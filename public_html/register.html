@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Chat room - register</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+        <script>
+            $(document).ready(function(){
+                $('form').submit(function(){
+                    var username = $("#username").val();
+                    var password = $("#password").val();
+                    var passwordConfirm = $("#passwordConfirm").val();
+                    if(typeof(username) === 'undefined'|| username.length == 0){
+                        $("#err-box").text("Please input the username");
+                    }
+                    else if(typeof(password) === 'undefined'|| password.length == 0 || typeof(passwordConfirm) === 'undefined'|| passwordConfirm.length == 0 ){
+                         $("#err-box").text("Please input the password");
+                    }
+                    else if(username.length >=20){
+                         $("#err-box").text("The username should be less than 20 characters");
+                    }
+                    else if(password !== passwordConfirm){
+                        $("#err-box").text("The password are not consistant");
+                        $("#password, #passwordConfirm").val('');
+                    }
+                    else if(password.length<6){
+                        $("#err-box").text("The password should have a least 6 characters");
+                        $("#password, #passwordConfirm").val('');
+                    }
+                    else{
+                        var data = {username: username, password: password};
+                        $.ajax({
+                            url: "/signup",
+                            type: "POST",
+                            data: JSON.stringify(data),
+                            contentType: "application/json; charset=utf-8",
+                            dataType:"json",
+                            success: function(data){
+                                if(data.meta.status == 200){
+                                    $.cookie('token', data.data.token, { expires: 100000 });
+                                    window.location = "./";
+                                }
+                            }
+                        });
+                    }
+                    return false;
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Welcome to chat room</h1>
+        <br>
+        <p>Create your account below</p>
+        <span id="err-box"></span>
+        <form>
+            <input id="username" autocomplete="on" placeholder = "username" />
+            <input id="password" type="password" placeholder = "password" />
+            <input id="passwordConfirm" type="password" placeholder = "password Confirmation" />
+            <button>Signup</button>
+        </form>
+        <br>
+        <a href="/login">Already have account?</a>
+    </body>
+</html>
