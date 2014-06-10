@@ -18,15 +18,14 @@ var http = require("http").Server(app.express);var cookieParser = require('cooki
 
 app.express
     .get('/', function(req, res){
-        console.log(req);
         var token = req.cookies.token;
-        console.log(token);
         isLoggedIn(token, function(session){
             if(typeof session === "undefined" || session == null){
                 res.sendfile(path.resolve(__dirname+'/../login.html'));
             }
             else{
                 res.sendfile(path.resolve(__dirname+'/../index.html'));
+                //build socket for users
             }
         });
 })
@@ -37,9 +36,15 @@ app.express
         res.sendfile(path.resolve(__dirname+'/../register.html'));
 })
     .get('/admin', function(req, res){
-        //if user has not logged in as administrator
-        res.sendfile(path.resolve(__dirname+'/../adminLogin.html'));
-        //else show the administator page for admin
+        var token = req.cookies.token;
+        isLoggedIn(token, function(session){
+            if(typeof session === "undefined" || session == null || session.permission == 0){
+                res.sendfile(path.resolve(__dirname+'/../adminLogin.html'));
+            }
+            else{
+                res.sendfile(path.resolve(__dirname+'/../admin.html')); 
+            }
+        });
 })
     .post('/signin', function(req, res){
         if(typeof(req.body) === 'undefined' || typeof(req.body.username) === 'undefined' || typeof(req.body.password) === 'undefined'){
