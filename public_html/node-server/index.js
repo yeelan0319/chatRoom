@@ -42,7 +42,9 @@ app.express
                 res.sendfile(path.resolve(__dirname+'/../adminLogin.html'));
             }
             else{
-                res.sendfile(path.resolve(__dirname+'/../admin.html')); 
+                res.sendfile(path.resolve(__dirname+'/../admin.html'));
+                //render the page with data: retrieve and render
+                retrieveUserList();
             }
         });
 })
@@ -180,5 +182,9 @@ var loginUser = function(username, password, res){
         }
     });
 };
+
+var retrieveUserList = function(callback){
+    
+}
 
 dbConnection();
