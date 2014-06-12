@@ -185,7 +185,7 @@ var checkLoginStatus = function(token, callback){
 }
 
 var logoutUser = function(token, res){
-    app.dbConnection.collection('session').remove({'token':token}, function(err, result){
+    app.dbConnection.collection('sessions').remove({'token':token}, function(err, result){
         if(err){
             renderDatabaseErrorJson(res);
         }
