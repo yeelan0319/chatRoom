@@ -56,6 +56,32 @@ app.express
     .get('/signout', function(req, res){
         var token = req.cookies.token;
         logoutUser(token, res);
+})
+    .get('/users', function(req, res){
+        var token = req.cookies.token;
+        checkAdminStatus(token, function(){
+                retrieveUserList(res);
+            }, function(){
+                renderInvalidRequestJson(res);
+            });
+})
+    .delete('/users/delete', function(req, res){
+        var token = req.cookies.token;
+        checkAdminStatus(token, function(){
+                deleteUser(req.body.username, res);
+            }, function(){
+                renderInvalidRequestJson(res);
+            });
+})
+    .put('/users/edit', function(req, res){
+        var token = req.cookies.token;
+        checkAdminStatus(token, function(){
+                var username = req.body.username;
+                var permission = req.body.permission;
+                editUser(username, permission, res);
+            }, function(){
+                renderInvalidRequestJson(res);
+            });
 });
 
 io.on('connection', function(socket){
@@ -169,8 +195,16 @@ var loginUser = function(username, password, res){
     });
 };
 
-var retrieveUserList = function(){
-    
+var retrieveUserList = function(res){
+    app.dbConnection.collection('users').find().toArray(function(err, documents){
+        if(err){
+            renderDatabaseErrorJson(res);
+        }
+        else{
+            console.log(documents);
+            renderSuccessJson(res, documents);
+        }
+    });
 }
 
 var checkLoginStatus = function(token, callback){
@@ -184,6 +218,23 @@ var checkLoginStatus = function(token, callback){
     });
 }
 
+var checkAdminStatus = function(token, adminAction, userAction){
+    checkLoginStatus(token, function(session){
+        if(session){
+            var isAdmin = session.permission == 1? true : false;
+            if(isAdmin){
+                adminAction();
+            }
+            else{
+                userAction();
+            }
+        }
+        else{
+            userAction();
+        }
+    });
+}
+
 var logoutUser = function(token, res){
     app.dbConnection.collection('sessions').remove({'token':token}, function(err, result){
         if(err){
@@ -193,6 +244,35 @@ var logoutUser = function(token, res){
             renderSuccessJson(res, {});
         }
     })
+}
+
+var editUser = function(username, permission, res){
+    app.dbConnection.collection('users').update({username:username}, {$set:{permission: permission}}, function(err, result){
+        if(err){
+            renderDatabaseErrorJson(res);
+        }
+        else{
+            renderSuccessJson(res, {});
+        }
+    });
+}
+
+var deleteUser = function(username, res){
+    app.dbConnection.collection('users').remove({username:username}, function(err, result){
+        if(err){
+            renderDatabaseErrorJson(res);
+        }
+        else{
+            app.dbConnection.collection('sessions').remove({username:username}, function(err, result){
+                if(err){
+                    renderDatabaseErrorJson(res);
+                }
+                else{
+                    renderSuccessJson(res);
+                }
+            });    
+        }
+    });
 }
 
 //Route handlers
@@ -230,18 +310,11 @@ var renderAdminLoginAction = function(req, res){
 
 var checkAdminAction = function(req, res){
     var token = req.cookies.token;
-    checkLoginStatus(token, function(session){
-        if(session){
-            var isAdmin = session.permission == 1? true : false;
-            if(isAdmin){
+    checkAdminStatus(token, function(){
                 renderAdminAction(req, res);
-                retrieveUserList();
-            }
-        }
-        else{
-            renderAdminLoginAction(req, res);
-        }
-    });
+            }, function(){
+                renderAdminLoginAction(req, res);
+            });
 }
 
 //json status render
