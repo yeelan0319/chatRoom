@@ -53,7 +53,7 @@ app.express
             renderInvalidRequestJson(res);
         }
 })
-    .post('/signout', function(req, res){
+    .get('/signout', function(req, res){
         var token = req.cookies.token;
         logoutUser(token, res);
 });
@@ -190,7 +190,7 @@ var logoutUser = function(token, res){
             renderDatabaseErrorJson(res);
         }
         else{
-            renderSuccessJson(res, data);
+            renderSuccessJson(res, {});
         }
     })
 }
