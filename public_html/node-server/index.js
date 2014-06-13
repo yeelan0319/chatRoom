@@ -196,7 +196,7 @@ io.on('connection', function(socket){
             var permission = data.permission;
             editUser(username, permission, function(socketID){
                 if(socketList[socketID]){
-                    socketList[socketID].permission = 1;
+                    socketList[socketID].permission = permission;
                 }
             }, function(errorJSON){
                 socket.emit('system message', errorJSON());
