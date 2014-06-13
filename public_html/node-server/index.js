@@ -3,118 +3,226 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+var SECRET = '3d4f2bf07dc1be38b20cd6e46949a1071f9d0e3d';
 var urlencode = require('urlencode');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var cookie = require('cookie');
+var cookieSession = require('express-session');
+var connect = require('connect');
+var parseSignedCookie = connect.utils.parseSignedCookie;
 var express = require("express");
 var path = require("path");
 var MongoClient = require("mongodb").MongoClient;
 var sha1 = require('sha1');
 var app = {};
 app.express = express();
-app.express.use(cookieParser());
 app.express.use(bodyParser());
+app.express.use(cookieParser(SECRET));
+app.express.use(cookieSession({
+    name:'PHPSESSID',
+    secret: SECRET
+}));
 var http = require("http").Server(app.express);
-var cookieParser = require('cookie-parser');
 var io = require('socket.io')(http);
 
 //routing
-app.express
-    .get('/', function(req, res){
-        checkMainAction(req,res);
-})
-    .get('/login', function(req, res){
-        renderLoginAction(req,res);
-})
-    .get('/register', function(req, res){
-        renderRegisterAction(req, res);
-})
-    .get('/admin', function(req, res){
-        checkAdminAction(req, res);
-})
-    .post('/signin', function(req, res){
-        if(isDataValid(req.body)){
-            var username = req.body.username;
-            var password = req.body.password;
-            loginUser(username, password, res);
-        }
-        else{
-            renderInvalidRequestJson(res);
-        }
-})
-    .post('/signup', function(req, res){
-        if(isDataValid(req.body)){
-            var username = req.body.username;
-            var password = req.body.password;
-            createNewUser(username, password, res);
-        }
-        else{
-            renderInvalidRequestJson(res);
-        }
-})
-    .get('/signout', function(req, res){
-        var token = req.cookies.token;
-        logoutUser(token, res);
-})
-    .get('/users', function(req, res){
-        var token = req.cookies.token;
-        checkAdminStatus(token, function(){
-                retrieveUserList(res);
-            }, function(){
-                renderInvalidRequestJson(res);
-            });
-})
-    .delete('/users/delete', function(req, res){
-        var token = req.cookies.token;
-        checkAdminStatus(token, function(){
-                deleteUser(req.body.username, res);
-            }, function(){
-                renderInvalidRequestJson(res);
-            });
-})
-    .put('/users/edit', function(req, res){
-        var token = req.cookies.token;
-        checkAdminStatus(token, function(){
-                var username = req.body.username;
-                var permission = req.body.permission;
-                editUser(username, permission, res);
-            }, function(){
-                renderInvalidRequestJson(res);
-            });
+app.express.get('/', function(req, res){
+    res.sendfile(path.resolve(__dirname+'/../index.html'));
 });
 
+var socketList = {};
+
 io.on('connection', function(socket){
-    var token = cookie.parse(socket.request.headers.cookie)['token'];
+    socketList[socket.id] = socket;
+    var tokenCrypto = cookie.parse(socket.request.headers.cookie)['PHPSESSID']
+    var token = parseSignedCookie(tokenCrypto, SECRET);
+    socket.token = token;
     checkLoginStatus(token, function(session){
         if(session){
-            console.log(session.username + ' is connected');
+            socket.username = session.username;
+            socket.permission = session.permission;
+            console.log(socket.username + ' is connected');
+            socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
+            socket.emit('render message', 'chat');
             app.dbConnection.collection('sessions').update(session, {$set:{socketID: socket.id}}, function(err, result){
                 if(err){
-                    console.log("error when updating the session's socket ID information");
-                }
-                else{
-                    socket.token = session.token;
-                    socket.username = session.username;
-                    socket.broadcast.emit('system message', socket.username + ' has joined the conversation');
-                    //add listeners to the socket
-                    socket.on('disconnect', function(){
-                        socket.broadcast.emit('system message', socket.username + ' has quitted the conversation');
-                        app.dbConnection.collection('sessions').update(session, {$set:{socketID: ''}}, function(err, result){
-                            if(err){
-                                console.log('error when clear the socket information in session collection');
-                            }
-                        });
-                    });
-                    socket.on('chat message', function(msg){
-                        io.sockets.emit('chat message', socket.username + ': ' + msg);
-                    });     
+                    socket.emit('system message', renderDatabaseErrorJson());
+                    console.log(renderDatabaseErrorJson());
+                    //redo the work
                 }
             });
         }
         else{
-            console.log("this user is not authorized");
-            //is it possible to cut the socket link when we find the request is fake?
+            socket.emit('render message', 'login');
+        }
+    }, function(errorJSON){
+        socket.emit('system message', errorJSON());
+        console.log(errorJSON());
+    });
+    socket.on('loginRender', function(){
+        if(!socket.username){
+            socket.emit('render message', 'login');
+        }
+    });
+    socket.on('loginAction', function(data){
+        try{
+            data = JSON.parse(data);
+        }
+        catch(e){
+            console.log("Receive invalid JSON");
+        }
+        if(!socket.username && isDataValid(data)){
+            var username = data.username;
+            var password = data.password;
+            loginUser(username, password, function(user){
+                socket.username = user.username;
+                socket.permission = user.permission;
+                console.log(socket.username + ' is connected');
+                socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
+                socket.emit('render message', 'chat');
+                var session = {'token': socket.token, 'username': socket.username, 'permission': socket.permission, 'socketID':socket.id}
+                app.dbConnection.collection('sessions').insert(session, function(err, result){
+                    if(err){
+                        socket.emit('system message', renderDatabaseErrorJson());
+                        console.log(renderDatabaseErrorJson());
+                        //redo the work
+                    }
+                });
+            },function(errorJSON){
+                socket.emit('system message', errorJSON());
+                console.log(errorJSON());
+            });
+        }
+        else{
+            socket.emit('system message', renderInvalidRequestJson());
+            console.log(renderInvalidRequestJson());
+        }
+    });
+    socket.on('registerRender', function(){
+        if(!socket.username){
+            socket.emit('render message', 'register');
+        }
+    });
+    socket.on('registerAction', function(data){
+        try{
+            data = JSON.parse(data);
+        }
+        catch(e){
+            console.log("Receive invalid JSON");
+        }
+        if(!socket.username && isDataValid(data)){
+            var username = data.username;
+            var password = data.password;
+            createNewUser(username, password, function(user){
+                socket.username = user.username;
+                socket.permission = user.permission;
+                console.log(socket.username + ' is connected');
+                socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
+                socket.emit('render message', 'chat');
+
+                var session = {'token': socket.token, 'username': socket.username, 'permission': socket.permission, 'socketID':socket.id}
+                app.dbConnection.collection('sessions').insert(session, function(err, result){
+                    if(err){
+                        socket.emit('system message', renderDatabaseErrorJson());
+                        console.log(renderDatabaseErrorJson());
+                        //redo the work
+                    }
+                });
+            }, function(errorJSON){
+                socket.emit('system message', errorJSON());
+                console.log(errorJSON());
+            });
+        }
+        else{
+            socket.emit('system message', renderInvalidRequestJson());
+            console.log(renderInvalidRequestJson());
+        }
+    });
+    socket.on('logoutAction', function(){
+        if(socket.username){
+            logoutUser(socket.token, function(){
+                socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
+                console.log(socket.username + ' has quitted the conversation');
+                delete socket.username;
+                delete socket.permission;
+                socket.emit('render message', 'login');
+            })
+        }
+    }, function(errorJSON){
+        socket.emit('system message', errorJSON());
+        console.log(errorJSON());
+    });
+    socket.on('chatAction', function(msg){
+        if(socket.username){
+            io.sockets.emit('chat message', socket.username + ': ' + msg);
+        }
+    }); 
+    socket.on('disconnect', function(){
+        socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
+        app.dbConnection.collection('sessions').update({token:socket.token}, {$set:{socketID: ''}}, function(err, result){
+            if(err){
+                socket.emit('system message', renderDatabaseErrorJson());
+                console.log(renderDatabaseErrorJson());
+                //redo the work
+            }
+        });
+        delete socketList[socket.id];
+    });
+    socket.on('adminRender', function(){
+        if(socket.permission == 1){
+            socket.emit("render message", 'admin');
+        }
+    });
+    socket.on('retrieveUserDataAction', function(){
+        if(socket.permission == 1){
+            retrieveUserList(function(data){
+                socket.emit('admin data', data);
+            }, function(errorJSON){
+                socket.emit('system message', errorJSON());
+                console.log(errorJSON());
+            });
+        }
+    });
+    socket.on('editPermissionAction', function(data){
+        try{
+            data = JSON.parse(data);
+        }
+        catch(e){
+            console.log("Receive invalid JSON");
+        }
+        if(socket.permission == 1){
+            var username = data.username;
+            var permission = data.permission;
+            editUser(username, permission, function(socketID){
+                if(socketList[socketID]){
+                    socketList[socketID].permission = 1;
+                }
+            }, function(errorJSON){
+                socket.emit('system message', errorJSON());
+                console.log(errorJSON());
+            });
+        }
+    });
+    socket.on('deleteUserAction', function(data){
+        try{
+            data = JSON.parse(data);
+        }
+        catch(e){
+            console.log("Receive invalid JSON");
+        }
+        if(socket.permission == 1){
+            var username = data.username;
+            deleteUser(username, function(socketID){
+                if(socketList[socketID]){
+                    socketList[socketID].emit('render message', 'register');
+                    delete socketList[socketID].username;
+                    delete socketList[socketID].permission;
+                };
+            }, function(errorJSON){
+                socket.emit('system message', errorJSON());
+                console.log(errorJSON());
+            });
         }
     });
 });
@@ -137,203 +245,146 @@ var dbConnection = function(){
     }
 );};
     
-var findUserWithUsername = function(username, callback){
-    app.dbConnection.collection('users').findOne({'username': username}, function(err, result){
+var findUserWithUsername = function(username, success, error){
+    app.dbConnection.collection('users').findOne({'username': username}, function(err, user){
         if(err){
-            renderDatabaseErrorJson(res);
+            error(renderDatabaseErrorJson);
+            //redo the work
         }
         else{
-            callback(result);
+            success(user);
         }
     }); 
 };
     
-var createNewUser = function(username, password, res){
+var createNewUser = function(username, password, success, error){
     findUserWithUsername(username, function(user){
         if(user){
-            res.json({meta: {status: 409,msg: "existing user, please login"},
-                    data:{}});
-            res.end();
+            error(renderExistingUserJson);
         }
         else{
-            //should generate a session key for the user and return it to the brwoser to save in cookie
             var user = {'username': username, 'password': sha1(password), 'permission':0};
             app.dbConnection.collection('users').insert(user, {w:1}, function(err, result) {
                 if(err){
-                    renderDatabaseErrorJson(res);
+                    error(renderDatabaseErrorJson);
                 }
                 else{
-                    loginUser(username, password, res);
+                    loginUser(username, password, success, error);
                 }
             });
         }
-    });
+    }, error);
 };
     
-var loginUser = function(username, password, res){
+var loginUser = function(username, password, success, error){
     findUserWithUsername(username, function(user){
         if(user && user.password === sha1(password)){
-            //should generate a session key for the user and return it to the brwoser to save in cookie
-            require('crypto').randomBytes(48, function(ex, buf) {
-                var token = buf.toString('hex');
-                var session = {'token': token, 'username': username, 'permission': user.permission}
-                app.dbConnection.collection('sessions').insert(session, function(err, result){
-                    if(err){
-                        renderDatabaseErrorJson(res);
-                    }
-                    else{
-                        renderSuccessJson(res, result[0]);
-                    }
-                });
-            });
+            success(user);
         }
         else{
-            res.json({meta: {status: 403,msg: "Login failed. Please check your username and password"},
-                     data:{}});
-            res.end();
+            error(renderWrongPasswordJson);
         }
-    });
+    }, error);
+
 };
 
-var retrieveUserList = function(res){
-    app.dbConnection.collection('users').find().toArray(function(err, documents){
-        if(err){
-            renderDatabaseErrorJson(res);
-        }
-        else{
-            console.log(documents);
-            renderSuccessJson(res, documents);
-        }
-    });
-}
-
-var checkLoginStatus = function(token, callback){
+var checkLoginStatus = function(token, success, error){
     app.dbConnection.collection('sessions').findOne({'token':token}, function(err, session){
         if(err){
-            renderDatabaseErrorJson(res);
+            error(renderDatabaseErrorJson);
         }
         else{
-            callback(session);
+            success(session);
         }
     });
 }
 
-var checkAdminStatus = function(token, adminAction, userAction){
-    checkLoginStatus(token, function(session){
-        if(session){
-            var isAdmin = session.permission == 1? true : false;
-            if(isAdmin){
-                adminAction();
-            }
-            else{
-                userAction();
-            }
-        }
-        else{
-            userAction();
-        }
-    });
-}
-
-var logoutUser = function(token, res){
+var logoutUser = function(token, success, error){
     app.dbConnection.collection('sessions').remove({'token':token}, function(err, result){
         if(err){
-            renderDatabaseErrorJson(res);
+            error(renderDatabaseErrorJson);
         }
         else{
-            renderSuccessJson(res, {});
+            success();
         }
     })
 }
 
-var editUser = function(username, permission, res){
+var retrieveUserList = function(success, error){
+    app.dbConnection.collection('users').find().toArray(function(err, documents){
+        if(err){
+            error(renderDatabaseErrorJson);
+            //redo the work
+        }
+        else{
+            success(renderSuccessJson(documents));
+        }
+    });
+}
+
+var editUser = function(username, permission, success, error){
     app.dbConnection.collection('users').update({username:username}, {$set:{permission: permission}}, function(err, result){
         if(err){
-            renderDatabaseErrorJson(res);
+            error(renderDatabaseErrorJson);
         }
         else{
-            renderSuccessJson(res, {});
-        }
-    });
-}
-
-var deleteUser = function(username, res){
-    app.dbConnection.collection('users').remove({username:username}, function(err, result){
-        if(err){
-            renderDatabaseErrorJson(res);
-        }
-        else{
-            app.dbConnection.collection('sessions').remove({username:username}, function(err, result){
+            app.dbConnection.collection('sessions').update({username:username}, {$set:{permission: permission}}, function(err, result){
                 if(err){
-                    renderDatabaseErrorJson(res);
+                    error(renderDatabaseErrorJson);
                 }
                 else{
-                    renderSuccessJson(res);
+                    success(result.socketID);
                 }
-            });    
+            });
         }
     });
 }
 
-//Route handlers
-var checkMainAction = function(req, res){
-    var token = req.cookies.token;
-    checkLoginStatus(token, function(session){
-        if(session){
-            renderMainAction(req, res);
+var deleteUser = function(username, success, error){
+    app.dbConnection.collection('users').remove({username:username}, function(err, result){
+        if(err){
+            error(renderDatabaseErrorJson);
         }
         else{
-            renderLoginAction(req, res); 
+            app.dbConnection.collection('users').remove({username:username}, function(err, result){
+                if(err){
+                    error(renderDatabaseErrorJson);
+                }
+                else{
+                    app.dbConnection.collection('sessions').remove({username:username}, function(err, result){
+                        if(err){
+                            error(renderDatabaseErrorJson);
+                        }
+                        else{
+                            success();
+                        }
+                    });  
+                }
+            });  
         }
     });
-}
-
-var renderMainAction = function(req, res){
-    res.sendfile(path.resolve(__dirname+'/../index.html'));
-}
-
-var renderLoginAction = function(req, res){
-    res.sendfile(path.resolve(__dirname+'/../login.html'));
-}
-
-var renderRegisterAction = function(req, res){
-    res.sendfile(path.resolve(__dirname+'/../register.html'));
-}
-
-var renderAdminAction = function(req, res){
-    res.sendfile(path.resolve(__dirname+'/../admin.html'));
-}
-
-var renderAdminLoginAction = function(req, res){
-    res.sendfile(path.resolve(__dirname+'/../adminLogin.html')); 
-}
-
-var checkAdminAction = function(req, res){
-    var token = req.cookies.token;
-    checkAdminStatus(token, function(){
-                renderAdminAction(req, res);
-            }, function(){
-                renderAdminLoginAction(req, res);
-            });
 }
 
 //json status render
-var renderInvalidRequestJson = function(res){
-    res.json({meta: {status: 500,msg: "bad request"},
-                data:{}});
-    res.end();
+var renderInvalidRequestJson = function(){
+    return '{meta: {status: 500, msg: "bad request"}, data:{}}';
 }
 
-var renderDatabaseErrorJson = function(res){
-    res.json({meta: {status: 500,msg: "database failure"},
-                data:{}});
-    res.end();
+var renderDatabaseErrorJson = function(){
+    return '{meta: {status: 500, msg: "database failure"}, data:{}}';
 }
 
-var renderSuccessJson = function(res, data){
-    res.json({meta: {status: 200,msg: "OK"},
-              data: data});
-    res.end();
+var renderWrongPasswordJson = function(){
+    return '{meta: {status: 403, msg: "login failed, please check your password"}, data:{}}';
+}
+
+var renderExistingUserJson = function(){
+    return '{meta: {status: 409, msg: "existing user. please log in"}, data:{}}';
+}
+
+var renderSuccessJson = function(data){
+    var result = {meta: {status: 200, msg: "OK"}, data: data};
+    return JSON.stringify(result);
 }
 
 //naive data validator

@@ -39,7 +39,7 @@ and open the template in the editor.
                             dataType:"json",
                             success: function(data){
                                 if(data.meta.status == 200){
-                                    $.cookie('token', data.data.token, { expires: 100000 });
+                                    console.log('haha');
                                     window.location = "./";
                                 }
                             }
