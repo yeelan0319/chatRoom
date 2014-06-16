@@ -14,11 +14,14 @@ var parseSignedCookie = connect.utils.parseSignedCookie;
 var express = require("express");
 var path = require("path");
 var MongoClient = require("mongodb").MongoClient;
+var crypto = require('crypto');
 var sha1 = require('sha1');
 var app = {};
+var cookieParserFunction = cookieParser(SECRET);
+
 app.express = express();
 app.express.use(bodyParser());
-app.express.use(cookieParser(SECRET));
+app.express.use(cookieParserFunction);
 app.express.use(cookieSession({
     name:'PHPSESSID',
     secret: SECRET
@@ -31,21 +34,27 @@ app.express.get('/', function(req, res){
     res.sendfile(path.resolve(__dirname+'/../index.html'));
 });
 
-var socketList = {};
+var socketList = io.of('/');
+
+io.use(function(socket, next){
+    cookieParserFunction(socket.request, {}, next);
+});
+
+io.use(function(socket, next){
+    var seed = crypto.randomBytes(20);
+    socket.token = socket.request.signedCookies['PHPSESSID'] || crypto.createHash('sha1').update(seed).digest('hex');
+    next();
+});
 
 io.on('connection', function(socket){
-    socketList[socket.id] = socket;
-    var tokenCrypto = cookie.parse(socket.request.headers.cookie)['PHPSESSID']
-    var token = parseSignedCookie(tokenCrypto, SECRET);
-    socket.token = token;
-    checkLoginStatus(token, function(session){
+    checkLoginStatus(socket.token, function(session){
         if(session){
             socket.username = session.username;
             socket.permission = session.permission;
             console.log(socket.username + ' is connected');
             socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
             socket.emit('render message', 'chat');
-            app.dbConnection.collection('sessions').update(session, {$set:{socketID: socket.id}}, function(err, result){
+            app.dbConnection.collection('sessions').findAndModify(session, [['_id','asc']], {$set:{socketID: socket.id}}, {}, function(err, session){
                 if(err){
                     socket.emit('system message', renderDatabaseErrorJson());
                     console.log(renderDatabaseErrorJson());
@@ -167,7 +176,6 @@ io.on('connection', function(socket){
                 //redo the work
             }
         });
-        delete socketList[socket.id];
     });
     socket.on('adminRender', function(){
         if(socket.permission == 1){
@@ -195,8 +203,8 @@ io.on('connection', function(socket){
             var username = data.username;
             var permission = data.permission;
             editUser(username, permission, function(socketID){
-                if(socketList[socketID]){
-                    socketList[socketID].permission = permission;
+                if(socketList.connected[socketID]){
+                    socketList.connected[socketID].permission = permission;
                 }
             }, function(errorJSON){
                 socket.emit('system message', errorJSON());
@@ -214,10 +222,10 @@ io.on('connection', function(socket){
         if(socket.permission == 1){
             var username = data.username;
             deleteUser(username, function(socketID){
-                if(socketList[socketID]){
-                    socketList[socketID].emit('render message', 'register');
-                    delete socketList[socketID].username;
-                    delete socketList[socketID].permission;
+                if(socketList.connected[socketID]){
+                    socketList.connected[socketID].emit('render message', 'register');
+                    delete socketList.connected[socketID].username;
+                    delete socketList.connected[socketID].permission;
                 };
             }, function(errorJSON){
                 socket.emit('system message', errorJSON());
@@ -323,17 +331,17 @@ var retrieveUserList = function(success, error){
 }
 
 var editUser = function(username, permission, success, error){
-    app.dbConnection.collection('users').update({username:username}, {$set:{permission: permission}}, function(err, result){
+    app.dbConnection.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{permission: permission}}, {}, function(err, user){
         if(err){
             error(renderDatabaseErrorJson);
         }
         else{
-            app.dbConnection.collection('sessions').update({username:username}, {$set:{permission: permission}}, function(err, result){
+            app.dbConnection.collection('sessions').findAndModify({username:username}, [['_id','asc']], {$set:{permission: permission}}, {}, function(err, session){
                 if(err){
                     error(renderDatabaseErrorJson);
                 }
                 else{
-                    success(result.socketID);
+                    success(session.socketID);
                 }
             });
         }
