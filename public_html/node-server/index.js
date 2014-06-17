@@ -47,6 +47,9 @@ io.use(function(socket, next){
 });
 
 io.use(function(socket, next){
+    //TODO:
+    //Don't use the session information for socketID in session object, which is not the latest one!!
+    //The mysterious is if I put this function last, it will crash server
     sessionParserFunction(socket.request, {}, next);
 });
 
