@@ -4,28 +4,32 @@
  * and open the template in the editor.
  */
 var SECRET = '3d4f2bf07dc1be38b20cd6e46949a1071f9d0e3d';
-var urlencode = require('urlencode');
-var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
-var cookie = require('cookie');
-var cookieSession = require('express-session');
-var connect = require('connect');
-var parseSignedCookie = connect.utils.parseSignedCookie;
+var expressSession = require('express-session');
+var MongoStore = require('connect-mongo')(expressSession);
 var express = require("express");
 var path = require("path");
 var MongoClient = require("mongodb").MongoClient;
 var crypto = require('crypto');
 var sha1 = require('sha1');
 var app = {};
+var myMongoStore = new MongoStore({
+        db: 'test',
+        host: '127.0.0.1',
+        port: 27017
+    });
 var cookieParserFunction = cookieParser(SECRET);
-
-app.express = express();
-app.express.use(bodyParser());
-app.express.use(cookieParserFunction);
-app.express.use(cookieSession({
+var sessionParserFunction = expressSession({
     name:'PHPSESSID',
-    secret: SECRET
-}));
+    secret: SECRET,
+    cookie: {
+        maxAge: 3600000 * 24 * 30
+    },
+    store: myMongoStore
+});
+app.express = express();
+app.express.use(cookieParserFunction);
+app.express.use(sessionParserFunction);
 var http = require("http").Server(app.express);
 var io = require('socket.io')(http);
 
@@ -47,18 +51,28 @@ io.use(function(socket, next){
 });
 
 io.on('connection', function(socket){
-    checkLoginStatus(socket.token, function(session){
-        if(session){
-            socket.username = session.username;
-            socket.permission = session.permission;
+    checkLoginStatus(socket.token, function(user){
+        if(user){
+            socket.username = user.username;
+            socket.permission = user.permission;
             console.log(socket.username + ' is connected');
             socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
             socket.emit('render message', 'chat');
-            app.dbConnection.collection('sessions').findAndModify(session, [['_id','asc']], {$set:{socketID: socket.id}}, {}, function(err, session){
+            myMongoStore.get(socket.token, function(err, sessData){
                 if(err){
                     socket.emit('system message', renderDatabaseErrorJson());
                     console.log(renderDatabaseErrorJson());
                     //redo the work
+                }
+                else{
+                    sessData.socketID = socket.id;
+                    myMongoStore.set(socket.token, sessData, function(err){
+                        if(err){
+                            socket.emit('system message', renderDatabaseErrorJson());
+                            console.log(renderDatabaseErrorJson());
+                            //redo the work
+                        }
+                    });
                 }
             });
         }
@@ -90,12 +104,22 @@ io.on('connection', function(socket){
                 console.log(socket.username + ' is connected');
                 socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
                 socket.emit('render message', 'chat');
-                var session = {'token': socket.token, 'username': socket.username, 'permission': socket.permission, 'socketID':socket.id}
-                app.dbConnection.collection('sessions').insert(session, function(err, result){
+                myMongoStore.get(socket.token, function(err, sessData){
                     if(err){
                         socket.emit('system message', renderDatabaseErrorJson());
                         console.log(renderDatabaseErrorJson());
                         //redo the work
+                    }
+                    else{
+                        sessData.username = socket.username;
+                        sessData.socketID = socket.id;
+                        myMongoStore.set(socket.token, sessData, function(err){
+                            if(err){
+                                socket.emit('system message', renderDatabaseErrorJson());
+                                console.log(renderDatabaseErrorJson());
+                                //redo the work
+                            }
+                        });
                     }
                 });
             },function(errorJSON){
@@ -129,13 +153,22 @@ io.on('connection', function(socket){
                 console.log(socket.username + ' is connected');
                 socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
                 socket.emit('render message', 'chat');
-
-                var session = {'token': socket.token, 'username': socket.username, 'permission': socket.permission, 'socketID':socket.id}
-                app.dbConnection.collection('sessions').insert(session, function(err, result){
+                myMongoStore.get(socket.token, function(err, sessData){
                     if(err){
                         socket.emit('system message', renderDatabaseErrorJson());
                         console.log(renderDatabaseErrorJson());
-                        //redo the work
+                        //redo the work 
+                    }
+                    else{
+                        sessData.username = socket.username;
+                        sessData.socketID = socket.id;
+                        myMongoStore.set(socket.token, sessData, function(err){
+                            if(err){
+                                socket.emit('system message', renderDatabaseErrorJson());
+                                console.log(renderDatabaseErrorJson());
+                                //redo the work
+                            }
+                        });
                     }
                 });
             }, function(errorJSON){
@@ -168,12 +201,24 @@ io.on('connection', function(socket){
         }
     }); 
     socket.on('disconnect', function(){
-        socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
-        app.dbConnection.collection('sessions').update({token:socket.token}, {$set:{socketID: ''}}, function(err, result){
+        if(socket.username){
+            socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
+        }
+        myMongoStore.get(socket.token, function(err, sessData){
             if(err){
                 socket.emit('system message', renderDatabaseErrorJson());
                 console.log(renderDatabaseErrorJson());
                 //redo the work
+            }
+            else{
+                delete sessData.socketID;
+                myMongoStore.set(socket.token, sessData, function(err){
+                    if(err){
+                        socket.emit('system message', renderDatabaseErrorJson());
+                        console.log(renderDatabaseErrorJson());
+                        //redo the work
+                    }   
+                });
             }
         });
     });
@@ -202,9 +247,13 @@ io.on('connection', function(socket){
         if(socket.permission == 1){
             var username = data.username;
             var permission = data.permission;
-            editUser(username, permission, function(socketID){
-                if(socketList.connected[socketID]){
-                    socketList.connected[socketID].permission = permission;
+            editUser(username, permission, function(){
+                for(socketID in socketList.connected){
+                    if(socketList.connected.hasOwnProperty(socketID)){
+                        if(socketList.connected[socketID].username === username){
+                            socketList.connected[socketID].permission = permission;
+                        }
+                    }
                 }
             }, function(errorJSON){
                 socket.emit('system message', errorJSON());
@@ -221,12 +270,19 @@ io.on('connection', function(socket){
         }
         if(socket.permission == 1){
             var username = data.username;
-            deleteUser(username, function(socketID){
-                if(socketList.connected[socketID]){
-                    socketList.connected[socketID].emit('render message', 'register');
-                    delete socketList.connected[socketID].username;
-                    delete socketList.connected[socketID].permission;
-                };
+            deleteUser(username, function(){
+                for(socketID in socketList.connected){
+                    if(socketList.connected.hasOwnProperty(socketID)){
+                        var targetSocket = socketList.connected[socketID];
+                        if(targetSocket.username === username){
+                            targetSocket.broadcast.emit('status message', targetSocket.username + ' has quitted the conversation');
+                            console.log(targetSocket.username + ' has quitted the conversation');
+                            delete targetSocket.username;
+                            delete targetSocket.permission;
+                            targetSocket.emit('render message', 'register');
+                        }
+                    }
+                }
             }, function(errorJSON){
                 socket.emit('system message', errorJSON());
                 console.log(errorJSON());
@@ -297,25 +353,42 @@ var loginUser = function(username, password, success, error){
 };
 
 var checkLoginStatus = function(token, success, error){
-    app.dbConnection.collection('sessions').findOne({'token':token}, function(err, session){
+    myMongoStore.get(token, function(err, sessData){
         if(err){
             error(renderDatabaseErrorJson);
+            //redo the work
         }
         else{
-            success(session);
+            if(sessData.username){
+                findUserWithUsername(sessData.username, success, error);
+            }
+            else{
+                success("");
+            }
+            
         }
     });
 }
 
 var logoutUser = function(token, success, error){
-    app.dbConnection.collection('sessions').remove({'token':token}, function(err, result){
+    myMongoStore.get(token, function(err, sessData){
         if(err){
             error(renderDatabaseErrorJson);
+            //redo the work
         }
         else{
-            success();
+            delete sessData.username;
+            myMongoStore.set(token, sessData, function(err){
+                if(err){
+                    error(renderDatabaseErrorJson);
+                    //redo the work
+                }
+                else{
+                    success();
+                }
+            });
         }
-    })
+    });
 }
 
 var retrieveUserList = function(success, error){
@@ -336,14 +409,7 @@ var editUser = function(username, permission, success, error){
             error(renderDatabaseErrorJson);
         }
         else{
-            app.dbConnection.collection('sessions').findAndModify({username:username}, [['_id','asc']], {$set:{permission: permission}}, {}, function(err, session){
-                if(err){
-                    error(renderDatabaseErrorJson);
-                }
-                else{
-                    success(session.socketID);
-                }
-            });
+            success();
         }
     });
 }
@@ -354,21 +420,7 @@ var deleteUser = function(username, success, error){
             error(renderDatabaseErrorJson);
         }
         else{
-            app.dbConnection.collection('users').remove({username:username}, function(err, result){
-                if(err){
-                    error(renderDatabaseErrorJson);
-                }
-                else{
-                    app.dbConnection.collection('sessions').remove({username:username}, function(err, result){
-                        if(err){
-                            error(renderDatabaseErrorJson);
-                        }
-                        else{
-                            success();
-                        }
-                    });  
-                }
-            });  
+            success();   
         }
     });
 }
