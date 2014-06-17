@@ -35,22 +35,47 @@ var io = require('socket.io')(http);
 
 //routing
 app.express.get('/', function(req, res){
+    console.log(req.session);
     res.sendfile(path.resolve(__dirname+'/../index.html'));
 });
 
 var socketList = io.of('/');
 
 io.use(function(socket, next){
+    socket.request.originalUrl = "/";
     cookieParserFunction(socket.request, {}, next);
+});
+
+io.use(function(socket, next){
+    sessionParserFunction(socket.request, {}, next);
 });
 
 io.use(function(socket, next){
     var seed = crypto.randomBytes(20);
     socket.token = socket.request.signedCookies['PHPSESSID'] || crypto.createHash('sha1').update(seed).digest('hex');
+    //store the socketID into session form for get/post request usage
+    myMongoStore.get(socket.token, function(err, sessData){
+        if(err){
+            socket.emit('system message', renderDatabaseErrorJson());
+            console.log(renderDatabaseErrorJson());
+            //redo the work
+        }
+        else{
+            sessData.socketID = socket.id;
+            myMongoStore.set(socket.token, sessData, function(err){
+                if(err){
+                    socket.emit('system message', renderDatabaseErrorJson());
+                    console.log(renderDatabaseErrorJson());
+                    //redo the work
+                }
+            });
+        }
+    });
     next();
 });
 
 io.on('connection', function(socket){
+    console.log(socket.request.session);
     checkLoginStatus(socket.token, function(user){
         if(user){
             socket.username = user.username;
@@ -58,23 +83,6 @@ io.on('connection', function(socket){
             console.log(socket.username + ' is connected');
             socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
             socket.emit('render message', 'chat');
-            myMongoStore.get(socket.token, function(err, sessData){
-                if(err){
-                    socket.emit('system message', renderDatabaseErrorJson());
-                    console.log(renderDatabaseErrorJson());
-                    //redo the work
-                }
-                else{
-                    sessData.socketID = socket.id;
-                    myMongoStore.set(socket.token, sessData, function(err){
-                        if(err){
-                            socket.emit('system message', renderDatabaseErrorJson());
-                            console.log(renderDatabaseErrorJson());
-                            //redo the work
-                        }
-                    });
-                }
-            });
         }
         else{
             socket.emit('render message', 'login');
@@ -112,7 +120,6 @@ io.on('connection', function(socket){
                     }
                     else{
                         sessData.username = socket.username;
-                        sessData.socketID = socket.id;
                         myMongoStore.set(socket.token, sessData, function(err){
                             if(err){
                                 socket.emit('system message', renderDatabaseErrorJson());
@@ -161,7 +168,6 @@ io.on('connection', function(socket){
                     }
                     else{
                         sessData.username = socket.username;
-                        sessData.socketID = socket.id;
                         myMongoStore.set(socket.token, sessData, function(err){
                             if(err){
                                 socket.emit('system message', renderDatabaseErrorJson());
@@ -203,7 +209,9 @@ io.on('connection', function(socket){
     socket.on('disconnect', function(){
         if(socket.username){
             socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
+            console.log(socket.username + ' has quitted the conversation');
         }
+        //remove the socketID into session form
         myMongoStore.get(socket.token, function(err, sessData){
             if(err){
                 socket.emit('system message', renderDatabaseErrorJson());
