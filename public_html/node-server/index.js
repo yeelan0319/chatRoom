@@ -3,6 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+var SESSIONAGE = 3600000 * 24 * 30;
 var SECRET = '3d4f2bf07dc1be38b20cd6e46949a1071f9d0e3d';
 var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
@@ -23,7 +24,7 @@ var sessionParserFunction = expressSession({
     name:'PHPSESSID',
     secret: SECRET,
     cookie: {
-        maxAge: 3600000 * 24 * 30
+        maxAge: SESSIONAGE
     },
     store: myMongoStore
 });
@@ -35,7 +36,6 @@ var io = require('socket.io')(http);
 
 //routing
 app.express.get('/', function(req, res){
-    console.log(req.session);
     res.sendfile(path.resolve(__dirname+'/../index.html'));
 });
 
@@ -78,7 +78,18 @@ io.use(function(socket, next){
 });
 
 io.on('connection', function(socket){
-    console.log(socket.request.session);
+    socket.prototype.extendSessionAge = function(expirationDate){
+        this.request.session.touch();
+        this.emit('session extension', expirationDate);
+    }
+
+    socket.extendSessionAge(new Date(Date.now() + SESSIONAGE));
+    for(var e in ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction','adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction']){
+        socket.on(e, function(){
+            socket.extendSessionAge(new Date(Date.now() + SESSIONAGE));
+        });
+    }
+    
     checkLoginStatus(socket.token, function(user){
         if(user){
             socket.username = user.username;
