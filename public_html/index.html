@@ -70,6 +70,11 @@
                 });
             }
 		});
+		socket.on('session extension', function(SESSIONAGE){
+			var cookieValue = $.cookie('PHPSESSID');
+			$.cookie('PHPSESSID', null);
+			$.cookie('PHPSESSID', cookieValue, { expires: SESSIONAGE });
+		});
 		socket.on('render message', function(target){
 			var tmpl = $.trim($('#' + target + '-index-tmpl').html());
 			var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));

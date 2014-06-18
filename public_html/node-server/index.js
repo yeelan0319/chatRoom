@@ -32,7 +32,13 @@ app.express = express();
 app.express.use(cookieParserFunction);
 app.express.use(sessionParserFunction);
 var http = require("http").Server(app.express);
+var Socket = require('socket.io/lib/socket');
 var io = require('socket.io')(http);
+Socket.prototype.extendSessionAge = function(){
+    console.log(this.request.session.touch);
+    this.request.session.touch().save();
+    this.emit('session extension', SESSIONAGE);
+};
 
 //routing
 app.express.get('/', function(req, res){
@@ -78,15 +84,11 @@ io.use(function(socket, next){
 });
 
 io.on('connection', function(socket){
-    socket.prototype.extendSessionAge = function(expirationDate){
-        this.request.session.touch();
-        this.emit('session extension', expirationDate);
-    }
-
-    socket.extendSessionAge(new Date(Date.now() + SESSIONAGE));
-    for(var e in ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction','adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction']){
-        socket.on(e, function(){
-            socket.extendSessionAge(new Date(Date.now() + SESSIONAGE));
+    socket.extendSessionAge();
+    var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction'];
+    for(var i = 0; i < eventList.length; i++){
+        socket.on(eventList[i], function(){
+            socket.extendSessionAge();
         });
     }
     
@@ -311,10 +313,27 @@ io.on('connection', function(socket){
             });
         }
     });
+    // socket.on('retrieveLinkedUserAction', function(data){
+    //     if(socket.permission == 1){
+    //         //should 
+    //         var data = JSON.stringify(socketList.connected);
+    //         socket.emit('admin data', data);
+    //     }
+    // });
+    // socket.on('focusLogout', function(data){
+    //     try{
+    //         data = JSON.parse(data);
+    //     }
+    //     catch(e){
+    //         console.log("Receive invalid JSON");
+    //     }
+    //     if(socket.permission == 1){
+    //         var socketID = data.socketID;
+    // })
 });
 
 var dbConnection = function(){
-    MongoClient.connect("mongodb://localhost:27017/test", function(err,db){
+    MongoClient.connect("mongodb://127.0.0.1:27017/test", function(err,db){
         if(err){
             console.dir(err);
             //should set a upper bound for try time
