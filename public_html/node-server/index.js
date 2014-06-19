@@ -35,9 +35,20 @@ var http = require("http").Server(app.express);
 var Socket = require('socket.io/lib/socket');
 var io = require('socket.io')(http);
 Socket.prototype.extendSessionAge = function(){
-    console.log(this.request.session.touch);
-    this.request.session.touch().save();
-    this.emit('session extension', SESSIONAGE);
+    var that = this;
+    myMongoStore.get(that.token, function(err, sessData){
+        if(err){
+            that.emit('system message', renderDatabaseErrorJson());
+            console.log(renderDatabaseErrorJson());
+            //redo the work
+        }
+        else{
+            that.request.session.username = sessData.username || '';
+            that.request.session.socketID = sessData.socketID || '';
+            that.request.session.touch().save();
+            that.emit('session extension', SESSIONAGE);
+        }
+    });
 };
 
 //routing
@@ -70,12 +81,18 @@ io.use(function(socket, next){
             //redo the work
         }
         else{
-            sessData.socketID = socket.id;
+            if(!sessData.socketID){
+                sessData.socketID = [];
+            }
+            sessData.socketID.push(socket.id);
             myMongoStore.set(socket.token, sessData, function(err){
                 if(err){
                     socket.emit('system message', renderDatabaseErrorJson());
                     console.log(renderDatabaseErrorJson());
                     //redo the work
+                }
+                else{
+                    socket.extendSessionAge();
                 }
             });
         }
@@ -84,7 +101,6 @@ io.use(function(socket, next){
 });
 
 io.on('connection', function(socket){
-    socket.extendSessionAge();
     var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction'];
     for(var i = 0; i < eventList.length; i++){
         socket.on(eventList[i], function(){
@@ -205,12 +221,17 @@ io.on('connection', function(socket){
     });
     socket.on('logoutAction', function(){
         if(socket.username){
-            logoutUser(socket.token, function(){
-                socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
-                console.log(socket.username + ' has quitted the conversation');
-                delete socket.username;
-                delete socket.permission;
-                socket.emit('render message', 'login');
+            logoutUser(socket.token, function(socketIDs){
+                for(var i = 0; i < socketIDs.length; i++){
+                    var target = socketList.connected[socketIDs[i]];
+                    if(target){
+                        target.broadcast.emit('status message', target.username + ' has quitted the conversation');
+                        console.log(target.username + ' has quitted the conversation');
+                        delete target.username;
+                        delete target.permission;
+                        target.emit('render message', 'login');
+                    }
+                }
             })
         }
     }, function(errorJSON){
@@ -235,7 +256,7 @@ io.on('connection', function(socket){
                 //redo the work
             }
             else{
-                delete sessData.socketID;
+                sessData.socketID.splice(sessData.socketID.indexOf(socket.id),1);
                 myMongoStore.set(socket.token, sessData, function(err){
                     if(err){
                         socket.emit('system message', renderDatabaseErrorJson());
@@ -425,7 +446,7 @@ var logoutUser = function(token, success, error){
                     //redo the work
                 }
                 else{
-                    success();
+                    success(sessData.socketID);
                 }
             });
         }
