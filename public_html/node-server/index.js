@@ -139,11 +139,6 @@ io.on('connection', function(socket){
             var username = data.username;
             var password = data.password;
             loginUser(username, password, function(user){
-                socket.username = user.username;
-                socket.permission = user.permission;
-                console.log(socket.username + ' is connected');
-                socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
-                socket.emit('render message', 'chat');
                 myMongoStore.get(socket.token, function(err, sessData){
                     if(err){
                         socket.emit('system message', renderDatabaseErrorJson());
@@ -151,7 +146,18 @@ io.on('connection', function(socket){
                         //redo the work
                     }
                     else{
-                        sessData.username = socket.username;
+                        var socketIDs = sessData.socketID;
+                        for(var i = 0; i < socketIDs.length; i++){
+                            var target = socketList.connected[socketIDs[i]];
+                            if(target){
+                                target.username = user.username;
+                                target.permission = user.permission;
+                                console.log(target.username + ' is connected');
+                                target.broadcast.emit('status message', target.username + ' has joined the conversation');
+                                target.emit('render message', 'chat');
+                            }
+                        }
+                        sessData.username = user.username;
                         myMongoStore.set(socket.token, sessData, function(err){
                             if(err){
                                 socket.emit('system message', renderDatabaseErrorJson());
@@ -187,19 +193,25 @@ io.on('connection', function(socket){
             var username = data.username;
             var password = data.password;
             createNewUser(username, password, function(user){
-                socket.username = user.username;
-                socket.permission = user.permission;
-                console.log(socket.username + ' is connected');
-                socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
-                socket.emit('render message', 'chat');
                 myMongoStore.get(socket.token, function(err, sessData){
                     if(err){
                         socket.emit('system message', renderDatabaseErrorJson());
                         console.log(renderDatabaseErrorJson());
-                        //redo the work 
+                        //redo the work
                     }
                     else{
-                        sessData.username = socket.username;
+                        var socketIDs = sessData.socketID;
+                        for(var i = 0; i < socketIDs.length; i++){
+                            var target = socketList.connected[socketIDs[i]];
+                            if(target){
+                                target.username = user.username;
+                                target.permission = user.permission;
+                                console.log(target.username + ' is connected');
+                                target.broadcast.emit('status message', target.username + ' has joined the conversation');
+                                target.emit('render message', 'chat');
+                            }
+                        }
+                        sessData.username = user.username;
                         myMongoStore.set(socket.token, sessData, function(err){
                             if(err){
                                 socket.emit('system message', renderDatabaseErrorJson());
