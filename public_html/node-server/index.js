@@ -30,6 +30,7 @@ var sessionParserFunction = expressSession({
 });
 app.expressHttp = express();
 app.express = express();
+app.express.use('/public', express.static(__dirname + '/../public'));
 app.express.use(cookieParserFunction);
 app.express.use(sessionParserFunction);
 var options = {
