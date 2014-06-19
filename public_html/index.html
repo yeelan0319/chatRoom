@@ -20,7 +20,8 @@
   <body>	
   <div id="container"></div>
     <script type="text/javascript">
-    	var userItem = function(userdata){
+    	var linkedUserList = {};
+    	var UserItem = function(userdata){
 			var that = this;
 			that.username = userdata.username;
 			that.permission = userdata.permission;
@@ -29,9 +30,9 @@
 			that.$el = $(Mustache.to_html(userTmpl, that).replace(/^\s*/mg, ''));
 			that.$el.find('.delete').click(function(){that.destroy.apply(that)});
 			that.$el.find('.permission').change(function(){that.edit.apply(that)});
-		}
+		};
 
-		userItem.prototype = {
+		UserItem.prototype = {
 			edit: function(){
 				var that = this;
 				var username = that.username;
@@ -52,7 +53,47 @@
 					that.$el.remove();
 				}
 			}
-		}
+		};
+
+		var LinkedUserItem = function(userdata){
+			this.username = userdata.username;
+			this.sessionNumber = 0;
+			this.socketNumber = 0;
+			this.sessions = [];
+			this.socketIDs = [];
+			linkedUserList[this.username] = this;
+		};
+
+		LinkedUserItem.prototype = {
+			addSession: function(session){
+				if(this.sessions.indexOf(session) == -1){
+					this.sessions.push(session);
+					this.sessionNumber++;
+				}
+			},
+			addSocketID: function(socketID){
+				if(this.socketIDs.indexOf(socketID) == -1){
+					this.socketIDs.push(socketID);
+					this.socketNumber++;
+				}
+			},
+			initEl: function(){
+				var linkedUserItemTmpl = $.trim($('#linked-user-item-tmpl').html());
+				var that = this;
+				that.$el = $(Mustache.to_html(linkedUserItemTmpl, that).replace(/^\s*/mg, ''));
+				that.$el.find('.boot').click(function(){that.boot.apply(that)});
+				$('#user-list').append(that.$el);
+			},
+			boot: function(){
+				var confirmed = confirm("Are you sure to boot this user?");
+				var that = this;
+				if(confirmed){
+					data = {sessions: that.sessions};
+					socket.emit("focusLogout", JSON.stringify(data));
+					that.$el.remove();
+				}
+			}
+		};
 
 		var socket = io();
 		socket.on('status message', function(msg){
@@ -61,14 +102,34 @@
 		socket.on('chat message', function(msg){
 			$('#messages').append($('<li>').text(msg));
 		});
-		socket.on('admin data', function(data){
+		socket.on('users data', function(data){
 			data = JSON.parse(data);
 			if(data.meta.status == 200){
+				$('#user-list').html('');
                 $.each(data.data, function(index, userdata){
-                	var user = new userItem(userdata);
+                	var user = new UserItem(userdata);
                 	$('#user-list').append(user.$el);
                 });
             }
+		});
+		socket.on('linked users data', function(data){
+			data = JSON.parse(data);
+			if(data.meta.status == 200){
+				$('#user-list').html('');
+				$.each(data.data, function(index, userdata){
+					var linkedUserItem = linkedUserList[userdata.username];
+					if(!linkedUserItem){
+						linkedUserItem = new LinkedUserItem(userdata);
+					}
+					linkedUserItem.addSession(userdata.token);
+					linkedUserItem.addSocketID(userdata.id);
+				});
+				for(var username in linkedUserList){
+					if(linkedUserList.hasOwnProperty(username)){
+						linkedUserList[username].initEl();
+					}
+				}
+			}
 		});
 		socket.on('session extension', function(SESSIONAGE){
 			var cookieValue = $.cookie('PHPSESSID');
@@ -76,12 +137,24 @@
 			$.cookie('PHPSESSID', cookieValue, { expires: SESSIONAGE });
 		});
 		socket.on('render message', function(target){
+			if(target == 'bootedPage'){
+				$('body').html('');
+				alert("You've been booted out of the system by administrator");
+			}
+
 			var tmpl = $.trim($('#' + target + '-index-tmpl').html());
 			var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
 			$('#container').html($el);
 			switch(target){
-				case 'admin': 
-					socket.emit('retrieveUserDataAction');
+				case 'admin':
+					$('#realtime').click(function(){
+						linkedUserList = {};
+						socket.emit('retrieveLinkedUserAction');
+					}); 
+					$('#alluser').click(function(){
+						socket.emit('retrieveUserDataAction');
+					});
+					$('#realtime').click();
 				case 'chat':
 					$('form').submit(function(){
 						var msg = $('#m').val();
@@ -141,6 +214,22 @@
         	</td>
     	</tr>
     </script>
+    <script id="linked-user-item-tmpl" type="text/html">
+    	<tr>
+        	<td>
+        		<span class="username">{{username}}</span>
+        	</td>
+        	<td>
+        		<span class="sessionNumber">sessionNumber: {{sessionNumber}} | </span>
+        	</td>
+        	<td>
+        		<span class="socketNumber">SocketNumber: {{socketNumber}}</span>
+        	</td>
+        	<td>
+        		<span class="boot">Boot</span>
+        	</td>
+    	</tr>
+    </script>
     <script id="chat-index-tmpl" type="text/html">
 	    <span id="signout">Logout</span>
 	    <span> | </span>
@@ -177,7 +266,11 @@
         <span id="login">Already have account?</span>
     </script>
     <script id="admin-index-tmpl" type="text/html">
-    	<h1>User List</h1>
+    	<span id="realtime">Realtime linkage management</span>
+    	<span> | </span>
+    	<span id="alluser">All registered user management</span>
+    	<br>
+    	<h2>User List</h2>
         <table id="user-list">
         </table>
     </script>

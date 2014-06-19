@@ -256,6 +256,7 @@ io.on('connection', function(socket){
         }
     }); 
     socket.on('disconnect', function(){
+        console.log('disconnect');
         if(socket.username){
             socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
             console.log(socket.username + ' has quitted the conversation');
@@ -268,6 +269,7 @@ io.on('connection', function(socket){
                 //redo the work
             }
             else{
+                console.log(socket.id + ' in ' + sessData.socketID);
                 sessData.socketID.splice(sessData.socketID.indexOf(socket.id),1);
                 myMongoStore.set(socket.token, sessData, function(err){
                     if(err){
@@ -287,7 +289,7 @@ io.on('connection', function(socket){
     socket.on('retrieveUserDataAction', function(){
         if(socket.permission == 1){
             retrieveUserList(function(data){
-                socket.emit('admin data', data);
+                socket.emit('users data', renderSuccessJson(data));
             }, function(errorJSON){
                 socket.emit('system message', errorJSON());
                 console.log(errorJSON());
@@ -346,23 +348,49 @@ io.on('connection', function(socket){
             });
         }
     });
-    // socket.on('retrieveLinkedUserAction', function(data){
-    //     if(socket.permission == 1){
-    //         //should 
-    //         var data = JSON.stringify(socketList.connected);
-    //         socket.emit('admin data', data);
-    //     }
-    // });
-    // socket.on('focusLogout', function(data){
-    //     try{
-    //         data = JSON.parse(data);
-    //     }
-    //     catch(e){
-    //         console.log("Receive invalid JSON");
-    //     }
-    //     if(socket.permission == 1){
-    //         var socketID = data.socketID;
-    // })
+    socket.on('retrieveLinkedUserAction', function(){
+        if(socket.permission == 1){
+            var keyNeeded = ['id', 'username', 'permission', 'token'];
+            var sockets = [];
+            for(var socketID in socketList.connected){
+                if(socketList.connected.hasOwnProperty(socketID)){
+                    var simpleSocket = {};
+                    for(var key in socketList.connected[socketID]){
+                        if(keyNeeded.indexOf(key) !== -1){
+                            simpleSocket[key] = socketList.connected[socketID][key];
+                        }
+                    }
+                    sockets.push(simpleSocket);
+                }
+            }
+            console.log(sockets);
+            socket.emit('linked users data', renderSuccessJson(sockets));
+        }
+    });
+    socket.on('focusLogout', function(data){
+        try{
+            data = JSON.parse(data);
+        }
+        catch(e){
+            console.log("Receive invalid JSON");
+        }
+        if(socket.permission == 1){
+            var sessions = data.sessions;
+            if(sessions){
+                for(var i=0; i < sessions.length; i++){
+                    logoutUser(sessions[i], function(socketIDs){
+                        for(var i = 0; i < socketIDs.length; i++){
+                            var target = socketList.connected[socketIDs[i]];
+                            if(target){
+                                target.emit('render message', 'bootedPage');
+                                target.disconnect();
+                            }
+                        }
+                    }); 
+                }
+            }
+        }
+    })
 });
 
 var dbConnection = function(){
@@ -472,7 +500,7 @@ var retrieveUserList = function(success, error){
             //redo the work
         }
         else{
-            success(renderSuccessJson(documents));
+            success(documents);
         }
     });
 }
