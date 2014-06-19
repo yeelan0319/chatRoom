@@ -266,7 +266,6 @@ io.on('connection', function(socket){
         }
     }); 
     socket.on('disconnect', function(){
-        console.log('disconnect');
         if(socket.username){
             socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
             console.log(socket.username + ' has quitted the conversation');
@@ -279,7 +278,6 @@ io.on('connection', function(socket){
                 //redo the work
             }
             else{
-                console.log(socket.id + ' in ' + sessData.socketID);
                 sessData.socketID.splice(sessData.socketID.indexOf(socket.id),1);
                 myMongoStore.set(socket.token, sessData, function(err){
                     if(err){
@@ -373,7 +371,6 @@ io.on('connection', function(socket){
                     sockets.push(simpleSocket);
                 }
             }
-            console.log(sockets);
             socket.emit('linked users data', renderSuccessJson(sockets));
         }
     });
