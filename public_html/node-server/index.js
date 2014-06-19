@@ -12,7 +12,6 @@ var express = require("express");
 var path = require("path");
 var MongoClient = require("mongodb").MongoClient;
 var crypto = require('crypto');
-var sha1 = require('sha1');
 var app = {};
 var myMongoStore = new MongoStore({
         db: 'test',
@@ -429,7 +428,7 @@ var createNewUser = function(username, password, success, error){
             error(renderExistingUserJson);
         }
         else{
-            var user = {'username': username, 'password': sha1(password), 'permission':0};
+            var user = {'username': username, 'password': crypto.createHash('sha1').update(password).digest('hex'), 'permission':0};
             app.dbConnection.collection('users').insert(user, {w:1}, function(err, result) {
                 if(err){
                     error(renderDatabaseErrorJson);
@@ -444,7 +443,7 @@ var createNewUser = function(username, password, success, error){
     
 var loginUser = function(username, password, success, error){
     findUserWithUsername(username, function(user){
-        if(user && user.password === sha1(password)){
+        if(user && user.password === crypto.createHash('sha1').update(password).digest('hex')){
             success(user);
         }
         else{
