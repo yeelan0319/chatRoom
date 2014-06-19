@@ -147,6 +147,9 @@
 			$('#container').html($el);
 			switch(target){
 				case 'admin':
+					$('#back').click(function(){
+						window.location = './';
+					});
 					$('#realtime').click(function(){
 						linkedUserList = {};
 						socket.emit('retrieveLinkedUserAction');
@@ -266,6 +269,8 @@
         <span id="login">Already have account?</span>
     </script>
     <script id="admin-index-tmpl" type="text/html">
+    	<span id="back">Back</span>
+    	<span> | </span>
     	<span id="realtime">Realtime linkage management</span>
     	<span> | </span>
     	<span id="alluser">All registered user management</span>
