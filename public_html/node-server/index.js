@@ -28,16 +28,18 @@ var sessionParserFunction = expressSession({
     },
     store: myMongoStore
 });
-app.expressHttp = express();
 app.express = express();
-app.express.use('/public', express.static(__dirname + '/../public'));
+app.express.use(express.static(__dirname + '/../public'));
 app.express.use(cookieParserFunction);
 app.express.use(sessionParserFunction);
 var options = {
     key: fs.readFileSync('/path/to/server.key.orig'),
     cert: fs.readFileSync('/path/to/server.crt')
 };
-var http = require("http").Server(app.expressHttp);
+var http = require("http").createServer(function(req, res){
+    res.writeHead(302, {Location: 'https://' + req.headers.host + req.url});
+    res.end();
+});
 var https = require('https').Server(options, app.express);
 var io = require('socket.io')(https);
 
@@ -60,9 +62,6 @@ Socket.prototype.extendSessionAge = function(){
 };
 
 //routing
-app.expressHttp.get('*', function(req,res){  
-    res.redirect('https://127.0.0.1');
-});
 app.express.get('/', function(req, res){
     res.sendfile(path.resolve(__dirname+'/../index.html'));
 });
@@ -412,8 +411,8 @@ var dbConnection = function(){
             console.log("Connected to database");
             app.dbConnection = db;
             //start listening to port and receive request
-            http.listen(3000, function(err){
-                console.log("http listening on port: 3000");
+            http.listen(80, function(err){
+                console.log("http listening on port: 80");
             });
             https.listen(443, function(err){
                 console.log("https listening on port: 443");
