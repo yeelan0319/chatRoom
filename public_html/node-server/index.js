@@ -69,55 +69,68 @@ app.express.get('/', function(req, res){
 
 var socketList = io.of('/');
 
-io.use(function(socket, next){
-    socket.request.originalUrl = "/";
-    cookieParserFunction(socket.request, {}, next);
-});
+var sessionList = {};
+sessionList.__proto__.locked = false;
+sessionList.__proto__.getSessionObject = function(socket){
+    return this[socket.token];
+}
+sessionList.__proto__.setSessionObject = function(socket){
+    this[socket.token] = socket.request.session;
+}
 
-io.use(function(socket, next){
-    //TODO:
-    //Don't use the session information for socketID in session object, which is not the latest one!!
-    //The mysterious is if I put this function last, it will crash server
-    sessionParserFunction(socket.request, {}, next);
-});
-
-io.use(function(socket, next){
-    var seed = crypto.randomBytes(20);
-    socket.token = socket.request.signedCookies['PHPSESSID'] || crypto.createHash('sha1').update(seed).digest('hex');
-    //store the socketID into session form for get/post request usage
-    myMongoStore.get(socket.token, function(err, sessData){
-        if(err){
-            socket.emit('system message', renderDatabaseErrorJson());
-            console.log(renderDatabaseErrorJson());
-            //redo the work
+function setSocketSession(socket, next){
+    var session = getSessionObject(socket);
+    if(session){
+        socket.request.session = session;
+        next();
+    }
+    else{
+        if(sessionList.locked){
+            setTimeout(function(){setSocketSession(socket, next)}, 100);
         }
         else{
-            if(!sessData.socketID){
-                sessData.socketID = [];
-            }
-            sessData.socketID.push(socket.id);
-            myMongoStore.set(socket.token, sessData, function(err){
-                if(err){
-                    socket.emit('system message', renderDatabaseErrorJson());
-                    console.log(renderDatabaseErrorJson());
-                    //redo the work
-                }
-                else{
-                    socket.extendSessionAge();
-                }
-            });
+            socket.request.originalUrl = "/";
+            sessionList.locked = true;
+            sessionParserFunction(socket.request, {}, function(){
+                sessionList.setSessionObject(socket);
+                sessionList.locked = false;
+                next();
+            }); 
         }
-    });
-    next();
+    }
+}
+
+//socket io middlewares
+io.use(function(socket, next){
+    //TODOS: Should generate socket based session key if the initial request is not via browser
+    // var seed = crypto.randomBytes(20);
+    // socket.token = socket.request.signedCookies['PHPSESSID'] || crypto.createHash('sha1').update(seed).digest('hex');
+    cookieParserFunction(socket.request, {}, next);
 });
+io.use(function(socket, next){
+    socket.token = socket.request.signedCookies['PHPSESSID'];
+});
+// io.use(function(socket, next){
+//     setSocketSession(socket, next);
+// });
+
+// io.use(function(socket, next){
+//     // var session = socket.request.session;
+//     // if(!session.socketID){
+//     //     session.socketID = [];
+//     // }
+//     // session.socketID.push(socket.id);
+//     // session.touch().save();
+//     // next();
+// });
 
 io.on('connection', function(socket){
-    var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction'];
-    for(var i = 0; i < eventList.length; i++){
-        socket.on(eventList[i], function(){
-            socket.extendSessionAge();
-        });
-    }
+    // var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction'];
+    // for(var i = 0; i < eventList.length; i++){
+    //     socket.on(eventList[i], function(){
+    //         socket.extendSessionAge();
+    //     });
+    // }
     
     checkLoginStatus(socket.token, function(user){
         if(user){
