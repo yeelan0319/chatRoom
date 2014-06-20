@@ -14,11 +14,7 @@ var MongoClient = require("mongodb").MongoClient;
 var crypto = require('crypto');
 var fs = require('fs');
 var app = {};
-var myMongoStore = new MongoStore({
-        db: 'test',
-        host: '127.0.0.1',
-        port: 27017
-    });
+var myMongoStore;
 var cookieParserFunction = cookieParser(SECRET);
 var sessionParserFunction = expressSession({
     name:'PHPSESSID',
@@ -86,7 +82,7 @@ function setSocketSession(socket, next){
     }
     else{
         if(sessionList.locked){
-            setTimeout(function(){setSocketSession(socket, next)}, 100);
+            setTimeout(function(){console.log('shouldnt3');setSocketSession(socket, next)}, 100);
         }
         else{
             socket.request.originalUrl = "/";
@@ -105,32 +101,32 @@ io.use(function(socket, next){
     //TODOS: Should generate socket based session key if the initial request is not via browser
     // var seed = crypto.randomBytes(20);
     // socket.token = socket.request.signedCookies['PHPSESSID'] || crypto.createHash('sha1').update(seed).digest('hex');
-    cookieParserFunction(socket.request, {}, next);
+    cookieParserFunction(socket.request, {}, function(){
+        socket.token = socket.request.signedCookies['PHPSESSID'];
+        next();
+    });
 });
 io.use(function(socket, next){
-    socket.token = socket.request.signedCookies['PHPSESSID'];
+    setSocketSession(socket, next);
 });
-// io.use(function(socket, next){
-//     setSocketSession(socket, next);
-// });
 
-// io.use(function(socket, next){
-//     // var session = socket.request.session;
-//     // if(!session.socketID){
-//     //     session.socketID = [];
-//     // }
-//     // session.socketID.push(socket.id);
-//     // session.touch().save();
-//     // next();
-// });
+io.use(function(socket, next){
+    var session = socket.request.session;
+    if(!session.socketID){
+        session.socketID = [];
+    }
+    session.socketID.push(socket.id);
+    session.touch().save();
+    next();
+});
 
 io.on('connection', function(socket){
-    // var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction'];
-    // for(var i = 0; i < eventList.length; i++){
-    //     socket.on(eventList[i], function(){
-    //         socket.extendSessionAge();
-    //     });
-    // }
+    var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction'];
+    for(var i = 0; i < eventList.length; i++){
+        socket.on(eventList[i], function(){
+            socket.extendSessionAge();
+        });
+    }
     
     checkLoginStatus(socket.token, function(user){
         if(user){
@@ -424,6 +420,9 @@ var dbConnection = function(){
         else{
             console.log("Connected to database");
             app.dbConnection = db;
+            myMongoStore = new MongoStore({
+                db: app.dbConnection
+            });
             //start listening to port and receive request
             http.listen(80, function(err){
                 console.log("http listening on port: 80");
@@ -479,21 +478,13 @@ var loginUser = function(username, password, success, error){
 };
 
 var checkLoginStatus = function(token, success, error){
-    myMongoStore.get(token, function(err, sessData){
-        if(err){
-            error(renderDatabaseErrorJson);
-            //redo the work
-        }
-        else{
-            if(sessData.username){
-                findUserWithUsername(sessData.username, success, error);
-            }
-            else{
-                success("");
-            }
-            
-        }
-    });
+    var username = sessionList[token].username;
+    if(username){
+        findUserWithUsername(username, success, error);
+    }
+    else{
+        success("");
+    }
 }
 
 var logoutUser = function(token, success, error){
