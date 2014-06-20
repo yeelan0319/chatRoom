@@ -36,6 +36,9 @@ socket.on('linked users data', function(data){
 		}
 	}
 });
+//TODOS: The following code cannot read PHPSESSID from safari and extend the expiration date properly.
+//Tried jquery cookie plugin, W3C code and read the whole cookie data. None works.
+//It all works on browser set cookies but not on the server set PHPSESSID.
 socket.on('session extension', function(SESSIONAGE){
 	var cookieValue = $.cookie('PHPSESSID');
 	$.cookie('PHPSESSID', null);
