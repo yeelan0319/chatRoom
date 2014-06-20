@@ -24,7 +24,8 @@ var sessionParserFunction = expressSession({
     name:'PHPSESSID',
     secret: SECRET,
     cookie: {
-        maxAge: SESSIONAGE
+        maxAge: SESSIONAGE,
+        expires: new Date(Date.now()+SESSIONAGE)
     },
     store: myMongoStore
 });
