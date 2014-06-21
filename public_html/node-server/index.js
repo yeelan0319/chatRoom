@@ -5,6 +5,7 @@
  */
 var SESSIONAGE = 3600000 * 24 * 30;
 var SECRET = '3d4f2bf07dc1be38b20cd6e46949a1071f9d0e3d';
+
 var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
 var MongoStore = require('connect-mongo')(expressSession);
@@ -13,33 +14,9 @@ var path = require("path");
 var MongoClient = require("mongodb").MongoClient;
 var crypto = require('crypto');
 var fs = require('fs');
-var app = {};
-var myMongoStore;
-var cookieParserFunction = cookieParser(SECRET);
-var sessionParserFunction = expressSession({
-    name:'PHPSESSID',
-    secret: SECRET,
-    cookie: {
-        maxAge: SESSIONAGE,
-        expires: new Date(Date.now()+SESSIONAGE)
-    },
-    store: myMongoStore
-});
-app.express = express();
-app.express.use(express.static(__dirname + '/../public'));
-app.express.use(cookieParserFunction);
-app.express.use(sessionParserFunction);
-var options = {
-    key: fs.readFileSync('/path/to/server.key.orig'),
-    cert: fs.readFileSync('/path/to/server.crt')
-};
-var http = require("http").createServer(function(req, res){
-    res.writeHead(302, {Location: 'https://' + req.headers.host + req.url});
-    res.end();
-});
-var https = require('https').Server(options, app.express);
-var io = require('socket.io')(https);
-
+var httpModule = require('http');
+var httpsModule = require('https');
+var socketioModule = require('socket.io');
 var Socket = require('socket.io/lib/socket');
 Socket.prototype.extendSessionAge = function(){
     var that = this;
@@ -58,12 +35,25 @@ Socket.prototype.extendSessionAge = function(){
     });
 };
 
+
+var app = {};
+app.express = express();
+var options = {
+    key: fs.readFileSync('/path/to/server.key.orig'),
+    cert: fs.readFileSync('/path/to/server.crt')
+};
+var http = httpModule.createServer(function(req, res){
+    res.writeHead(302, {Location: 'https://' + req.headers.host + req.url});
+    res.end();
+});
+var https = httpsModule.Server(options, app.express);
+var io = socketioModule(https);
+var socketList = io.of('/');
+
 //routing
 app.express.get('/', function(req, res){
     res.sendfile(path.resolve(__dirname+'/../index.html'));
 });
-
-var socketList = io.of('/');
 
 var sessionList = {};
 sessionList.__proto__.locked = false;
@@ -130,6 +120,7 @@ io.on('connection', function(socket){
     
     checkLoginStatus(socket.token, function(user){
         if(user){
+
             socket.username = user.username;
             socket.permission = user.permission;
             console.log(socket.username + ' is connected');
@@ -409,30 +400,6 @@ io.on('connection', function(socket){
         }
     })
 });
-
-var dbConnection = function(){
-    MongoClient.connect("mongodb://127.0.0.1:27017/test", function(err,db){
-        if(err){
-            console.dir(err);
-            //should set a upper bound for try time
-            dbConnection();
-        }
-        else{
-            console.log("Connected to database");
-            app.dbConnection = db;
-            myMongoStore = new MongoStore({
-                db: app.dbConnection
-            });
-            //start listening to port and receive request
-            http.listen(80, function(err){
-                console.log("http listening on port: 80");
-            });
-            https.listen(443, function(err){
-                console.log("https listening on port: 443");
-            });
-        }
-    }
-);};
     
 var findUserWithUsername = function(username, success, error){
     app.dbConnection.collection('users').findOne({'username': username}, function(err, user){
@@ -574,4 +541,49 @@ var isDataValid = function(data){
     }
 }
 
-dbConnection();
+var dbConnection = function(success) {
+    MongoClient.connect("mongodb://127.0.0.1:27017/test", function(err,db){
+        if(err){
+            console.dir(err);
+            //should set a upper bound for try time
+            dbConnection();
+        }
+        else{
+            console.log("Connected to database");
+            success(db);
+        }
+    });
+}
+
+var ServerStart = function(){
+    var ServerInitialization = function(db){
+        app.dbConnection = db;
+        myMongoStore = new MongoStore({
+            db: app.dbConnection
+        });;
+        var cookieParserFunction = cookieParser(SECRET);
+        var sessionParserFunction = expressSession({
+            name:'PHPSESSID',
+            secret: SECRET,
+            cookie: {
+                maxAge: SESSIONAGE,
+                expires: new Date(Date.now()+SESSIONAGE)
+            },
+            store: myMongoStore
+        });
+
+        app.express.use(express.static(__dirname + '/../public'));
+        app.express.use(cookieParserFunction);
+        app.express.use(sessionParserFunction);
+        
+        //start listening to port and receive request
+        http.listen(80, function(err){
+            console.log("http listening on port: 80");
+        });
+        https.listen(443, function(err){
+            console.log("https listening on port: 443");
+        });
+    }
+
+    dbConnection(ServerInitialization);
+}();
