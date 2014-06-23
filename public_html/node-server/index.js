@@ -21,20 +21,7 @@ var socketioModule = require('socket.io');
 //socketio's Socket object prototype extension
 var Socket = require('socket.io/lib/socket');
 Socket.prototype.extendSessionAge = function(){
-    var that = this;
-    myMongoStore.get(that.token, function(err, sessData){
-        if(err){
-            that.emit('system message', renderDatabaseErrorJson());
-            console.log(renderDatabaseErrorJson());
-            //redo the work
-        }
-        else{
-            that.request.session.username = sessData.username || '';
-            that.request.session.socketID = sessData.socketID || '';
-            that.request.session.touch().save();
-            that.emit('session extension', SESSIONAGE);
-        }
-    });
+    this.request.session.touch().save();
 };
 
 //sessionList prototype extension
@@ -46,28 +33,52 @@ var SessionList = function(){
 SessionList.prototype.getSessionObject = function(socket){
     return this.sessions[socket.token] || '';
 }
+
+SessionList.prototype.getSessionObjectByToken = function(token){
+    return this.sessions[token] || '';
+}
+
 SessionList.prototype.setSessionObject = function(socket){
     this.sessions[socket.token] = socket.request.session;
+    return this.sessions[socket.token];
 }
 
 //set socket session middleware, depend on that the program have a global sessionList object and its extension
 var setSocketSession = function(socket, next){
     if(typeof sessionList == 'undefined'){
         sessionList = new SessionList();
+        console.log("log::create session list");
     }
     var session = sessionList.getSessionObject(socket);
+    console.log(sessionList);
     if(session){
+        console.log("log::reading exsiting session");
+        session.counter++;
         socket.request.session = session;
+        if(!session.socketID){
+            session.socketID = [];
+        }
+        session.socketID.push(socket.id);
+        session.save();
         next();
     }
     else{
         if(sessionList.locked){
             setTimeout(function(){sessionList.setSocketSession(socket, next)}, 100);
+            return;
         }
         else{
+            console.log("log::build new session instance");
             socket.request.originalUrl = "/";
             sessionList.locked = true;
             sessionParserFunction(socket.request, {}, function(){
+                var session = socket.request.session;
+                if(!session.socketID){
+                    session.socketID = [];
+                }
+                session.socketID.push(socket.id);
+                session.counter = 1;
+                session.save();
                 sessionList.setSessionObject(socket);
                 sessionList.locked = false;
                 next();
@@ -78,7 +89,7 @@ var setSocketSession = function(socket, next){
  
 //Database operations 
 var findUserWithUsername = function(username, success, error){
-    app.dbConnection.collection('users').findOne({'username': username}, function(err, user){
+    app.db.collection('users').findOne({'username': username}, function(err, user){
         if(err){
             error(renderDatabaseErrorJson);
             //redo the work
@@ -96,7 +107,7 @@ var createNewUser = function(username, password, success, error){
         }
         else{
             var user = {'username': username, 'password': crypto.createHash('sha1').update(password).digest('hex'), 'permission':0};
-            app.dbConnection.collection('users').insert(user, {w:1}, function(err, result) {
+            app.db.collection('users').insert(user, {w:1}, function(err, result) {
                 if(err){
                     error(renderDatabaseErrorJson);
                 }
@@ -117,43 +128,24 @@ var loginUser = function(username, password, success, error){
             error(renderWrongPasswordJson);
         }
     }, error);
+}
 
-};
-
-var checkLoginStatus = function(token, success, error){
-    var session = sessionList.getSessionObject(token);
-    var username = session.username;
+var checkPermission = function(username, success, error){
+    var username = socket.request.session.username;
     if(username){
         findUserWithUsername(username, success, error);
     }
-    else{
-        success("");
-    }
 }
 
-var logoutUser = function(token, success, error){
-    myMongoStore.get(token, function(err, sessData){
-        if(err){
-            error(renderDatabaseErrorJson);
-            //redo the work
-        }
-        else{
-            delete sessData.username;
-            myMongoStore.set(token, sessData, function(err){
-                if(err){
-                    error(renderDatabaseErrorJson);
-                    //redo the work
-                }
-                else{
-                    success(sessData.socketID);
-                }
-            });
-        }
-    });
+var logoutUser = function(session, success){
+    delete session.permission;
+    delete session.username;
+    session.save();
+    success(session.socketID);
 }
 
 var retrieveUserList = function(success, error){
-    app.dbConnection.collection('users').find().toArray(function(err, documents){
+    app.db.collection('users').find().toArray(function(err, documents){
         if(err){
             error(renderDatabaseErrorJson);
             //redo the work
@@ -165,7 +157,7 @@ var retrieveUserList = function(success, error){
 }
 
 var editUser = function(username, permission, success, error){
-    app.dbConnection.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{permission: permission}}, {}, function(err, user){
+    app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{permission: permission}}, {}, function(err, user){
         if(err){
             error(renderDatabaseErrorJson);
         }
@@ -176,7 +168,7 @@ var editUser = function(username, permission, success, error){
 }
 
 var deleteUser = function(username, success, error){
-    app.dbConnection.collection('users').remove({username:username}, function(err, result){
+    app.db.collection('users').remove({username:username}, function(err, result){
         if(err){
             error(renderDatabaseErrorJson);
         }
@@ -231,12 +223,12 @@ function ServerStart(){
                 success(db);
             }
         });
-    }
+    };
     var ServerInitialization = function(db){
         app = {};
-        app.dbConnection = db;
-        myMongoStore = new MongoStore({
-            db: app.dbConnection
+        app.db = db;
+        app.sessiondb = new MongoStore({
+            db: app.db
         });
         cookieParserFunction = cookieParser(SECRET);
         sessionParserFunction = expressSession({
@@ -246,7 +238,7 @@ function ServerStart(){
                 maxAge: SESSIONAGE,
                 expires: new Date(Date.now()+SESSIONAGE)
             },
-            store: myMongoStore
+            store: app.sessiondb
         });
         app.express = express();
         app.express.use(express.static(__dirname + '/../public'));
@@ -258,7 +250,6 @@ function ServerStart(){
             res.sendfile(path.resolve(__dirname+'/../index.html'));
         });
 
-        
         http = httpModule.createServer(function(req, res){
             res.writeHead(302, {Location: 'https://' + req.headers.host + req.url});
             res.end();
@@ -283,16 +274,6 @@ function ServerStart(){
         });
         io.use(setSocketSession);
 
-        io.use(function(socket, next){
-            var session = socket.request.session;
-            if(!session.socketID){
-                session.socketID = [];
-            }
-            session.socketID.push(socket.id);
-            session.touch().save();
-            next();
-        });
-
         //room structure
         socketList = io.of('/');
 
@@ -305,25 +286,35 @@ function ServerStart(){
                 });
             }
             
-            checkLoginStatus(socket.token, function(user){
-                if(user){
+            var username = socket.request.session.username;
+            if(username){
+                //double check if the user still exsit and have the correct permission
+                findUserWithUsername(username, function(user){
+                    if(user){
+                        socket.request.session.permission = user.permission;
+                        console.log(socket.request.session.username + ' is connected');
+                        socket.broadcast.emit('status message', socket.request.session.username + ' has joined the conversation');
+                        socket.emit('render message', 'chat');
+                    }
+                    //possibly that user is deleted but the session information is not correctly updated in db
+                    else{
+                        socket.emit('render message', 'login');
+                    }
+                }, function(errorJSON){
+                    socket.emit('system message', errorJSON());
+                    console.log(errorJSON());
+                });
+            }
+            else{
+                socket.emit('render message', 'login');
+            }
 
-                    socket.username = user.username;
-                    socket.permission = user.permission;
-                    console.log(socket.username + ' is connected');
-                    socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
-                    socket.emit('render message', 'chat');
+            socket.on('loginRender', function(){
+                if(!socket.request.session.username){
+                    socket.emit('render message', 'login');
                 }
                 else{
-                    socket.emit('render message', 'login');
-                }
-            }, function(errorJSON){
-                socket.emit('system message', errorJSON());
-                console.log(errorJSON());
-            });
-            socket.on('loginRender', function(){
-                if(!socket.username){
-                    socket.emit('render message', 'login');
+                    socket.emit('render message', 'chat');
                 }
             });
             socket.on('loginAction', function(data){
@@ -333,38 +324,25 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(!socket.username && isDataValid(data)){
+                if(!socket.request.session.username && isDataValid(data)){
                     var username = data.username;
                     var password = data.password;
                     loginUser(username, password, function(user){
-                        myMongoStore.get(socket.token, function(err, sessData){
-                            if(err){
-                                socket.emit('system message', renderDatabaseErrorJson());
-                                console.log(renderDatabaseErrorJson());
-                                //redo the work
+                        var session = socket.request.session;
+                        session.username = user.username;
+                        session.permission = user.permission;
+                        session.save();
+
+                        console.log(session.username + ' is connected');
+                        socket.broadcast.emit('status message', session.username + ' has joined the conversation');
+                        
+                        var socketIDs = session.socketID;
+                        for(var i=0; i < socketIDs.length; i++){
+                            var target = socketList.connected[socketIDs[i]];
+                            if(target){
+                                target.emit('render message', 'chat');
                             }
-                            else{
-                                var socketIDs = sessData.socketID;
-                                for(var i = 0; i < socketIDs.length; i++){
-                                    var target = socketList.connected[socketIDs[i]];
-                                    if(target){
-                                        target.username = user.username;
-                                        target.permission = user.permission;
-                                        console.log(target.username + ' is connected');
-                                        target.broadcast.emit('status message', target.username + ' has joined the conversation');
-                                        target.emit('render message', 'chat');
-                                    }
-                                }
-                                sessData.username = user.username;
-                                myMongoStore.set(socket.token, sessData, function(err){
-                                    if(err){
-                                        socket.emit('system message', renderDatabaseErrorJson());
-                                        console.log(renderDatabaseErrorJson());
-                                        //redo the work
-                                    }
-                                });
-                            }
-                        });
+                        }
                     },function(errorJSON){
                         socket.emit('system message', errorJSON());
                         console.log(errorJSON());
@@ -376,8 +354,11 @@ function ServerStart(){
                 }
             });
             socket.on('registerRender', function(){
-                if(!socket.username){
+                if(!socket.request.session.username){
                     socket.emit('render message', 'register');
+                }
+                else{
+                    socket.emit('render message', 'chat');
                 }
             });
             socket.on('registerAction', function(data){
@@ -387,38 +368,25 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(!socket.username && isDataValid(data)){
+                if(!socket.request.session.username && isDataValid(data)){
                     var username = data.username;
                     var password = data.password;
                     createNewUser(username, password, function(user){
-                        myMongoStore.get(socket.token, function(err, sessData){
-                            if(err){
-                                socket.emit('system message', renderDatabaseErrorJson());
-                                console.log(renderDatabaseErrorJson());
-                                //redo the work
+                        var session = socket.request.session;
+                        session.username = user.username;
+                        session.permission = user.permission;
+                        session.save();
+
+                        console.log(session.username + ' is connected');
+                        socket.broadcast.emit('status message', session.username + ' has joined the conversation');
+
+                        var socketIDs = session.socketID;
+                        for(var i=0; i < socketIDs.length; i++){
+                            var target = socketList.connected[socketIDs[i]];
+                            if(target){
+                                target.emit('render message', 'chat');
                             }
-                            else{
-                                var socketIDs = sessData.socketID;
-                                for(var i = 0; i < socketIDs.length; i++){
-                                    var target = socketList.connected[socketIDs[i]];
-                                    if(target){
-                                        target.username = user.username;
-                                        target.permission = user.permission;
-                                        console.log(target.username + ' is connected');
-                                        target.broadcast.emit('status message', target.username + ' has joined the conversation');
-                                        target.emit('render message', 'chat');
-                                    }
-                                }
-                                sessData.username = user.username;
-                                myMongoStore.set(socket.token, sessData, function(err){
-                                    if(err){
-                                        socket.emit('system message', renderDatabaseErrorJson());
-                                        console.log(renderDatabaseErrorJson());
-                                        //redo the work
-                                    }
-                                });
-                            }
-                        });
+                        }
                     }, function(errorJSON){
                         socket.emit('system message', errorJSON());
                         console.log(errorJSON());
@@ -430,60 +398,44 @@ function ServerStart(){
                 }
             });
             socket.on('logoutAction', function(){
-                if(socket.username){
-                    logoutUser(socket.token, function(socketIDs){
+                var session = socket.request.session;
+                var username = session.username;
+                if(username){
+                    logoutUser(session, function(socketIDs){
+                        socket.broadcast.emit('status message', username + ' has quitted the conversation');
+                        console.log(username + ' has quitted the conversation');
+
                         for(var i = 0; i < socketIDs.length; i++){
                             var target = socketList.connected[socketIDs[i]];
                             if(target){
-                                target.broadcast.emit('status message', target.username + ' has quitted the conversation');
-                                console.log(target.username + ' has quitted the conversation');
-                                delete target.username;
-                                delete target.permission;
                                 target.emit('render message', 'login');
                             }
                         }
-                    })
-                }
-            }, function(errorJSON){
-                socket.emit('system message', errorJSON());
-                console.log(errorJSON());
-            });
-            socket.on('chatAction', function(msg){
-                if(socket.username){
-                    io.sockets.emit('chat message', socket.username + ': ' + msg);
+                    });
                 }
             }); 
-            socket.on('disconnect', function(){
-                if(socket.username){
-                    socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
-                    console.log(socket.username + ' has quitted the conversation');
+            socket.on('chatAction', function(msg){
+                if(socket.request.session.username){
+                    io.sockets.emit('chat message', socket.request.session.username + ': ' + msg);
                 }
-                //remove the socketID into session form
-                myMongoStore.get(socket.token, function(err, sessData){
-                    if(err){
-                        socket.emit('system message', renderDatabaseErrorJson());
-                        console.log(renderDatabaseErrorJson());
-                        //redo the work
-                    }
-                    else{
-                        sessData.socketID.splice(sessData.socketID.indexOf(socket.id),1);
-                        myMongoStore.set(socket.token, sessData, function(err){
-                            if(err){
-                                socket.emit('system message', renderDatabaseErrorJson());
-                                console.log(renderDatabaseErrorJson());
-                                //redo the work
-                            }   
-                        });
-                    }
-                });
+                console.log(socket.request.session.counter);
+            }); 
+            socket.on('disconnect', function(){
+                var session = socket.request.session;
+                if(session.username){
+                    socket.broadcast.emit('status message', session.username + ' has quitted the conversation');
+                    console.log(session.username + ' has quitted the conversation');
+                }
+                session.socketID.splice(session.socketID.indexOf(socket.id),1);
+                session.save();
             });
             socket.on('adminRender', function(){
-                if(socket.permission == 1){
+                if(socket.request.session.permission == 1){
                     socket.emit("render message", 'admin');
                 }
             });
             socket.on('retrieveUserDataAction', function(){
-                if(socket.permission == 1){
+                if(socket.request.session.permission == 1){
                     retrieveUserList(function(data){
                         socket.emit('users data', renderSuccessJson(data));
                     }, function(errorJSON){
@@ -499,14 +451,17 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(socket.permission == 1){
+                if(socket.request.session.permission == 1){
                     var username = data.username;
                     var permission = data.permission;
                     editUser(username, permission, function(){
                         for(socketID in socketList.connected){
                             if(socketList.connected.hasOwnProperty(socketID)){
-                                if(socketList.connected[socketID].username === username){
-                                    socketList.connected[socketID].permission = permission;
+                                var targetSocket = socketList.connected[socketID];
+                                var session = targetSocket.request.session;
+                                if(session.username === username){
+                                    session.permission = permission;
+                                    session.save();
                                 }
                             }
                         }
@@ -523,18 +478,20 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(socket.permission == 1){
+                if(socket.request.session.permission == 1){
                     var username = data.username;
                     deleteUser(username, function(){
                         for(socketID in socketList.connected){
                             if(socketList.connected.hasOwnProperty(socketID)){
-                                var targetSocket = socketList.connected[socketID];
-                                if(targetSocket.username === username){
-                                    targetSocket.broadcast.emit('status message', targetSocket.username + ' has quitted the conversation');
-                                    console.log(targetSocket.username + ' has quitted the conversation');
-                                    delete targetSocket.username;
-                                    delete targetSocket.permission;
-                                    targetSocket.emit('render message', 'register');
+                                var session = socketList.connected[socketID].request.session;
+                                if(session.username === username){
+                                    delete session.username;
+                                    delete session.permission;
+                                    session.save();
+                                    for(var i=0; i < session.socketID.length; i++){
+                                        var targetSocket = socketList.connected[session.socketID[i]];
+                                        targetSocket.emit('render message', 'register');
+                                    }
                                 }
                             }
                         }
@@ -545,17 +502,17 @@ function ServerStart(){
                 }
             });
             socket.on('retrieveLinkedUserAction', function(){
-                if(socket.permission == 1){
-                    var keyNeeded = ['id', 'username', 'permission', 'token'];
+                if(socket.request.session.permission == 1){
                     var sockets = [];
                     for(var socketID in socketList.connected){
                         if(socketList.connected.hasOwnProperty(socketID)){
                             var simpleSocket = {};
-                            for(var key in socketList.connected[socketID]){
-                                if(keyNeeded.indexOf(key) !== -1){
-                                    simpleSocket[key] = socketList.connected[socketID][key];
-                                }
-                            }
+                            var targetSocket = socketList.connected[socketID];
+                            var session = targetSocket.request.session;
+                            simpleSocket.id = targetSocket.id;
+                            simpleSocket.username = session.username;
+                            simpleSocket.permission = session.permission;
+                            simpleSocket.token = targetSocket.token;
                             sockets.push(simpleSocket);
                         }
                     }
@@ -569,20 +526,19 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(socket.permission == 1){
-                    var sessions = data.sessions;
-                    if(sessions){
-                        for(var i=0; i < sessions.length; i++){
-                            logoutUser(sessions[i], function(socketIDs){
-                                for(var i = 0; i < socketIDs.length; i++){
-                                    var target = socketList.connected[socketIDs[i]];
-                                    if(target){
-                                        target.emit('render message', 'bootedPage');
-                                        target.disconnect();
-                                    }
+                if(socket.request.session.permission == 1){
+                    var sessionTokens = data.sessions;
+                    for(var i=0; i < sessionTokens.length; i++){
+                        var session = sessionList.getSessionObjectByToken(sessionTokens[i]);
+                        logoutUser(session, function(socketIDs){
+                            while(socketIDs.length){
+                                var targetSocket = socketList.connected[socketIDs[0]];
+                                if(targetSocket){
+                                    targetSocket.emit('render message', 'bootedPage');
+                                    targetSocket.disconnect();
                                 }
-                            }); 
-                        }
+                            }
+                        }); 
                     }
                 }
             });
