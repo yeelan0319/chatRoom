@@ -23,103 +23,72 @@ var Socket = require('socket.io/lib/socket');
 Socket.prototype.extendSessionAge = function(){
     this.request.session.touch().save();
 };
-Socket.prototype.renderErrorMsg = function(errorJSON){
-    this.emit('system message', errorJSON());
-    console.log(errorJSON());
+Socket.prototype.renderErrorMsg = function(socket, errorJSON){
+    socket.emit('system message', errorJSON);
+    console.log(errorJSON);
 };
-Socket.prototype.welcomeUser = function(socketIDs){
-    console.log(this);
-    console.log(this.request.session.username + ' is connected');
-    this.broadcast.emit('status message', this.request.session.username + ' has joined the conversation');
-    
-    for(var i=0; i < socketIDs.length; i++){
-        var target = socketList.connected[socketIDs[i]];
-        if(target){
-            target.emit('render message', 'chat');
-        }
-    }
+Socket.prototype.setSocketUser = function(socket, user){
+    socket.username = user.username;
+    socket.permission = user.permission;
+    socket.join('/private/user/'+socket.username);
+    socket.renderChat(socket);
 };
-Socket.prototype.seeyouUser = function(socketIDs){
-    console.log(this.request.session.username + ' has quitted the conversation');
-    this.broadcast.emit('status message', this.request.session.username + ' has quitted the conversation');
-
-    for(var i = 0; i < socketIDs.length; i++){
-        var target = socketList.connected[socketIDs[i]];
-        if(target){
-            target.emit('render message', 'login');
-        }
-    }
+Socket.prototype.removeSocketUser = function(socket, user){
+    delete socket.username;
+    delete socket.permission;
+    socket.leave('/private/user/'+socket.username);
 };
-Socket.prototype.isLoggedIn = function(){
-    return this.request.session.username ? true : false;
+Socket.prototype.welcomeUser = function(socket, user){
+    console.log(socket.username + ' is connected');
+    socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
 };
-Socket.prototype.isAdmin = function(){
-    return this.request.session.permission == 1 ? true : false;
+Socket.prototype.seeyouUser = function(socket){
+    console.log(socket.username + ' has quitted the conversation');
+    socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
 };
 
-
-//sessionList prototype extension
-var SessionList = function(){
-    this.sessions = {};
-    this.locked = false;
-};
-
-SessionList.prototype.getSessionObject = function(socket){
-    return this.sessions[socket.token] || '';
+Socket.prototype.changePermission = function(socket, permission){
+    socket.permission = permission;
 }
 
-SessionList.prototype.getSessionObjectByToken = function(token){
-    return this.sessions[token] || '';
+Socket.prototype.isLoggedIn = function(socket){
+    return socket.username ? true : false;
+};
+Socket.prototype.isAdmin = function(socket){
+    return socket.permission == 1 ? true : false;
+};
+
+Socket.prototype.renderLogin = function(socket){
+    socket.emit('render message', 'login');
+};
+Socket.prototype.renderRegister = function(socket){
+    socket.emit('render message', 'register');
+};
+Socket.prototype.renderChat = function(socket){
+    socket.emit('render message', 'chat');
+};
+Socket.prototype.renderAdmin = function(socket){
+    socket.emit('render message', 'admin');
+};
+Socket.prototype.renderBoot = function(socket){
+    socket.emit('render message', 'bootedPage');
 }
 
-SessionList.prototype.setSessionObject = function(socket){
-    this.sessions[socket.token] = socket.request.session;
-    return this.sessions[socket.token];
-}
-
-//set socket session middleware, depend on that the program have a global sessionList object and its extension
-var setSocketSession = function(socket, next){
-    if(typeof sessionList == 'undefined'){
-        sessionList = new SessionList();
-    }
-    var session = sessionList.getSessionObject(socket);
-    if(session){
-        socket.request.session = session;
-        if(!session.socketID){
-            session.socketID = [];
-        }
-        session.socketID.push(socket.id);
-        session.save();
-        next();
+var checkLoginStatus = function(session, isLoginFunc, isntLoginFunc){
+    if(session.username){
+        findUserWithUsername(username, function(user){
+            user ? isLoginFunc(user) : isntLoginFunc();
+        });
     }
     else{
-        if(sessionList.locked){
-            setTimeout(function(){sessionList.setSocketSession(socket, next)}, 100);
-            return;
-        }
-        else{
-            socket.request.originalUrl = "/";
-            sessionList.locked = true;
-            sessionParserFunction(socket.request, {}, function(){
-                var session = socket.request.session;
-                if(!session.socketID){
-                    session.socketID = [];
-                }
-                session.socketID.push(socket.id);
-                session.save();
-                sessionList.setSessionObject(socket);
-                sessionList.locked = false;
-                next();
-            }); 
-        }
+        isntLoginFunc();
     }
-}
- 
+} 
 //Database operations 
-var findUserWithUsername = function(username, success, error){
+var findUserWithUsername = function(username, success){
     app.db.collection('users').findOne({'username': username}, function(err, user){
         if(err){
-            error(renderDatabaseErrorJson);
+            throw new DatabaseError();
             //redo the work
         }
         else{
@@ -128,37 +97,36 @@ var findUserWithUsername = function(username, success, error){
     }); 
 };
     
-var createNewUser = function(username, password, session, success, error){
+var createNewUser = function(username, password, session, success){
     findUserWithUsername(username, function(user){
         if(user){
-            error(renderExistingUserJson);
+            throw new ExistingUserError();
         }
         else{
             var user = {'username': username, 'password': crypto.createHash('sha1').update(password).digest('hex'), 'permission':0};
             app.db.collection('users').insert(user, {w:1}, function(err, result) {
                 if(err){
-                    error(renderDatabaseErrorJson);
+                    throw new DatabaseError();
                 }
                 else{
-                    loginUser(username, password, session, success, error);
+                    loginUser(username, password, session, success);
                 }
             });
         }
-    }, error);
+    });
 };
     
-var loginUser = function(username, password, session, success, error){
+var loginUser = function(username, password, session, success){
     findUserWithUsername(username, function(user){
         if(user && user.password === crypto.createHash('sha1').update(password).digest('hex')){
             session.username = user.username;
-            session.permission = user.permission;
             session.save();
-            success(session.socketID);
+            success(user);
         }
         else{
-            error(renderWrongPasswordJson);
+            throw new WrongPasswordError();
         }
-    }, error);
+    });
 }
 
 var logoutUser = function(session, success){
@@ -168,10 +136,10 @@ var logoutUser = function(session, success){
     success(session.socketID);
 }
 
-var retrieveUserList = function(success, error){
+var retrieveUserList = function(success){
     app.db.collection('users').find().toArray(function(err, documents){
         if(err){
-            error(renderDatabaseErrorJson);
+            throw new DatabaseError();
             //redo the work
         }
         else{
@@ -180,10 +148,10 @@ var retrieveUserList = function(success, error){
     });
 }
 
-var editUser = function(username, permission, success, error){
+var editUser = function(username, permission, success){
     app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{permission: permission}}, {}, function(err, user){
         if(err){
-            error(renderDatabaseErrorJson);
+            throw new DatabaseError();
         }
         else{
             success();
@@ -191,10 +159,10 @@ var editUser = function(username, permission, success, error){
     });
 }
 
-var deleteUser = function(username, success, error){
+var deleteUser = function(username, success){
     app.db.collection('users').remove({username:username}, function(err, result){
         if(err){
-            error(renderDatabaseErrorJson);
+            throw new DatabaseError();
         }
         else{
             success();   
@@ -203,34 +171,29 @@ var deleteUser = function(username, success, error){
 }
 
 //json status render
-var renderInvalidRequestJson = function(){
-    return '{meta: {status: 500, msg: "bad request"}, data:{}}';
+var DatabaseError = function(){
+    this.JSON = JSON.stringify({meta: {status: 500, msg: "database failure"}, data:{}});
+}
+var InvalidRequestError = function(){
+    this.JSON = JSON.stringify({meta: {status: 500, msg: "bad request"}, data:{}});
 }
 
-var renderDatabaseErrorJson = function(){
-    return '{meta: {status: 500, msg: "database failure"}, data:{}}';
+var WrongPasswordError = function(){
+    this.JSON = JSON.stringify({meta: {status: 403, msg: "login failed, please check your password"}, data:{}});
 }
 
-var renderWrongPasswordJson = function(){
-    return '{meta: {status: 403, msg: "login failed, please check your password"}, data:{}}';
+var ExistingUserError = function(){
+    this.JSON = JSON.stringify({meta: {status: 409, msg: "existing user. please log in"}, data:{}});
 }
 
-var renderExistingUserJson = function(){
-    return '{meta: {status: 409, msg: "existing user. please log in"}, data:{}}';
-}
-
-var renderSuccessJson = function(data){
-    var result = {meta: {status: 200, msg: "OK"}, data: data};
-    return JSON.stringify(result);
+var SuccessJson = function(data){
+    return JSON.stringify({meta: {status: 200, msg: "OK"}, data: data});
 }
 
 //naive data validator
-var isDataValid = function(data){
+var validateData = function(data){
     if(typeof(data) === 'undefined' || typeof(data.username) === 'undefined' || typeof(data.password) === 'undefined'){
-        return false;
-    }
-    else{
-        return true;
+        throw new InvalidRequestError();
     }
 }
 
@@ -296,7 +259,9 @@ function ServerStart(){
                 next();
             });
         });
-        io.use(setSocketSession);
+        io.use(function(socket, next){
+            sessionParserFunction(socket.request, {}, next);
+        });
 
         //room structure
         socketList = io.of('/');
@@ -309,31 +274,22 @@ function ServerStart(){
                     socket.extendSessionAge();
                 });
             }
-            
-            var username = socket.request.session.username;
-            if(username){
-                //double check if the user still exsit and have the correct permission
-                findUserWithUsername(username, function(user){
-                    if(user){
-                        socket.request.session.permission = user.permission;
-                        console.log(socket.request.session.username + ' is connected');
-                        socket.broadcast.emit('status message', socket.request.session.username + ' has joined the conversation');
-                        socket.emit('render message', 'chat');
+
+            try{
+                checkLoginStatus(socket.request.session, function(user){
+                        socket.setSocketUser(socket, user);
+                        socket.welcomeUser(socket); 
+                    }, function(){
+                        socket.renderLogin(socket);
                     }
-                    //possibly that user is deleted but the session information is not correctly updated in db
-                    else{
-                        socket.emit('render message', 'login');
-                    }
-                }, function(){
-                    socket.renderErrorMsg.apply(socket);
                 });
             }
-            else{
-                socket.emit('render message', 'login');
+            catch(e){
+                socket.renderErrorMsg(socket, e.JSON);
             }
 
             socket.on('loginRender', function(){
-                socket.isLoggedIn() ? socket.emit('render message', 'chat') : socket.emit('render message', 'login');
+                socket.isLoggedIn(socket) ? socket.renderChat(socket) : socket.renderLogin(socket);
             });
             socket.on('loginAction', function(data){
                 try{
@@ -342,22 +298,36 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(!socket.isLoggedIn() && isDataValid(data)){
+                if(!socket.isLoggedIn(socket)){
+                    try{
+                        validateData(data);
+                    }
+                    catch(e){
+                        socket.renderErrorMsg(socket, e.JSON);
+                    }
+
                     var username = data.username;
                     var password = data.password;
                     var session = socket.request.session;
-                    loginUser(username, password, session, function(){
-                        socket.welcomeUser.apply(socket);
-                    }, function(){
-                        socket.renderErrorMsg.apply(socket);
-                    });
-                }
-                else{
-                    socket.renderErrorMsg(renderInvalidRequestJson);
+                    try{
+                        loginUser(username, password, session, function(user){
+                            var sessionSocketList = io.of('/private/session/'+session.id);
+                            for(var socketID in sessionSocketList){
+                                if(sessionSocketList.hasOwnProperty(socketID){
+                                    var targetSocket = sessionSocketList[socketID];
+                                    targetSocket.setSocketUser(targetSocket, user);
+                                })
+                            }
+                            socket.welcomeUser(socket);
+                        }); 
+                    }
+                    catch(e){
+                        socket.renderErrorMsg(socket, e.JSON);
+                    }
                 }
             });
             socket.on('registerRender', function(){
-                socket.isLoggedIn() ? socket.emit('render message', 'chat') : socket.emit('render message', 'register');
+                socket.isLoggedIn(socket) ? socket.renderChat(socket) : socket.renderRegister(socket);
             });
             socket.on('registerAction', function(data){
                 try{
@@ -366,54 +336,76 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(!socket.isLoggedIn() && isDataValid(data)){
+                if(!socket.isLoggedIn(socket)){
+                    try{
+                        validateData(data);
+                    }
+                    catch(e){
+                        socket.renderErrorMsg(socket, e.JSON);
+                    }
+
                     var username = data.username;
                     var password = data.password;
                     var session = socket.request.session;
-                    createNewUser(username, password, session, function(){
-                        socket.welcomeUser.apply(socket);
-                    }, function(){
-                        socket.renderErrorMsg.apply(socket)
-                    });
-                }
-                else{
-                    socket.renderErrorMsg(renderInvalidRequestJson);
+                    try{
+                        createNewUser(username, password, session, function(user){
+                            var sessionSocketList = io.of('/private/session/'+session.id);
+                            for(var socketID in sessionSocketList){
+                                if(sessionSocketList.hasOwnProperty(socketID){
+                                    var targetSocket = sessionSocketList[socketID];
+                                    targetSocket.setSocketUser(targetSocket, user);
+                                })
+                            }
+                            socket.welcomeUser(socket);
+                        });
+                    }
+                    catch(e){
+                        socket.renderErrorMsg(socket, e.JSON);
+                    }
                 }
             });
             socket.on('logoutAction', function(){
-                if(socket.isLoggedIn()){
+                if(socket.isLoggedIn(socket)){
                     var session = socket.request.session;
                     logoutUser(session, function(){
-                        socket.seeyouUser.apply(socket)
+                        socket.seeyouUser(socket);
+
+                        var sessionSocketList = io.of('/private/session/'+session.id);
+                        for(var socketID in sessionSocketList){
+                            if(sessionSocketList.hasOwnProperty(socketID){
+                                var targetSocket = sessionSocketList[socketID];
+                                targetSocket.removeSocketUser(targetSocket);
+                                targetSocket.renderLogin(targetSocket);
+                            })
+                        }
                     });
                 }
             }); 
             socket.on('chatAction', function(msg){
-                if(socket.isLoggedIn()){
+                if(socket.isLoggedIn(socket)){
                     io.sockets.emit('chat message', socket.request.session.username + ': ' + msg);
                 }
             }); 
             socket.on('disconnect', function(){
-                var session = socket.request.session;
-                if(session.username){
-                    socket.broadcast.emit('status message', session.username + ' has quitted the conversation');
-                    console.log(session.username + ' has quitted the conversation');
+                if(socket.username){
+                    socket.seeyouUser(socket);
                 }
-                session.socketID.splice(session.socketID.indexOf(socket.id),1);
-                session.save();
             });
             socket.on('adminRender', function(){
-                if(socket.isAdmin()){
-                    socket.emit("render message", 'admin');
+                if(socket.isAdmin(socket)){
+                    socket.renderAdmin(socket);
                 }
             });
             socket.on('retrieveUserDataAction', function(){
-                if(socket.isAdmin()){
-                    retrieveUserList(function(data){
-                        socket.emit('users data', renderSuccessJson(data));
-                    }, function(){
-                        socket.renderErrorMsg.apply(socket);
-                    });
+                if(socket.isAdmin(socket)){
+                    try{
+                        retrieveUserList(function(data){
+                            socket.emit('users data', new SuccessJson(data));
+                        }); 
+                    }
+                    catch(e){
+                        socket.renderErrorMsg(socket, e.JSON);
+                    }  
                 }
             });
             socket.on('editPermissionAction', function(data){
@@ -423,23 +415,23 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(socket.isAdmin()){
+                if(socket.isAdmin(socket)){
                     var username = data.username;
                     var permission = data.permission;
-                    editUser(username, permission, function(){
-                        for(socketID in socketList.connected){
-                            if(socketList.connected.hasOwnProperty(socketID)){
-                                var targetSocket = socketList.connected[socketID];
-                                var session = targetSocket.request.session;
-                                if(session.username === username){
-                                    session.permission = permission;
-                                    session.save();
+                    try{
+                        editUser(username, permission, function(){
+                            var userSocketList = io.of('/private/user/'+username);
+                            for(var socketID in userSocketList){
+                                if(userSocketList.hasOwnProperty(socketID)){
+                                    var targetSocket = userSocketList[socketID];
+                                    targetSocket.changePermission(targetSocket, permission);
                                 }
                             }
-                        }
-                    }, function(){
-                        socket.renderErrorMsg.apply(socket);
-                    });
+                        }); 
+                    }
+                    catch(e){
+                        socket.renderErrorMsg(socket, e.JSON);
+                    }
                 }
             });
             socket.on('deleteUserAction', function(data){
@@ -449,66 +441,58 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(socket.isAdmin()){
+                if(socket.isAdmin(socket)){
                     var username = data.username;
-                    deleteUser(username, function(){
-                        for(socketID in socketList.connected){
-                            if(socketList.connected.hasOwnProperty(socketID)){
-                                var session = socketList.connected[socketID].request.session;
-                                if(session.username === username){
-                                    delete session.username;
-                                    delete session.permission;
-                                    session.save();
-                                    for(var i=0; i < session.socketID.length; i++){
-                                        var targetSocket = socketList.connected[session.socketID[i]];
-                                        targetSocket.emit('render message', 'register');
-                                    }
+                    try{
+                        deleteUser(username, function(){
+                            var userSocketList = io.of('/private/user/'+username);
+                            for(var socketID in userSocketList){
+                                if(userSocketList.hasOwnProperty(socketID)){
+                                    var targetSocket = userSocketList[socketID];
+                                    targetSocket.removeSocketUser(targetSocket);
+                                    targetSocket.renderRegister(targetSocket);
                                 }
                             }
-                        }
-                    }, function(){
-                        socket.renderErrorMsg.apply(socket);
-                    });
+                        }); 
+                    }
+                    catch(e){
+                        socket.renderErrorMsg(socket, e.JSON);
+                    }   
                 }
             });
             socket.on('retrieveLinkedUserAction', function(){
-                if(socket.isAdmin()){
+                if(socket.isAdmin(socket)){
                     var sockets = [];
                     for(var socketID in socketList.connected){
                         if(socketList.connected.hasOwnProperty(socketID)){
                             var simpleSocket = {};
                             var targetSocket = socketList.connected[socketID];
-                            var session = targetSocket.request.session;
                             simpleSocket.id = targetSocket.id;
-                            simpleSocket.username = session.username;
-                            simpleSocket.permission = session.permission;
+                            simpleSocket.username = targetSocket.username;
+                            simpleSocket.permission = targetSocket.permission;
                             simpleSocket.token = targetSocket.token;
                             sockets.push(simpleSocket);
                         }
                     }
-                    socket.emit('linked users data', renderSuccessJson(sockets));
+                    socket.emit('linked users data', new SuccessJson(sockets));
                 }
             });
-            socket.on('focusLogout', function(data){
+            socket.on('forceLogout', function(data){
                 try{
                     data = JSON.parse(data);
                 }
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(socket.isAdmin()){
-                    var sessionTokens = data.sessions;
-                    for(var i=0; i < sessionTokens.length; i++){
-                        var session = sessionList.getSessionObjectByToken(sessionTokens[i]);
-                        logoutUser(session, function(socketIDs){
-                            while(socketIDs.length){
-                                var targetSocket = socketList.connected[socketIDs[0]];
-                                if(targetSocket){
-                                    targetSocket.emit('render message', 'bootedPage');
-                                    targetSocket.disconnect();
-                                }
-                            }
-                        }); 
+                if(socket.isAdmin(socket)){
+                    var userSocketList = io.of('/private/user/'+username);
+                    for(var socketID in userSocketList){
+                        if(userSocketList.hasOwnProperty(socketID)){
+                            var targetSocket = userSocketList[socketID];
+                            targetSocket.removeSocketUser(targetSocket);
+                            targetSocket.renderBoot(targetSocket);
+                            targetSocket.disconnect();
+                        }
                     }
                 }
             });
