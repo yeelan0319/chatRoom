@@ -23,6 +23,40 @@ var Socket = require('socket.io/lib/socket');
 Socket.prototype.extendSessionAge = function(){
     this.request.session.touch().save();
 };
+Socket.prototype.renderErrorMsg = function(errorJSON){
+    this.emit('system message', errorJSON());
+    console.log(errorJSON());
+};
+Socket.prototype.welcomeUser = function(socketIDs){
+    console.log(this);
+    console.log(this.request.session.username + ' is connected');
+    this.broadcast.emit('status message', this.request.session.username + ' has joined the conversation');
+    
+    for(var i=0; i < socketIDs.length; i++){
+        var target = socketList.connected[socketIDs[i]];
+        if(target){
+            target.emit('render message', 'chat');
+        }
+    }
+};
+Socket.prototype.seeyouUser = function(socketIDs){
+    console.log(this.request.session.username + ' has quitted the conversation');
+    this.broadcast.emit('status message', this.request.session.username + ' has quitted the conversation');
+
+    for(var i = 0; i < socketIDs.length; i++){
+        var target = socketList.connected[socketIDs[i]];
+        if(target){
+            target.emit('render message', 'login');
+        }
+    }
+};
+Socket.prototype.isLoggedIn = function(){
+    return this.request.session.username ? true : false;
+};
+Socket.prototype.isAdmin = function(){
+    return this.request.session.permission == 1 ? true : false;
+};
+
 
 //sessionList prototype extension
 var SessionList = function(){
@@ -47,13 +81,9 @@ SessionList.prototype.setSessionObject = function(socket){
 var setSocketSession = function(socket, next){
     if(typeof sessionList == 'undefined'){
         sessionList = new SessionList();
-        console.log("log::create session list");
     }
     var session = sessionList.getSessionObject(socket);
-    console.log(sessionList);
     if(session){
-        console.log("log::reading exsiting session");
-        session.counter++;
         socket.request.session = session;
         if(!session.socketID){
             session.socketID = [];
@@ -68,7 +98,6 @@ var setSocketSession = function(socket, next){
             return;
         }
         else{
-            console.log("log::build new session instance");
             socket.request.originalUrl = "/";
             sessionList.locked = true;
             sessionParserFunction(socket.request, {}, function(){
@@ -77,7 +106,6 @@ var setSocketSession = function(socket, next){
                     session.socketID = [];
                 }
                 session.socketID.push(socket.id);
-                session.counter = 1;
                 session.save();
                 sessionList.setSessionObject(socket);
                 sessionList.locked = false;
@@ -100,7 +128,7 @@ var findUserWithUsername = function(username, success, error){
     }); 
 };
     
-var createNewUser = function(username, password, success, error){
+var createNewUser = function(username, password, session, success, error){
     findUserWithUsername(username, function(user){
         if(user){
             error(renderExistingUserJson);
@@ -112,29 +140,25 @@ var createNewUser = function(username, password, success, error){
                     error(renderDatabaseErrorJson);
                 }
                 else{
-                    loginUser(username, password, success, error);
+                    loginUser(username, password, session, success, error);
                 }
             });
         }
     }, error);
 };
     
-var loginUser = function(username, password, success, error){
+var loginUser = function(username, password, session, success, error){
     findUserWithUsername(username, function(user){
         if(user && user.password === crypto.createHash('sha1').update(password).digest('hex')){
-            success(user);
+            session.username = user.username;
+            session.permission = user.permission;
+            session.save();
+            success(session.socketID);
         }
         else{
             error(renderWrongPasswordJson);
         }
     }, error);
-}
-
-var checkPermission = function(username, success, error){
-    var username = socket.request.session.username;
-    if(username){
-        findUserWithUsername(username, success, error);
-    }
 }
 
 var logoutUser = function(session, success){
@@ -300,9 +324,8 @@ function ServerStart(){
                     else{
                         socket.emit('render message', 'login');
                     }
-                }, function(errorJSON){
-                    socket.emit('system message', errorJSON());
-                    console.log(errorJSON());
+                }, function(){
+                    socket.renderErrorMsg.apply(socket);
                 });
             }
             else{
@@ -310,12 +333,7 @@ function ServerStart(){
             }
 
             socket.on('loginRender', function(){
-                if(!socket.request.session.username){
-                    socket.emit('render message', 'login');
-                }
-                else{
-                    socket.emit('render message', 'chat');
-                }
+                socket.isLoggedIn() ? socket.emit('render message', 'chat') : socket.emit('render message', 'login');
             });
             socket.on('loginAction', function(data){
                 try{
@@ -324,42 +342,22 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(!socket.request.session.username && isDataValid(data)){
+                if(!socket.isLoggedIn() && isDataValid(data)){
                     var username = data.username;
                     var password = data.password;
-                    loginUser(username, password, function(user){
-                        var session = socket.request.session;
-                        session.username = user.username;
-                        session.permission = user.permission;
-                        session.save();
-
-                        console.log(session.username + ' is connected');
-                        socket.broadcast.emit('status message', session.username + ' has joined the conversation');
-                        
-                        var socketIDs = session.socketID;
-                        for(var i=0; i < socketIDs.length; i++){
-                            var target = socketList.connected[socketIDs[i]];
-                            if(target){
-                                target.emit('render message', 'chat');
-                            }
-                        }
-                    },function(errorJSON){
-                        socket.emit('system message', errorJSON());
-                        console.log(errorJSON());
+                    var session = socket.request.session;
+                    loginUser(username, password, session, function(){
+                        socket.welcomeUser.apply(socket);
+                    }, function(){
+                        socket.renderErrorMsg.apply(socket);
                     });
                 }
                 else{
-                    socket.emit('system message', renderInvalidRequestJson());
-                    console.log(renderInvalidRequestJson());
+                    socket.renderErrorMsg(renderInvalidRequestJson);
                 }
             });
             socket.on('registerRender', function(){
-                if(!socket.request.session.username){
-                    socket.emit('render message', 'register');
-                }
-                else{
-                    socket.emit('render message', 'chat');
-                }
+                socket.isLoggedIn() ? socket.emit('render message', 'chat') : socket.emit('render message', 'register');
             });
             socket.on('registerAction', function(data){
                 try{
@@ -368,57 +366,32 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(!socket.request.session.username && isDataValid(data)){
+                if(!socket.isLoggedIn() && isDataValid(data)){
                     var username = data.username;
                     var password = data.password;
-                    createNewUser(username, password, function(user){
-                        var session = socket.request.session;
-                        session.username = user.username;
-                        session.permission = user.permission;
-                        session.save();
-
-                        console.log(session.username + ' is connected');
-                        socket.broadcast.emit('status message', session.username + ' has joined the conversation');
-
-                        var socketIDs = session.socketID;
-                        for(var i=0; i < socketIDs.length; i++){
-                            var target = socketList.connected[socketIDs[i]];
-                            if(target){
-                                target.emit('render message', 'chat');
-                            }
-                        }
-                    }, function(errorJSON){
-                        socket.emit('system message', errorJSON());
-                        console.log(errorJSON());
+                    var session = socket.request.session;
+                    createNewUser(username, password, session, function(){
+                        socket.welcomeUser.apply(socket);
+                    }, function(){
+                        socket.renderErrorMsg.apply(socket)
                     });
                 }
                 else{
-                    socket.emit('system message', renderInvalidRequestJson());
-                    console.log(renderInvalidRequestJson());
+                    socket.renderErrorMsg(renderInvalidRequestJson);
                 }
             });
             socket.on('logoutAction', function(){
-                var session = socket.request.session;
-                var username = session.username;
-                if(username){
-                    logoutUser(session, function(socketIDs){
-                        socket.broadcast.emit('status message', username + ' has quitted the conversation');
-                        console.log(username + ' has quitted the conversation');
-
-                        for(var i = 0; i < socketIDs.length; i++){
-                            var target = socketList.connected[socketIDs[i]];
-                            if(target){
-                                target.emit('render message', 'login');
-                            }
-                        }
+                if(socket.isLoggedIn()){
+                    var session = socket.request.session;
+                    logoutUser(session, function(){
+                        socket.seeyouUser.apply(socket)
                     });
                 }
             }); 
             socket.on('chatAction', function(msg){
-                if(socket.request.session.username){
+                if(socket.isLoggedIn()){
                     io.sockets.emit('chat message', socket.request.session.username + ': ' + msg);
                 }
-                console.log(socket.request.session.counter);
             }); 
             socket.on('disconnect', function(){
                 var session = socket.request.session;
@@ -430,17 +403,16 @@ function ServerStart(){
                 session.save();
             });
             socket.on('adminRender', function(){
-                if(socket.request.session.permission == 1){
+                if(socket.isAdmin()){
                     socket.emit("render message", 'admin');
                 }
             });
             socket.on('retrieveUserDataAction', function(){
-                if(socket.request.session.permission == 1){
+                if(socket.isAdmin()){
                     retrieveUserList(function(data){
                         socket.emit('users data', renderSuccessJson(data));
-                    }, function(errorJSON){
-                        socket.emit('system message', errorJSON());
-                        console.log(errorJSON());
+                    }, function(){
+                        socket.renderErrorMsg.apply(socket);
                     });
                 }
             });
@@ -451,7 +423,7 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(socket.request.session.permission == 1){
+                if(socket.isAdmin()){
                     var username = data.username;
                     var permission = data.permission;
                     editUser(username, permission, function(){
@@ -465,9 +437,8 @@ function ServerStart(){
                                 }
                             }
                         }
-                    }, function(errorJSON){
-                        socket.emit('system message', errorJSON());
-                        console.log(errorJSON());
+                    }, function(){
+                        socket.renderErrorMsg.apply(socket);
                     });
                 }
             });
@@ -478,7 +449,7 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(socket.request.session.permission == 1){
+                if(socket.isAdmin()){
                     var username = data.username;
                     deleteUser(username, function(){
                         for(socketID in socketList.connected){
@@ -495,14 +466,13 @@ function ServerStart(){
                                 }
                             }
                         }
-                    }, function(errorJSON){
-                        socket.emit('system message', errorJSON());
-                        console.log(errorJSON());
+                    }, function(){
+                        socket.renderErrorMsg.apply(socket);
                     });
                 }
             });
             socket.on('retrieveLinkedUserAction', function(){
-                if(socket.request.session.permission == 1){
+                if(socket.isAdmin()){
                     var sockets = [];
                     for(var socketID in socketList.connected){
                         if(socketList.connected.hasOwnProperty(socketID)){
@@ -526,7 +496,7 @@ function ServerStart(){
                 catch(e){
                     console.log("Receive invalid JSON");
                 }
-                if(socket.request.session.permission == 1){
+                if(socket.isAdmin()){
                     var sessionTokens = data.sessions;
                     for(var i=0; i < sessionTokens.length; i++){
                         var session = sessionList.getSessionObjectByToken(sessionTokens[i]);
