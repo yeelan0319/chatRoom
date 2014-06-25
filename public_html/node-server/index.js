@@ -20,9 +20,9 @@ var socketioModule = require('socket.io');
 
 //socketio's Socket object prototype extension
 var Socket = require('socket.io/lib/socket');
-Socket.prototype.extendSessionAge = function(){
-    this.request.session.touch().save();
-};
+// Socket.prototype.extendSessionAge = function(){
+//     this.request.session.touch().save();
+// };
 Socket.prototype.renderErrorMsg = function(socket, errorJSON){
     socket.emit('system message', errorJSON);
     console.log(errorJSON);
@@ -75,9 +75,14 @@ Socket.prototype.renderBoot = function(socket){
 }
 
 var checkLoginStatus = function(session, isLoginFunc, isntLoginFunc){
-    if(session.username){
+    var username = session.username;
+    if(username){
         findUserWithUsername(username, function(user){
-            user ? isLoginFunc(user) : isntLoginFunc();
+            user ? isLoginFunc(user) : function(){
+                                            delete session.username;
+                                            session.save();
+                                            isntLoginFunc();
+                                        }
         });
     }
     else{
@@ -248,6 +253,7 @@ function ServerStart(){
         https = httpsModule.Server(options, app.express);
         
         io = socketioModule(https);
+        socketList = io.of('/').connected;
         
         //socket io middlewares
         io.use(function(socket, next){
@@ -256,32 +262,30 @@ function ServerStart(){
             // socket.token = socket.request.signedCookies['PHPSESSID'] || crypto.createHash('sha1').update(seed).digest('hex');
             cookieParserFunction(socket.request, {}, function(){
                 socket.token = socket.request.signedCookies['PHPSESSID'];
+                socket.join('/private/session/' + socket.token);
                 next();
             });
         });
         io.use(function(socket, next){
+            socket.request.originalUrl = "/";
             sessionParserFunction(socket.request, {}, next);
         });
 
-        //room structure
-        socketList = io.of('/');
-
         //event listening
         io.on('connection', function(socket){
-            var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction'];
-            for(var i = 0; i < eventList.length; i++){
-                socket.on(eventList[i], function(){
-                    socket.extendSessionAge();
-                });
-            }
+            // var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction'];
+            // for(var i = 0; i < eventList.length; i++){
+            //     socket.on(eventList[i], function(){
+            //         socket.extendSessionAge(socket);
+            //     });
+            // }
 
             try{
                 checkLoginStatus(socket.request.session, function(user){
-                        socket.setSocketUser(socket, user);
-                        socket.welcomeUser(socket); 
-                    }, function(){
-                        socket.renderLogin(socket);
-                    }
+                    socket.setSocketUser(socket, user);
+                    socket.welcomeUser(socket); 
+                }, function(){
+                    socket.renderLogin(socket);
                 });
             }
             catch(e){
@@ -311,12 +315,12 @@ function ServerStart(){
                     var session = socket.request.session;
                     try{
                         loginUser(username, password, session, function(user){
-                            var sessionSocketList = io.of('/private/session/'+session.id);
-                            for(var socketID in sessionSocketList){
-                                if(sessionSocketList.hasOwnProperty(socketID){
-                                    var targetSocket = sessionSocketList[socketID];
+                            var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
+                            for(var socketID in sessionRoom){
+                                if(sessionRoom.hasOwnProperty(socketID)){
+                                    var targetSocket = socketList[socketID];
                                     targetSocket.setSocketUser(targetSocket, user);
-                                })
+                                }
                             }
                             socket.welcomeUser(socket);
                         }); 
@@ -349,12 +353,12 @@ function ServerStart(){
                     var session = socket.request.session;
                     try{
                         createNewUser(username, password, session, function(user){
-                            var sessionSocketList = io.of('/private/session/'+session.id);
-                            for(var socketID in sessionSocketList){
-                                if(sessionSocketList.hasOwnProperty(socketID){
-                                    var targetSocket = sessionSocketList[socketID];
+                            var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
+                            for(var socketID in sessionRoom){
+                                if(sessionRoom.hasOwnProperty(socketID)){
+                                    var targetSocket = socketList[socketID];
                                     targetSocket.setSocketUser(targetSocket, user);
-                                })
+                                }
                             }
                             socket.welcomeUser(socket);
                         });
@@ -370,20 +374,20 @@ function ServerStart(){
                     logoutUser(session, function(){
                         socket.seeyouUser(socket);
 
-                        var sessionSocketList = io.of('/private/session/'+session.id);
-                        for(var socketID in sessionSocketList){
-                            if(sessionSocketList.hasOwnProperty(socketID){
-                                var targetSocket = sessionSocketList[socketID];
+                        var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
+                        for(var socketID in sessionRoom){
+                            if(sessionRoom.hasOwnProperty(socketID)){
+                                var targetSocket = socketList[socketID];
                                 targetSocket.removeSocketUser(targetSocket);
                                 targetSocket.renderLogin(targetSocket);
-                            })
+                            }
                         }
                     });
                 }
             }); 
             socket.on('chatAction', function(msg){
                 if(socket.isLoggedIn(socket)){
-                    io.sockets.emit('chat message', socket.request.session.username + ': ' + msg);
+                    io.sockets.emit('chat message', socket.username + ': ' + msg);
                 }
             }); 
             socket.on('disconnect', function(){
@@ -400,7 +404,7 @@ function ServerStart(){
                 if(socket.isAdmin(socket)){
                     try{
                         retrieveUserList(function(data){
-                            socket.emit('users data', new SuccessJson(data));
+                            socket.emit('users data', SuccessJson(data));
                         }); 
                     }
                     catch(e){
@@ -420,10 +424,10 @@ function ServerStart(){
                     var permission = data.permission;
                     try{
                         editUser(username, permission, function(){
-                            var userSocketList = io.of('/private/user/'+username);
-                            for(var socketID in userSocketList){
-                                if(userSocketList.hasOwnProperty(socketID)){
-                                    var targetSocket = userSocketList[socketID];
+                            var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
+                            for(var socketID in userRoom){
+                                if(userRoom.hasOwnProperty(socketID)){
+                                    var targetSocket = socketList[socketID];
                                     targetSocket.changePermission(targetSocket, permission);
                                 }
                             }
@@ -445,10 +449,10 @@ function ServerStart(){
                     var username = data.username;
                     try{
                         deleteUser(username, function(){
-                            var userSocketList = io.of('/private/user/'+username);
-                            for(var socketID in userSocketList){
-                                if(userSocketList.hasOwnProperty(socketID)){
-                                    var targetSocket = userSocketList[socketID];
+                            var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
+                            for(var socketID in userRoom){
+                                if(userRoom.hasOwnProperty(socketID)){
+                                    var targetSocket = socketList[socketID];
                                     targetSocket.removeSocketUser(targetSocket);
                                     targetSocket.renderRegister(targetSocket);
                                 }
@@ -463,10 +467,10 @@ function ServerStart(){
             socket.on('retrieveLinkedUserAction', function(){
                 if(socket.isAdmin(socket)){
                     var sockets = [];
-                    for(var socketID in socketList.connected){
-                        if(socketList.connected.hasOwnProperty(socketID)){
+                    for(var socketID in socketList){
+                        if(socketList.hasOwnProperty(socketID)){
                             var simpleSocket = {};
-                            var targetSocket = socketList.connected[socketID];
+                            var targetSocket = socketList[socketID];
                             simpleSocket.id = targetSocket.id;
                             simpleSocket.username = targetSocket.username;
                             simpleSocket.permission = targetSocket.permission;
@@ -474,7 +478,7 @@ function ServerStart(){
                             sockets.push(simpleSocket);
                         }
                     }
-                    socket.emit('linked users data', new SuccessJson(sockets));
+                    socket.emit('linked users data', SuccessJson(sockets));
                 }
             });
             socket.on('forceLogout', function(data){
@@ -485,10 +489,15 @@ function ServerStart(){
                     console.log("Receive invalid JSON");
                 }
                 if(socket.isAdmin(socket)){
-                    var userSocketList = io.of('/private/user/'+username);
-                    for(var socketID in userSocketList){
-                        if(userSocketList.hasOwnProperty(socketID)){
-                            var targetSocket = userSocketList[socketID];
+                    var username = data.username;
+                    var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
+                    for(var socketID in userRoom){
+                        if(userRoom.hasOwnProperty(socketID)){
+                            var targetSocket = socketList[socketID];
+                            if(targetSocket.isLoggedIn(socket)){
+                                var session = targetSocket.request.session;
+                                logoutUser(session, function(){});
+                            }
                             targetSocket.removeSocketUser(targetSocket);
                             targetSocket.renderBoot(targetSocket);
                             targetSocket.disconnect();

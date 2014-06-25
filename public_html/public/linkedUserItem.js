@@ -31,8 +31,8 @@ LinkedUserItem.prototype = {
 		var confirmed = confirm("Are you sure to boot this user?");
 		var that = this;
 		if(confirmed){
-			data = {sessions: that.sessions};
-			socket.emit("focusLogout", JSON.stringify(data));
+			data = {username: that.username};
+			socket.emit("forceLogout", JSON.stringify(data));
 			that.$el.remove();
 		}
 	}
