@@ -20,9 +20,20 @@ var socketioModule = require('socket.io');
 
 //socketio's Socket object prototype extension
 var Socket = require('socket.io/lib/socket');
-// Socket.prototype.extendSessionAge = function(){
-//     this.request.session.touch().save();
-// };
+Socket.prototype.extendSessionAge = function(socket){
+    var session = socket.request.session;
+    //half window extension
+    if(session.cookie.maxAge < session.cookie.originalMaxAge/2){
+        socket.emit('session extension');
+        var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
+        for(var socketID in sessionRoom){
+            if(sessionRoom.hasOwnProperty(socketID)){
+                var targetSocket = socketList[socketID];
+                targetSocket.request.session.touch();
+            }
+        }
+    }
+};
 Socket.prototype.renderErrorMsg = function(socket, errorJSON){
     socket.emit('system message', errorJSON);
     console.log(errorJSON);
@@ -230,7 +241,8 @@ function ServerStart(){
                 maxAge: SESSIONAGE,
                 expires: new Date(Date.now()+SESSIONAGE)
             },
-            store: app.sessiondb
+            store: app.sessiondb,
+            rolling: true
         });
         app.express = express();
         app.express.use(express.static(__dirname + '/../public'));
@@ -241,6 +253,10 @@ function ServerStart(){
         app.express.get('/', function(req, res){
             res.sendfile(path.resolve(__dirname+'/../index.html'));
         });
+        app.express.get('/sessionExtension', function(req, res){
+            res.write(SuccessJson());
+            res.end();
+        })
 
         http = httpModule.createServer(function(req, res){
             res.writeHead(302, {Location: 'https://' + req.headers.host + req.url});
@@ -273,12 +289,12 @@ function ServerStart(){
 
         //event listening
         io.on('connection', function(socket){
-            // var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'editPermissionAction', 'deleteUserAction'];
-            // for(var i = 0; i < eventList.length; i++){
-            //     socket.on(eventList[i], function(){
-            //         socket.extendSessionAge(socket);
-            //     });
-            // }
+            var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'retrieveLinkedUserAction', 'forceLogout', 'editPermissionAction', 'deleteUserAction'];
+            for(var i = 0; i < eventList.length; i++){
+                socket.on(eventList[i], function(){
+                    socket.extendSessionAge(socket);
+                });
+            }
 
             try{
                 checkLoginStatus(socket.request.session, function(user){
