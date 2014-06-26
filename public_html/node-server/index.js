@@ -25,11 +25,11 @@ var checkLoginStatus = function(session, isLoginFunc, isntLoginFunc){
     var username = session.username;
     if(username){
         findUserWithUsername(username, function(user){
-            user ? isLoginFunc(user) : function(){
+            user ? isLoginFunc(user) : (function(){
                                             delete session.username;
                                             session.save();
                                             isntLoginFunc();
-                                        }
+                                        })();
         });
     }
     else{
