@@ -40,9 +40,7 @@ socket.on('linked users data', function(data){
 //Tried jquery cookie plugin, W3C code and read the whole cookie data. None works.
 //It all works on browser set cookies but not on the server set PHPSESSID.
 socket.on('session extension', function(SESSIONAGE){
-	var cookieValue = $.cookie('PHPSESSID');
-	$.cookie('PHPSESSID', null);
-	$.cookie('PHPSESSID', cookieValue, { expires: SESSIONAGE });
+	$.get('/sessionExtension');
 });
 socket.on('render message', function(target){
 	if(target == 'bootedPage'){

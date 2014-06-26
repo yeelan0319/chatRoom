@@ -17,13 +17,14 @@ var fs = require('fs');
 var httpModule = require('http');
 var httpsModule = require('https');
 var socketioModule = require('socket.io');
+var socketGarbageCollector = require('./socketGarbageCollector');
 
 //socketio's Socket object prototype extension
 var Socket = require('socket.io/lib/socket');
 Socket.prototype.extendSessionAge = function(socket){
     var session = socket.request.session;
     //half window extension
-    if(session.cookie.maxAge < session.cookie.originalMaxAge/2){
+    if(session.cookie.maxAge < (SESSIONAGE/2)){
         socket.emit('session extension');
         var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
         for(var socketID in sessionRoom){
@@ -510,7 +511,7 @@ function ServerStart(){
                     for(var socketID in userRoom){
                         if(userRoom.hasOwnProperty(socketID)){
                             var targetSocket = socketList[socketID];
-                            if(targetSocket.isLoggedIn(socket)){
+                            if(targetSocket.isLoggedIn(targetSocket)){
                                 var session = targetSocket.request.session;
                                 logoutUser(session, function(){});
                             }
@@ -525,6 +526,7 @@ function ServerStart(){
             
         portListeningStart();
     }
+
     var portListeningStart = function(){
         //start listening to port and receive request
         http.listen(80, function(err){
@@ -533,6 +535,7 @@ function ServerStart(){
         https.listen(443, function(err){
             console.log("https listening on port: 443");
         });
+        socketGarbageCollector.start(socketList);
     }
 
     dbConnection(ServerInitialization);
