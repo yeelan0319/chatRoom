@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 var DAY = 1000 * 60 * 60 * 24;  //millisecond in a day
-var SESSIONAGE = 10000;
+var SESSIONAGE = DAY * 30;
 var SECRET = '3d4f2bf07dc1be38b20cd6e46949a1071f9d0e3d';
 
 var cookieParser = require('cookie-parser');
@@ -85,7 +85,7 @@ var logoutUser = function(session, success){
     delete session.permission;
     delete session.username;
     session.save();
-    success(session.socketID);
+    success();
 }
 
 var retrieveUserList = function(success){
@@ -174,8 +174,7 @@ function ServerStart(){
             name:'PHPSESSID',
             secret: SECRET,
             cookie: {
-                maxAge: SESSIONAGE,
-                expires: new Date(Date.now()+SESSIONAGE)
+                maxAge: SESSIONAGE
             },
             store: app.sessiondb,
             rolling: true
