@@ -3,7 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-var SESSIONAGE = 3600000 * 24 * 30;
+var DAY = 1000 * 60 * 60 * 24;  //millisecond in a day
+var SESSIONAGE = 10000;
 var SECRET = '3d4f2bf07dc1be38b20cd6e46949a1071f9d0e3d';
 
 var cookieParser = require('cookie-parser');
@@ -17,74 +18,8 @@ var fs = require('fs');
 var httpModule = require('http');
 var httpsModule = require('https');
 var socketioModule = require('socket.io');
+var socketExtension = require('./socketExtension');
 var socketGarbageCollector = require('./socketGarbageCollector');
-
-//socketio's Socket object prototype extension
-var Socket = require('socket.io/lib/socket');
-Socket.prototype.extendSessionAge = function(socket){
-    var session = socket.request.session;
-    //half window extension
-    if(session.cookie.maxAge < (SESSIONAGE/2)){
-        socket.emit('session extension');
-        var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
-        for(var socketID in sessionRoom){
-            if(sessionRoom.hasOwnProperty(socketID)){
-                var targetSocket = socketList[socketID];
-                targetSocket.request.session.touch();
-            }
-        }
-    }
-};
-Socket.prototype.renderErrorMsg = function(socket, errorJSON){
-    socket.emit('system message', errorJSON);
-    console.log(errorJSON);
-};
-Socket.prototype.setSocketUser = function(socket, user){
-    socket.username = user.username;
-    socket.permission = user.permission;
-    socket.join('/private/user/'+socket.username);
-    socket.renderChat(socket);
-};
-Socket.prototype.removeSocketUser = function(socket, user){
-    delete socket.username;
-    delete socket.permission;
-    socket.leave('/private/user/'+socket.username);
-};
-Socket.prototype.welcomeUser = function(socket, user){
-    console.log(socket.username + ' is connected');
-    socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
-};
-Socket.prototype.seeyouUser = function(socket){
-    console.log(socket.username + ' has quitted the conversation');
-    socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
-};
-
-Socket.prototype.changePermission = function(socket, permission){
-    socket.permission = permission;
-}
-
-Socket.prototype.isLoggedIn = function(socket){
-    return socket.username ? true : false;
-};
-Socket.prototype.isAdmin = function(socket){
-    return socket.permission == 1 ? true : false;
-};
-
-Socket.prototype.renderLogin = function(socket){
-    socket.emit('render message', 'login');
-};
-Socket.prototype.renderRegister = function(socket){
-    socket.emit('render message', 'register');
-};
-Socket.prototype.renderChat = function(socket){
-    socket.emit('render message', 'chat');
-};
-Socket.prototype.renderAdmin = function(socket){
-    socket.emit('render message', 'admin');
-};
-Socket.prototype.renderBoot = function(socket){
-    socket.emit('render message', 'bootedPage');
-}
 
 var checkLoginStatus = function(session, isLoginFunc, isntLoginFunc){
     var username = session.username;
@@ -287,6 +222,7 @@ function ServerStart(){
             socket.request.originalUrl = "/";
             sessionParserFunction(socket.request, {}, next);
         });
+        io.use(socketExtension);
 
         //event listening
         io.on('connection', function(socket){

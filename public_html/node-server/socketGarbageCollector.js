@@ -1,5 +1,6 @@
 var socketGarbageTimer;
-var interval = 10000; //running per day
+var DAY = 1000 * 60 * 60 * 24;  //millisecond in a day
+var interval = DAY; //running per day
 
 function start(socketList){
     console.log('socket garbage daemon started');
