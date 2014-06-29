@@ -13,9 +13,7 @@ function start(socketList){
                 var targetSocket = socketList[socketID];
                 console.log(targetSocket.request.session.cookie.maxAge);
                 if(targetSocket.request.session.cookie.maxAge < 0){
-                    targetSocket.renderBoot(targetSocket);
-                    targetSocket.disconnect();
-                    //need to find if express session deal with session storage already
+                    targetSocket.boot();
                 }
             }
         } 

@@ -15,6 +15,12 @@ module.exports = function socketExtension(socket, next){
             }
         }
     };
+
+    socket.boot = function(){
+        this.renderBoot();
+        this.disconnection();
+    };
+
     socket.renderErrorMsg = function(errorJSON){
         this.emit('system message', errorJSON);
         console.log(errorJSON);

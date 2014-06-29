@@ -15,15 +15,8 @@ var httpsModule = require('https');
 var socketioModule = require('socket.io');
 var socketExtension = require('./socketExtension');
 var socketGarbageCollector = require('./socketGarbageCollector');
-var databaseModule = require('databaseModule');
-
-databaseModule.on('userLoggedIn', welcomeSocket);
-databaseModule.on('userNotLoggedIn', renderLoginSocket);
-databaseModule.on('successfullyLoggedInUser', welcomeSession)
-databaseModule.on('successfullyLoggedOutUser', renderLoginSession);
-databaseModule.on('successfullyRetrievedUserList', sendUserListSocket);
-databaseModule.on('successfullyChangedUserPermission', informChangedPermissionUser);
-databaseModule.on('successfullyDeletedUser', renderRegisterUser);
+var databaseModule = require('./databaseModule');
+var responseJson = require('./responseJson');
 
 var welcomeSocket = function(res){
     var socket = socketList[res.target];
@@ -58,7 +51,7 @@ var renderLoginSession = function(res){
 
 var sendUserListSocket = function(res){
     var socket = socketList[res.target];
-    socket.emit('users data', SuccessJson(res.data));
+    socket.emit('users data', responseJson.success(res.data));
 }
 
 var informChangedPermissionUser = function(res){
@@ -74,7 +67,7 @@ var informChangedPermissionUser = function(res){
 }
 
 var renderRegisterUser = function(res){
-    var username = res.username;
+    var username = res.target;
     var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
     for(var socketID in userRoom){
         if(userRoom.hasOwnProperty(socketID)){
@@ -99,16 +92,15 @@ var retrieveLinkedUser = function(socketID){
             data.push(simpleSocket);
         }
     }
-    socket.emit('linked users data', SuccessJson(data));
+    socket.emit('linked users data', responseJson.success(data));
 }
 
-var boot = function(username){
+var bootUser = function(username){
     var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
     for(var socketID in userRoom){
         if(userRoom.hasOwnProperty(socketID)){
             var targetSocket = socketList[socketID];
-            targetSocket.renderBoot(targetSocket);
-            targetSocket.disconnect();
+            targetSocket.boot();
         }
     }
 }
@@ -141,11 +133,20 @@ var _parseData = function(data){
     return data;
 }
 
+databaseModule.on('userLoggedIn', welcomeSocket);
+databaseModule.on('userNotLoggedIn', renderLoginSocket);
+databaseModule.on('successfullyLoggedInUser', welcomeSession)
+databaseModule.on('successfullyLoggedOutUser', renderLoginSession);
+databaseModule.on('successfullyRetrievedUserList', sendUserListSocket);
+databaseModule.on('successfullyChangedUserPermission', informChangedPermissionUser);
+databaseModule.on('successfullyDeletedUser', renderRegisterUser);
+
 var ServerStart = function(){
     var dbConnection = function() {
         MongoClient.connect("mongodb://127.0.0.1:27017/test", function(err,db){
             if(err){
                 //should set a upper bound for try time
+                console.log("attempt fails. Try to reconnect to database");
                 dbConnection();
             }
             else{
@@ -156,6 +157,7 @@ var ServerStart = function(){
     };
 
     var serverInitialization = function(db){
+        console.log('server init');
         app = {};
         app.db = db;
         app.sessiondb = new MongoStore({
@@ -181,7 +183,7 @@ var ServerStart = function(){
             res.sendfile(path.resolve(__dirname+'/../index.html'));
         });
         app.express.get('/sessionExtension', function(req, res){
-            res.write(SuccessJson());
+            res.write(responseJson.success());
             res.end();
         })
 
@@ -229,7 +231,6 @@ var ServerStart = function(){
             socket.on('loginAction', function(data){
                 data = _parseData(data);
                 if(!socket.isLoggedIn()){
-                    //should validate data here!!
                     var username = data.username;
                     var password = data.password;
                     databaseModule.loginUser(username, password, session);
@@ -241,7 +242,6 @@ var ServerStart = function(){
             socket.on('registerAction', function(data){
                 data = _parseData(data);
                 if(!socket.isLoggedIn()){
-                    //should validate data here!!
                     var username = data.username;
                     var password = data.password;
                     databaseModule.createNewUser(username, password, session);
@@ -284,7 +284,7 @@ var ServerStart = function(){
                 data = _parseData(data);
                 if(socket.isAdmin()){
                     var username = data.username;
-                    deleteUser(username);  
+                    databaseModule.deleteUser(username);  
                 }
             });
             socket.on('retrieveLinkedUserAction', function(){
@@ -296,7 +296,7 @@ var ServerStart = function(){
                 data = _parseData(data);
                 if(socket.isAdmin()){
                     var username = data.username;
-                    boot(username);
+                    bootUser(username);
                 }
             });
         });
