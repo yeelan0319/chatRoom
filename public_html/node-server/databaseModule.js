@@ -1,5 +1,6 @@
 var util = require('util');
 var events = require('events');
+var crypto = require('crypto');
 
 var DatabaseModule = function(){
     events.EventEmitter.call(this);
