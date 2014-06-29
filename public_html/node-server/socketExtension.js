@@ -1,11 +1,8 @@
 module.exports = function socketExtension(socket, next){
-    socket.extendSessionAge = function(socket){
-        var session = socket.request.session;
-        //half window extension
-        console.log("1:age:"+session.cookie.maxAge);
-        console.log("2:maxage:"+session.cookie.originalMaxAge);
+    socket.extendSessionAge = function(){
+        var session = this.request.session;
         if(session.cookie.maxAge < (session.cookie.originalMaxAge/2)){
-            socket.emit('session extension');
+            this.emit('session extension');
             var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
             console.log("3:"+sessionRoom);
             for(var socketID in sessionRoom){
@@ -18,55 +15,55 @@ module.exports = function socketExtension(socket, next){
             }
         }
     };
-    socket.renderErrorMsg = function(socket, errorJSON){
-        socket.emit('system message', errorJSON);
+    socket.renderErrorMsg = function(errorJSON){
+        this.emit('system message', errorJSON);
         console.log(errorJSON);
     };
-    socket.setSocketUser = function(socket, user){
-        socket.username = user.username;
-        socket.permission = user.permission;
-        socket.join('/private/user/'+socket.username);
-        socket.renderChat(socket);
+    socket.setSocketUser = function(user){
+        this.username = user.username;
+        this.permission = user.permission;
+        this.join('/private/user/'+this.username);
+        this.renderChat();
     };
-    socket.removeSocketUser = function(socket, user){
-        delete socket.username;
-        delete socket.permission;
-        socket.leave('/private/user/'+socket.username);
+    socket.removeSocketUser = function(){
+        this.leave('/private/user/'+this.username);
+        delete this.username;
+        delete this.permission;
     };
-    socket.welcomeUser = function(socket, user){
-        //console.log(socket.username + ' is connected');
-        //socket.broadcast.emit('status message', socket.username + ' has joined the conversation');
+    socket.welcomeUser = function(){
+        //console.log(this.username + ' is connected');
+        //this.broadcast.emit('status message', this.username + ' has joined the conversation');
     };
-    socket.seeyouUser = function(socket){
-        //console.log(socket.username + ' has quitted the conversation');
-        //socket.broadcast.emit('status message', socket.username + ' has quitted the conversation');
+    socket.seeyouUser = function(){
+        //console.log(this.username + ' has quitted the conversation');
+        //this.broadcast.emit('status message', this.username + ' has quitted the conversation');
     };
 
-    socket.changePermission = function(socket, permission){
-        socket.permission = permission;
+    socket.changePermission = function(permission){
+        this.permission = permission;
     }
 
-    socket.isLoggedIn = function(socket){
-        return socket.username ? true : false;
+    socket.isLoggedIn = function(){
+        return this.username ? true : false;
     };
-    socket.isAdmin = function(socket){
-        return socket.permission == 1 ? true : false;
+    socket.isAdmin = function(){
+        return this.permission == 1 ? true : false;
     };
 
-    socket.renderLogin = function(socket){
-        socket.emit('render message', 'login');
+    socket.renderLogin = function(){
+        this.emit('render message', 'login');
     };
-    socket.renderRegister = function(socket){
-        socket.emit('render message', 'register');
+    socket.renderRegister = function(){
+        this.emit('render message', 'register');
     };
-    socket.renderChat = function(socket){
-        socket.emit('render message', 'chat');
+    socket.renderChat = function(){
+        this.emit('render message', 'chat');
     };
-    socket.renderAdmin = function(socket){
-        socket.emit('render message', 'admin');
+    socket.renderAdmin = function(){
+        this.emit('render message', 'admin');
     };
-    socket.renderBoot = function(socket){
-        socket.emit('render message', 'bootedPage');
+    socket.renderBoot = function(){
+        this.emit('render message', 'bootedPage');
     }
 
     next();

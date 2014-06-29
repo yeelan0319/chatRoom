@@ -1,8 +1,3 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 var DAY = 1000 * 60 * 60 * 24;  //millisecond in a day
 var SESSIONAGE = DAY * 30;
 var SECRET = '3d4f2bf07dc1be38b20cd6e46949a1071f9d0e3d';
@@ -20,150 +15,147 @@ var httpsModule = require('https');
 var socketioModule = require('socket.io');
 var socketExtension = require('./socketExtension');
 var socketGarbageCollector = require('./socketGarbageCollector');
+var databaseModule = require('databaseModule');
 
-var checkLoginStatus = function(session, isLoginFunc, isntLoginFunc){
-    var username = session.username;
-    if(username){
-        findUserWithUsername(username, function(user){
-            user ? isLoginFunc(user) : (function(){
-                                            delete session.username;
-                                            session.save();
-                                            isntLoginFunc();
-                                        })();
-        });
-    }
-    else{
-        isntLoginFunc();
-    }
-} 
-//Database operations 
-var findUserWithUsername = function(username, success){
-    app.db.collection('users').findOne({'username': username}, function(err, user){
-        if(err){
-            throw new DatabaseError();
-            //redo the work
-        }
-        else{
-            success(user);
-        }
-    }); 
-};
-    
-var createNewUser = function(username, password, session, success){
-    findUserWithUsername(username, function(user){
-        if(user){
-            throw new ExistingUserError();
-        }
-        else{
-            var user = {'username': username, 'password': crypto.createHash('sha1').update(password).digest('hex'), 'permission':0};
-            app.db.collection('users').insert(user, {w:1}, function(err, result) {
-                if(err){
-                    throw new DatabaseError();
-                }
-                else{
-                    loginUser(username, password, session, success);
-                }
-            });
-        }
-    });
-};
-    
-var loginUser = function(username, password, session, success){
-    findUserWithUsername(username, function(user){
-        if(user && user.password === crypto.createHash('sha1').update(password).digest('hex')){
-            session.username = user.username;
-            session.save();
-            success(user);
-        }
-        else{
-            throw new WrongPasswordError();
-        }
-    });
+databaseModule.on('userLoggedIn', welcomeSocket);
+databaseModule.on('userNotLoggedIn', renderLoginSocket);
+databaseModule.on('successfullyLoggedInUser', welcomeSession)
+databaseModule.on('successfullyLoggedOutUser', renderLoginSession);
+databaseModule.on('successfullyRetrievedUserList', sendUserListSocket);
+databaseModule.on('successfullyChangedUserPermission', informChangedPermissionUser);
+databaseModule.on('successfullyDeletedUser', renderRegisterUser);
+
+var welcomeSocket = function(res){
+    var socket = socketList[res.target];
+    _welcomeUser(socket, res.user);
 }
 
-var logoutUser = function(session, success){
-    delete session.permission;
-    delete session.username;
-    session.save();
-    success();
+var renderLoginSocket = function(res){
+    var socket = socketList[res.target];
+    _renderLogin(socket);
 }
 
-var retrieveUserList = function(success){
-    app.db.collection('users').find().toArray(function(err, documents){
-        if(err){
-            throw new DatabaseError();
-            //redo the work
+var welcomeSession = function(res){
+    var sessionRoom = io.sockets.adapter.rooms['/private/session/'+res.target];
+    for(var socketID in sessionRoom){
+        if(sessionRoom.hasOwnProperty(socketID)){
+            var socket = socketList[socketID];
+            _welcomeUser(socket, res.user);
         }
-        else{
-            success(documents);
-        }
-    });
-}
-
-var editUser = function(username, permission, success){
-    app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{permission: permission}}, {}, function(err, user){
-        if(err){
-            throw new DatabaseError();
-        }
-        else{
-            success();
-        }
-    });
-}
-
-var deleteUser = function(username, success){
-    app.db.collection('users').remove({username:username}, function(err, result){
-        if(err){
-            throw new DatabaseError();
-        }
-        else{
-            success();   
-        }
-    });
-}
-
-//json status render
-var DatabaseError = function(){
-    this.JSON = JSON.stringify({meta: {status: 500, msg: "database failure"}, data:{}});
-}
-var InvalidRequestError = function(){
-    this.JSON = JSON.stringify({meta: {status: 500, msg: "bad request"}, data:{}});
-}
-
-var WrongPasswordError = function(){
-    this.JSON = JSON.stringify({meta: {status: 403, msg: "login failed, please check your password"}, data:{}});
-}
-
-var ExistingUserError = function(){
-    this.JSON = JSON.stringify({meta: {status: 409, msg: "existing user. please log in"}, data:{}});
-}
-
-var SuccessJson = function(data){
-    return JSON.stringify({meta: {status: 200, msg: "OK"}, data: data});
-}
-
-//naive data validator
-var validateData = function(data){
-    if(typeof(data) === 'undefined' || typeof(data.username) === 'undefined' || typeof(data.password) === 'undefined'){
-        throw new InvalidRequestError();
     }
 }
 
-function ServerStart(){
-    var dbConnection = function(success) {
+var renderLoginSession = function(res){
+    var sessionRoom = io.sockets.adapter.rooms['/private/session/'+res.target];
+    for(var socketID in sessionRoom){
+        if(sessionRoom.hasOwnProperty(socketID)){
+            var socket = socketList[socketID];
+            _seeyouUser(socket);
+            _renderLogin(socket);
+        }
+    }
+}
+
+var sendUserListSocket = function(res){
+    var socket = socketList[res.target];
+    socket.emit('users data', SuccessJson(res.data));
+}
+
+var informChangedPermissionUser = function(res){
+    var username = res.target;
+    var permission = res.permission;
+    var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
+    for(var socketID in userRoom){
+        if(userRoom.hasOwnProperty(socketID)){
+            var socket = socketList[socketID];
+            socket.changePermission(permission);
+        }
+    }
+}
+
+var renderRegisterUser = function(res){
+    var username = res.username;
+    var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
+    for(var socketID in userRoom){
+        if(userRoom.hasOwnProperty(socketID)){
+            var socket = socketList[socketID];
+            _seeyouUser(socket);
+            _renderRegister(socket);
+        }
+    }
+}
+
+var retrieveLinkedUser = function(socketID){
+    var socket = socketList[socketID];
+    var data = [];
+    for(var socketID in socketList){
+        if(socketList.hasOwnProperty(socketID)){
+            var simpleSocket = {};
+            var targetSocket = socketList[socketID];
+            simpleSocket.id = targetSocket.id;
+            simpleSocket.username = targetSocket.username;
+            simpleSocket.permission = targetSocket.permission;
+            simpleSocket.token = targetSocket.token;
+            data.push(simpleSocket);
+        }
+    }
+    socket.emit('linked users data', SuccessJson(data));
+}
+
+var boot = function(username){
+    var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
+    for(var socketID in userRoom){
+        if(userRoom.hasOwnProperty(socketID)){
+            var targetSocket = socketList[socketID];
+            targetSocket.renderBoot(targetSocket);
+            targetSocket.disconnect();
+        }
+    }
+}
+
+var _welcomeUser = function(socket, user){
+    socket.setSocketUser(user);
+    socket.welcomeUser(); 
+}
+
+var _seeyouUser = function(socket){
+    socket.seeyouUser();
+    socket.removeSocketUser();
+}
+
+var _renderLogin = function(socket){
+    socket.renderLogin();
+}
+
+var _renderRegister = function(socket){
+    socket.renderRegister();
+}
+
+var _parseData = function(data){
+    try{
+        data = JSON.parse(data);
+    }
+    catch(e){
+        console.log("Receive invalid JSON");
+    }
+    return data;
+}
+
+var ServerStart = function(){
+    var dbConnection = function() {
         MongoClient.connect("mongodb://127.0.0.1:27017/test", function(err,db){
             if(err){
-                console.dir(err);
                 //should set a upper bound for try time
                 dbConnection();
             }
             else{
                 console.log("Connected to database");
-                success(db);
+                serverInitialization(db);
             }
         });
     };
-    var ServerInitialization = function(db){
+
+    var serverInitialization = function(db){
         app = {};
         app.db = db;
         app.sessiondb = new MongoStore({
@@ -225,236 +217,86 @@ function ServerStart(){
 
         //event listening
         io.on('connection', function(socket){
-            var eventList = ['loginRender', 'loginAction', 'registerRender', 'registerAction', 'logoutAction', 'chatAction', 'adminRender', 'retrieveUserDataAction', 'retrieveLinkedUserAction', 'forceLogout', 'editPermissionAction', 'deleteUserAction'];
-            for(var i = 0; i < eventList.length; i++){
-                socket.on(eventList[i], function(){
-                    socket.extendSessionAge(socket);
-                });
-            }
+            var session = socket.request.session;
+            var socketID = socket.id;
 
-            try{
-                checkLoginStatus(socket.request.session, function(user){
-                    socket.setSocketUser(socket, user);
-                    socket.welcomeUser(socket); 
-                }, function(){
-                    socket.renderLogin(socket);
-                });
-            }
-            catch(e){
-                socket.renderErrorMsg(socket, e.JSON);
-            }
+            databaseModule.checkLoginStatus(session, socketID);
 
+            //register listeners needed
             socket.on('loginRender', function(){
-                socket.isLoggedIn(socket) ? socket.renderChat(socket) : socket.renderLogin(socket);
+                socket.isLoggedIn() ? socket.renderChat() : socket.renderLogin();
             });
             socket.on('loginAction', function(data){
-                try{
-                    data = JSON.parse(data);
-                }
-                catch(e){
-                    console.log("Receive invalid JSON");
-                }
-                if(!socket.isLoggedIn(socket)){
-                    try{
-                        validateData(data);
-                    }
-                    catch(e){
-                        socket.renderErrorMsg(socket, e.JSON);
-                    }
-
+                data = _parseData(data);
+                if(!socket.isLoggedIn()){
+                    //should validate data here!!
                     var username = data.username;
                     var password = data.password;
-                    var session = socket.request.session;
-                    try{
-                        loginUser(username, password, session, function(user){
-                            var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
-                            for(var socketID in sessionRoom){
-                                if(sessionRoom.hasOwnProperty(socketID)){
-                                    var targetSocket = socketList[socketID];
-                                    targetSocket.setSocketUser(targetSocket, user);
-                                }
-                            }
-                            socket.welcomeUser(socket);
-                        }); 
-                    }
-                    catch(e){
-                        socket.renderErrorMsg(socket, e.JSON);
-                    }
+                    databaseModule.loginUser(username, password, session);
                 }
             });
             socket.on('registerRender', function(){
-                socket.isLoggedIn(socket) ? socket.renderChat(socket) : socket.renderRegister(socket);
+                socket.isLoggedIn() ? socket.renderChat() : socket.renderRegister();
             });
             socket.on('registerAction', function(data){
-                try{
-                    data = JSON.parse(data);
-                }
-                catch(e){
-                    console.log("Receive invalid JSON");
-                }
-                if(!socket.isLoggedIn(socket)){
-                    try{
-                        validateData(data);
-                    }
-                    catch(e){
-                        socket.renderErrorMsg(socket, e.JSON);
-                    }
-
+                data = _parseData(data);
+                if(!socket.isLoggedIn()){
+                    //should validate data here!!
                     var username = data.username;
                     var password = data.password;
-                    var session = socket.request.session;
-                    try{
-                        createNewUser(username, password, session, function(user){
-                            var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
-                            for(var socketID in sessionRoom){
-                                if(sessionRoom.hasOwnProperty(socketID)){
-                                    var targetSocket = socketList[socketID];
-                                    targetSocket.setSocketUser(targetSocket, user);
-                                }
-                            }
-                            socket.welcomeUser(socket);
-                        });
-                    }
-                    catch(e){
-                        socket.renderErrorMsg(socket, e.JSON);
-                    }
+                    databaseModule.createNewUser(username, password, session);
                 }
             });
             socket.on('logoutAction', function(){
-                if(socket.isLoggedIn(socket)){
-                    var session = socket.request.session;
-                    logoutUser(session, function(){
-                        socket.seeyouUser(socket);
-
-                        var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
-                        for(var socketID in sessionRoom){
-                            if(sessionRoom.hasOwnProperty(socketID)){
-                                var targetSocket = socketList[socketID];
-                                targetSocket.removeSocketUser(targetSocket);
-                                targetSocket.renderLogin(targetSocket);
-                            }
-                        }
-                    });
+                if(socket.isLoggedIn()){
+                    databaseModule.logoutUser(session);
                 }
             }); 
             socket.on('chatAction', function(msg){
-                if(socket.isLoggedIn(socket)){
+                if(socket.isLoggedIn()){
                     io.sockets.emit('chat message', socket.username + ': ' + msg);
                 }
             }); 
             socket.on('disconnect', function(){
-                if(socket.username){
-                    socket.seeyouUser(socket);
+                if(socket.isLoggedIn()){
+                    socket.seeyouUser();
                 }
             });
             socket.on('adminRender', function(){
-                if(socket.isAdmin(socket)){
-                    socket.renderAdmin(socket);
+                if(socket.isAdmin()){
+                    socket.renderAdmin();
                 }
             });
             socket.on('retrieveUserDataAction', function(){
-                if(socket.isAdmin(socket)){
-                    try{
-                        retrieveUserList(function(data){
-                            socket.emit('users data', SuccessJson(data));
-                        }); 
-                    }
-                    catch(e){
-                        socket.renderErrorMsg(socket, e.JSON);
-                    }  
+                if(socket.isAdmin()){
+                    databaseModule.retrieveUserList(socketID);
                 }
             });
             socket.on('editPermissionAction', function(data){
-                try{
-                    data = JSON.parse(data);
-                }
-                catch(e){
-                    console.log("Receive invalid JSON");
-                }
-                if(socket.isAdmin(socket)){
+                data = _parseData(data);
+                if(socket.isAdmin()){
                     var username = data.username;
                     var permission = data.permission;
-                    try{
-                        editUser(username, permission, function(){
-                            var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
-                            for(var socketID in userRoom){
-                                if(userRoom.hasOwnProperty(socketID)){
-                                    var targetSocket = socketList[socketID];
-                                    targetSocket.changePermission(targetSocket, permission);
-                                }
-                            }
-                        }); 
-                    }
-                    catch(e){
-                        socket.renderErrorMsg(socket, e.JSON);
-                    }
+                    databaseModule.editUser(username, permission);
                 }
             });
             socket.on('deleteUserAction', function(data){
-                try{
-                    data = JSON.parse(data);
-                }
-                catch(e){
-                    console.log("Receive invalid JSON");
-                }
-                if(socket.isAdmin(socket)){
+                data = _parseData(data);
+                if(socket.isAdmin()){
                     var username = data.username;
-                    try{
-                        deleteUser(username, function(){
-                            var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
-                            for(var socketID in userRoom){
-                                if(userRoom.hasOwnProperty(socketID)){
-                                    var targetSocket = socketList[socketID];
-                                    targetSocket.removeSocketUser(targetSocket);
-                                    targetSocket.renderRegister(targetSocket);
-                                }
-                            }
-                        }); 
-                    }
-                    catch(e){
-                        socket.renderErrorMsg(socket, e.JSON);
-                    }   
+                    deleteUser(username);  
                 }
             });
             socket.on('retrieveLinkedUserAction', function(){
-                if(socket.isAdmin(socket)){
-                    var sockets = [];
-                    for(var socketID in socketList){
-                        if(socketList.hasOwnProperty(socketID)){
-                            var simpleSocket = {};
-                            var targetSocket = socketList[socketID];
-                            simpleSocket.id = targetSocket.id;
-                            simpleSocket.username = targetSocket.username;
-                            simpleSocket.permission = targetSocket.permission;
-                            simpleSocket.token = targetSocket.token;
-                            sockets.push(simpleSocket);
-                        }
-                    }
-                    socket.emit('linked users data', SuccessJson(sockets));
+                if(socket.isAdmin()){
+                    retrieveLinkedUser(socketID);
                 }
             });
             socket.on('forceLogout', function(data){
-                try{
-                    data = JSON.parse(data);
-                }
-                catch(e){
-                    console.log("Receive invalid JSON");
-                }
-                if(socket.isAdmin(socket)){
+                data = _parseData(data);
+                if(socket.isAdmin()){
                     var username = data.username;
-                    var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
-                    for(var socketID in userRoom){
-                        if(userRoom.hasOwnProperty(socketID)){
-                            var targetSocket = socketList[socketID];
-                            if(targetSocket.isLoggedIn(targetSocket)){
-                                var session = targetSocket.request.session;
-                                logoutUser(session, function(){});
-                            }
-                            targetSocket.removeSocketUser(targetSocket);
-                            targetSocket.renderBoot(targetSocket);
-                            targetSocket.disconnect();
-                        }
-                    }
+                    boot(username);
                 }
             });
         });
@@ -473,7 +315,7 @@ function ServerStart(){
         socketGarbageCollector.start(socketList);
     }
 
-    dbConnection(ServerInitialization);
+    dbConnection(serverInitialization);
 }
 
 ServerStart();
