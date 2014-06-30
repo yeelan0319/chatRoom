@@ -18,7 +18,7 @@ module.exports = function socketExtension(socket, next){
 
     socket.boot = function(){
         this.renderBoot();
-        this.disconnection();
+        this.disconnect();
     };
 
     socket.renderErrorMsg = function(errorJSON){

@@ -1,6 +1,3 @@
-var socketExtension = require('./socketExtension');
-var ioController = require('./ioController');
-
 var _parseData = function(data){
     try{
         data = JSON.parse(data);
@@ -12,6 +9,9 @@ var _parseData = function(data){
 }
 
 module.exports = function(app){
+	var socketExtension = require('./socketExtension');
+	var ioController = require('./ioController')(app);
+
 	//socket io middlewares
     app.io.use(function(socket, next){
         //TODOS: Should generate socket based session key if the initial request is not via browser
@@ -66,7 +66,7 @@ module.exports = function(app){
         }); 
         socket.on('chatAction', function(msg){
             if(socket.isLoggedIn()){
-                io.sockets.emit('chat message', socket.username + ': ' + msg);
+                app.io.sockets.emit('chat message', socket.username + ': ' + msg);
             }
         }); 
         socket.on('disconnect', function(){

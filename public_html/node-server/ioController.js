@@ -3,7 +3,7 @@ var events = require('events');
 var crypto = require('crypto');
 var responseJson = require('./responseJson');
 
-IoController = function(app){
+function IoController(app){
     events.EventEmitter.call(this);
 
     this.checkLoginStatus = function(session, socketID){
@@ -37,7 +37,7 @@ IoController = function(app){
         }
     };
 
-    var _findUserWithUsername = function(username, callback){
+    function _findUserWithUsername(username, callback){
         app.db.collection('users').findOne({'username': username}, function(err, user){
             if(err){
                 //throw new DatabaseError();
@@ -156,12 +156,12 @@ IoController = function(app){
     };
 
     this.retrieveLinkedUser = function(socketID){
-        var socket = socketList[socketID];
+        var socket = app.io.socketList[socketID];
         var data = [];
-        for(var socketID in socketList){
-            if(socketList.hasOwnProperty(socketID)){
+        for(var socketID in app.io.socketList){
+            if(app.io.socketList.hasOwnProperty(socketID)){
                 var simpleSocket = {};
-                var targetSocket = socketList[socketID];
+                var targetSocket = app.io.socketList[socketID];
                 simpleSocket.id = targetSocket.id;
                 simpleSocket.username = targetSocket.username;
                 simpleSocket.permission = targetSocket.permission;
@@ -173,90 +173,90 @@ IoController = function(app){
     };
 
     this.bootUser = function(username){
-        var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
+        var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
         for(var socketID in userRoom){
             if(userRoom.hasOwnProperty(socketID)){
-                var targetSocket = socketList[socketID];
+                var targetSocket = app.io.socketList[socketID];
                 targetSocket.boot();
             }
         }
     };
 
-    var welcomeSocket = function(res){
-        var socket = socketList[res.target];
+    function welcomeSocket(res){
+        var socket = app.io.socketList[res.target];
         _welcomeUser(socket, res.user);
     }
 
-    var renderLoginSocket = function(res){
-        var socket = socketList[res.target];
+    function renderLoginSocket(res){
+        var socket = app.io.socketList[res.target];
         _renderLogin(socket);
     }
 
-    var welcomeSession = function(res){
-        var sessionRoom = io.sockets.adapter.rooms['/private/session/'+res.target];
+    function welcomeSession(res){
+        var sessionRoom = app.io.sockets.adapter.rooms['/private/session/'+res.target];
         for(var socketID in sessionRoom){
             if(sessionRoom.hasOwnProperty(socketID)){
-                var socket = socketList[socketID];
+                var socket = app.io.socketList[socketID];
                 _welcomeUser(socket, res.user);
             }
         }
     }
 
-    var renderLoginSession = function(res){
-        var sessionRoom = io.sockets.adapter.rooms['/private/session/'+res.target];
+    function renderLoginSession(res){
+        var sessionRoom = app.io.sockets.adapter.rooms['/private/session/'+res.target];
         for(var socketID in sessionRoom){
             if(sessionRoom.hasOwnProperty(socketID)){
-                var socket = socketList[socketID];
+                var socket = app.io.socketList[socketID];
                 _seeyouUser(socket);
                 _renderLogin(socket);
             }
         }
     }
 
-    var sendUserListSocket = function(res){
-        var socket = socketList[res.target];
+    function sendUserListSocket(res){
+        var socket = app.io.socketList[res.target];
         socket.emit('users data', responseJson.success(res.data));
     }
 
-    var informChangedPermissionUser = function(res){
+    function informChangedPermissionUser(res){
         var username = res.target;
         var permission = res.permission;
-        var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
+        var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
         for(var socketID in userRoom){
             if(userRoom.hasOwnProperty(socketID)){
-                var socket = socketList[socketID];
+                var socket = app.io.socketList[socketID];
                 socket.changePermission(permission);
             }
         }
     }
 
-    var renderRegisterUser = function(res){
+    function renderRegisterUser(res){
         var username = res.target;
-        var userRoom = io.sockets.adapter.rooms['/private/user/'+username];
+        var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
         for(var socketID in userRoom){
             if(userRoom.hasOwnProperty(socketID)){
-                var socket = socketList[socketID];
+                var socket = app.io.socketList[socketID];
                 _seeyouUser(socket);
                 _renderRegister(socket);
             }
         }
     }
 
-    var _welcomeUser = function(socket, user){
+    function _welcomeUser(socket, user){
         socket.setSocketUser(user);
         socket.welcomeUser(); 
     }
 
-    var _seeyouUser = function(socket){
+    function _seeyouUser(socket){
         socket.seeyouUser();
         socket.removeSocketUser();
     }
 
-    var _renderLogin = function(socket){
+    function _renderLogin(socket){
         socket.renderLogin();
     }
 
-    var _renderRegister = function(socket){
+    function _renderRegister(socket){
         socket.renderRegister();
     }
 
@@ -271,7 +271,5 @@ IoController = function(app){
 
 util.inherits(IoController, events.EventEmitter);
 module.exports = function(app){
-    var ioController = new IoController(app);
-    console.log("haha");
-    return ioController;
+    return new IoController(app);
 };
