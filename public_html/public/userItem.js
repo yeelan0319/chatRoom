@@ -1,15 +1,17 @@
 var UserItem = function(userdata){
-	var that = this;
-	that.username = userdata.username;
-	that.permission = userdata.permission;
-
-	var userTmpl = $.trim($('#user-item-tmpl').html());
-	that.$el = $(Mustache.to_html(userTmpl, that).replace(/^\s*/mg, ''));
-	that.$el.find('.delete').click(function(){that.destroy.apply(that)});
-	that.$el.find('.permission').change(function(){that.edit.apply(that)});
+	this.username = userdata.username;
+	this.permission = userdata.permission;
 };
 
 UserItem.prototype = {
+	render:function(){
+		var that = this;
+		var userTmpl = $.trim($('#user-item-tmpl').html());
+		that.$el = $(Mustache.to_html(userTmpl, that).replace(/^\s*/mg, ''));
+		that.$el.find('.delete').click(function(){that.destroy.apply(that)});
+		that.$el.find('.permission').change(function(){that.edit.apply(that)});
+		$('#user-list').append(that.$el);
+	},
 	edit: function(){
 		var that = this;
 		var username = that.username;
