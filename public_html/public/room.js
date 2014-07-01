@@ -10,6 +10,10 @@ module.room = {
 		
 		$('#back').click(function(){
             window.location = './';
+            data = {
+				id: module.data.room,
+			}
+			socket.emit('leaveRoomAction', JSON.stringify(data));
         });
 		$('#signout').click(function(){
       		socket.emit('logoutAction');

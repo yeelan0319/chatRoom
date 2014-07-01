@@ -64,8 +64,8 @@ module.exports = function socketExtension(socket, next){
         this.join('/chatRoom/' + id);
         this.renderRoom(id, name);
     }
-    socket.leaveRoom = function(name){
-        this.leave('/chatRoom/' + name);
+    socket.leaveRoom = function(id){
+        this.leave('/chatRoom/' + id);
     }
 
     socket.renderLogin = function(){

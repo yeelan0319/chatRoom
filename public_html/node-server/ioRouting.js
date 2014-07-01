@@ -123,11 +123,17 @@ module.exports = function(app){
         })
         socket.on('joinRoomAction', function(data){
             data = _parseData(data);
-            console.log(data);
             if(socket.isLoggedIn()){
                 var id = data.id;
                 var name = data.name;
                 socket.joinRoom(id, name);
+            }
+        });
+        socket.on('leaveRoomAction', function(data){
+            data = _parseData(data);
+            if(socket.isLoggedIn()){
+                var id = data.id;
+                socket.leaveRoom(id);
             }
         });
         socket.on('createRoomAction', function(data){
