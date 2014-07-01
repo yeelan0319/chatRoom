@@ -121,9 +121,13 @@ module.exports = function(app){
                 roomController.retrieveRoomList(socketID);
             }
         })
-        socket.on('joinRoomAction', function(name){
+        socket.on('joinRoomAction', function(data){
+            data = _parseData(data);
+            console.log(data);
             if(socket.isLoggedIn()){
-                socket.joinRoom(name);
+                var id = data.id;
+                var name = data.name;
+                socket.joinRoom(id, name);
             }
         });
         socket.on('createRoomAction', function(data){

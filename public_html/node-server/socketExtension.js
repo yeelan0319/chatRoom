@@ -60,9 +60,9 @@ module.exports = function socketExtension(socket, next){
         return this.rooms.indexOf('/chatRoom/' + id) != -1 ? true : false;
     }
 
-    socket.joinRoom = function(name){
-        this.join('/chatRoom/' + name);
-        this.renderRoom(name);
+    socket.joinRoom = function(id, name){
+        this.join('/chatRoom/' + id);
+        this.renderRoom(id, name);
     }
     socket.leaveRoom = function(name){
         this.leave('/chatRoom/' + name);
@@ -72,40 +72,41 @@ module.exports = function socketExtension(socket, next){
         var res = {
             target: 'login'
         }
-        this.emit('render message', res);
+        this.emit('render message', JSON.stringify(res));
     };
     socket.renderRegister = function(){
         var res = {
             target: 'register'
         }
-        this.emit('render message', res);
+        this.emit('render message', JSON.stringify(res));
     };
     socket.renderLounge = function(){
         var res = {
             target: 'lounge'
         }
-        this.emit('render message', res);
+        this.emit('render message', JSON.stringify(res));
     };
-    socket.renderRoom = function(name){
+    socket.renderRoom = function(id, name){
         var res = {
             target: 'room',
             data: {
+                id: id,
                 name: name
             }
         }
-        this.emit('render message', res);
+        this.emit('render message', JSON.stringify(res));
     }
     socket.renderAdmin = function(){
         var res = {
             target: 'admin'
         }
-        this.emit('render message', res);
+        this.emit('render message', JSON.stringify(res));
     };
     socket.renderBoot = function(){
         var res = {
             target: 'bootedPage'
         }
-        this.emit('render message', res);
+        this.emit('render message', JSON.stringify(res));
     }
     next();
 }

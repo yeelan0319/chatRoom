@@ -1,5 +1,5 @@
 var RoomItem = function(roomdata){
-	this.id = roomdata.id;
+	this.id = roomdata._id;
 	this.name = roomdata.name;
 	this.admins = roomdata.admins;
 	module.lounge.roomList.push(this.name);
@@ -13,7 +13,11 @@ RoomItem.prototype = {
 		$('#room-list').append(that.$el);
 	},
 	join: function(){
-		socket.emit('joinRoomAction', this.id);
+		data = {
+			id: this.id,
+			name: this.name
+		}
+		socket.emit('joinRoomAction', JSON.stringify(data));
 	},
 	isAdmin: function(username){
 		return this.admins.indexOf(username) != -1 ? true : false;
