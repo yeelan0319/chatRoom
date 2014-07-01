@@ -182,6 +182,15 @@ function IoController(app){
         }
     };
 
+    this.sendMessage = function(id, username, msg){
+        if(id===0){
+            app.io.sockets.emit('chat message', username + ': ' + msg);
+        }
+        else{
+            app.io.to('/chatRoom/' + id).emit('chat message', username + ': ' + msg)
+        }
+    }
+
     function welcomeSocket(res){
         var socket = app.io.socketList[res.target];
         _welcomeUser(socket, res.user);

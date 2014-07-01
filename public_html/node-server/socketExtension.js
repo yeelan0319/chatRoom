@@ -29,7 +29,7 @@ module.exports = function socketExtension(socket, next){
         this.username = user.username;
         this.permission = user.permission;
         this.join('/private/user/'+this.username);
-        this.renderChat();
+        this.renderLounge();
     };
     socket.removeSocketUser = function(){
         this.leave('/private/user/'+this.username);
@@ -55,22 +55,57 @@ module.exports = function socketExtension(socket, next){
     socket.isAdmin = function(){
         return this.permission == 1 ? true : false;
     };
-
-    socket.renderLogin = function(){
-        this.emit('render message', 'login');
-    };
-    socket.renderRegister = function(){
-        this.emit('render message', 'register');
-    };
-    socket.renderChat = function(){
-        this.emit('render message', 'chat');
-    };
-    socket.renderAdmin = function(){
-        this.emit('render message', 'admin');
-    };
-    socket.renderBoot = function(){
-        this.emit('render message', 'bootedPage');
+    socket.isInRoom = function(id){
+        if(id===0) return true;
+        return this.rooms.indexOf('/chatRoom/' + id) != -1 ? true : false;
     }
 
+    socket.joinRoom = function(name){
+        this.join('/chatRoom/' + name);
+        this.renderRoom(name);
+    }
+    socket.leaveRoom = function(name){
+        this.leave('/chatRoom/' + name);
+    }
+
+    socket.renderLogin = function(){
+        var res = {
+            target: 'login'
+        }
+        this.emit('render message', res);
+    };
+    socket.renderRegister = function(){
+        var res = {
+            target: 'register'
+        }
+        this.emit('render message', res);
+    };
+    socket.renderLounge = function(){
+        var res = {
+            target: 'lounge'
+        }
+        this.emit('render message', res);
+    };
+    socket.renderRoom = function(name){
+        var res = {
+            target: 'room',
+            data: {
+                name: name
+            }
+        }
+        this.emit('render message', res);
+    }
+    socket.renderAdmin = function(){
+        var res = {
+            target: 'admin'
+        }
+        this.emit('render message', res);
+    };
+    socket.renderBoot = function(){
+        var res = {
+            target: 'bootedPage'
+        }
+        this.emit('render message', res);
+    }
     next();
 }
