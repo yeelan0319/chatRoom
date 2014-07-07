@@ -22,6 +22,7 @@ var serverInitialization = function(db){
     app.express = express();
     app.io = socketio();
     app.io.socketList = app.io.of('/').connected;
+    app.roomList = {};
 
     app.db = db;
     app.sessiondb = new MongoStore({

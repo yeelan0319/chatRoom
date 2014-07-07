@@ -3,7 +3,22 @@ var events = require('events');
 var responseJson = require('./responseJson');
 
 function RoomController(app){
+
     events.EventEmitter.call(this);
+
+    (function initRoomList(){
+        app.db.collection('rooms').find({'destoryTime': 0}).toArray(function(err, documents){
+            if(err){
+                //redo the work
+            }
+            else{
+                for(var i in documents){
+                    var room = documents[i];
+                    app.roomList[room._id] = room;
+                }
+            }
+        });
+    })();
 
     this.createRoom = function(name, username){
         var that = this;
