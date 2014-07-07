@@ -29,8 +29,10 @@ socket.on('render message', function(res){
 		case 'register':
 			module.loginRegister.renderRegister();
 			break;
-		case 'admin':
-			module.admin.renderIndex();
+		case 'systemAdmin':
+			module.systemAdmin.renderIndex();
 			break;
+		case 'roomAdmin':
+			module.roomAdmin.renderIndex();
 	}
 });

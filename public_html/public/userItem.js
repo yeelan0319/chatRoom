@@ -18,7 +18,7 @@ UserItem.prototype = {
 		var permission = that.$el.find('.permission').val() === 'admin'? 1 : 0;
 		if(that.permission != permission){
 			//send request to update information
-			data = {username: username, permission: permission};
+			data = {username: username, permission: permission, id: module.data.room};
 			socket.emit("editPermissionAction", JSON.stringify(data));
 			that.permission = permission;
 		}

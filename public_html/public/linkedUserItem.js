@@ -4,7 +4,6 @@ var LinkedUserItem = function(userdata){
 	this.socketNumber = 0;
 	this.sessions = [];
 	this.socketIDs = [];
-	module.admin.linkedUserList[this.username] = this;
 };
 
 LinkedUserItem.prototype = {
@@ -14,6 +13,24 @@ LinkedUserItem.prototype = {
 		that.$el = $(Mustache.to_html(linkedUserItemTmpl, that).replace(/^\s*/mg, ''));
 		that.$el.find('.boot').click(function(){that.boot.apply(that)});
 		$('#user-list').append(that.$el);
+	},
+	renderRoomStyle: function(){
+		var that = this;
+		var linkedUserItemTmpl = $.trim($('#room-linked-user-item-tmpl').html());
+		that.$el = $(Mustache.to_html(linkedUserItemTmpl, that).replace(/^\s*/mg, ''));
+		that.$el.find('.boot').click(function(){that.boot.apply(that)});
+		that.$el.find('.changePermission').click(function(){that.changePermission.apply(that)});
+		$('#user-list').append(that.$el);
+	},
+	changePermission: function(){
+		this.isAdminOfRoom = this.isAdminOfRoom^1;
+		var data = {
+			username: this.username,
+			permission: this.isAdminOfRoom,
+			id: module.data.room
+		}
+		socket.emit('editPermissionAction', JSON.stringify(data));
+		this.$el.find('.changePermission').text(this.isAdminOfRoom ? 'unset admin' : 'set to admin');
 	},
 	addSession: function(session){
 		if(this.sessions.indexOf(session) == -1){
