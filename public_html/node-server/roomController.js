@@ -14,7 +14,7 @@ function RoomController(app){
             }
             else{
                 var adminOfRoom = [username];
-                var room = {'name': name, 'createTime': Date.now(), 'destoryTime': 0, 'admins': adminOfRoom};
+                var room = {'name': name, 'owner': username, 'createTime': Date.now(), 'destoryTime': 0, 'adminOfRoom': adminOfRoom};
                 app.db.collection('rooms').insert(room, {w:1}, function(err, result) {
                     if(err){
                         //this is socket-level info
