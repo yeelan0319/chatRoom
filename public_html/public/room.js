@@ -9,14 +9,14 @@ module.room = {
 		module.chat.renderChatPanel($('#container'));
 		
 		$('#back').click(function(){
-            window.location = './';
+            socket.emit('leaveRoomAction', module.data.room);
         });
 		$('#signout').click(function(){
       		socket.emit('logoutAction');
       		$.removeCookie('PHPSESSID');
       	});
       	$('#admin').click(function(){
-      		socket.emit('adminRender');
+      		socket.emit('adminRender', module.data.room);
       	});
 	}
 }

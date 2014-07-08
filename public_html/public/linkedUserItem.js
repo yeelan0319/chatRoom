@@ -4,7 +4,7 @@ var LinkedUserItem = function(userdata){
 	this.socketNumber = 0;
 	this.sessions = [];
 	this.socketIDs = [];
-	module.admin.linkedUserList[this.username] = this;
+	module.systemAdmin.linkedUserList[this.username] = this;
 };
 
 LinkedUserItem.prototype = {
@@ -32,7 +32,7 @@ LinkedUserItem.prototype = {
 		var that = this;
 		if(confirmed){
 			data = {username: that.username};
-			socket.emit("forceLogout", JSON.stringify(data));
+			socket.emit("systemBootAction", JSON.stringify(data));
 			that.$el.remove();
 		}
 	}

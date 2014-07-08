@@ -1,5 +1,4 @@
 module.lounge = {
-	roomList: [],
 
 	renderIndex: function(){
 		module.data.pos = 'lounge';
@@ -17,29 +16,51 @@ module.lounge = {
       		$.removeCookie('PHPSESSID');
       	});
       	$('#admin').click(function(){
-      		socket.emit('adminRender');
+      		socket.emit('adminRender', module.data.room);
       	});
       	$('#new-room').click(function(){
       		var name = prompt("please enter the name of your room");
-      		if(name && module.lounge.roomList.indexOf(name) == -1){
+      		if(name && !module.data.roomList[name]){
       			socket.emit('createRoomAction', JSON.stringify({name: name}));
       		}
-      	})
+      	});
 	},
 
-	renderRoomData: function(data){
-		data = JSON.parse(data);
-		if(data.meta.status == 200){
-			$.each(data.data, function(index, roomdata){
-				var room = new RoomItem(roomdata);
-				room.render();
-			});
-		}
+	renderRoom: function(data){
+		$.each(data, function(key, roomdata){
+			var room = new RoomItem(roomdata);
+			module.data.roomList[room.name] = room;
+			room.render();
+		});
+	},
+
+	deleteRoom: function(data){
+		$.each(data, function(key, roomdata){
+			var room = module.data.roomList[roomdata.name];
+			if(room){
+				room.destory();
+				delete room;
+			}
+		});
 	}
 };
 
 socket.on('room data', function(data){
 	if(module.data.pos === 'lounge'){
-		module.lounge.renderRoomData(data);
+		data = JSON.parse(data);
+		if(data.meta.status == 200){
+			switch(data.data.type){
+			case 'reset':
+				$('#room-list').html('');
+				module.lounge.renderRoom(data.data.data);
+				break;
+			case 'add':
+				module.lounge.renderRoom(data.data.data);
+				break;
+			case 'delete':
+				module.lounge.deleteRoom(data.data.data);
+				break;
+			}	
+		}
 	}
 });

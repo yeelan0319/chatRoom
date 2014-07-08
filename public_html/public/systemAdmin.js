@@ -1,8 +1,8 @@
-module.admin = {
+module.systemAdmin = {
     linkedUserList:{},
 
     renderIndex: function(){
-        var tmpl = $.trim($('#admin-index-tmpl').html());
+        var tmpl = $.trim($('#systemAdmin-index-tmpl').html());
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
         $('#container').html($el);
 
@@ -10,12 +10,12 @@ module.admin = {
             window.location = './';
         });
         $('#realtime').click(function(){
-            module.admin.linkedUserList = {};
-            socket.emit('retrieveLinkedUserAction', module.data.room);
+            module.systemAdmin.linkedUserList = {};
+            socket.emit('retrieveLinkedUserAction');
         });
         if(module.data.room === 0){
             $('#alluser').click(function(){
-                socket.emit('retrieveUserDataAction', module.data.room);
+                socket.emit('retrieveUserDataAction');
             });
         }
         $('#realtime').click();
@@ -39,16 +39,16 @@ module.admin = {
         if(data.meta.status == 200){
             $('#user-list').html('');
             $.each(data.data, function(index, userdata){
-                var linkedUserItem = module.admin.linkedUserList[userdata.username];
+                var linkedUserItem = module.systemAdmin.linkedUserList[userdata.username];
                 if(!linkedUserItem){
                     linkedUserItem = new LinkedUserItem(userdata);
                 }
                 linkedUserItem.addSession(userdata.token);
                 linkedUserItem.addSocketID(userdata.id);
             });
-            for(var username in module.admin.linkedUserList){
-                if(module.admin.linkedUserList.hasOwnProperty(username)){
-                    module.admin.linkedUserList[username].render();
+            for(var username in module.systemAdmin.linkedUserList){
+                if(module.systemAdmin.linkedUserList.hasOwnProperty(username)){
+                    module.systemAdmin.linkedUserList[username].render();
                 }
             }
         }
@@ -56,8 +56,8 @@ module.admin = {
 };
 
 socket.on('users data', function(data){
-    module.admin.renderRegisterUserData(data);
+    module.systemAdmin.renderRegisterUserData(data);
 });
 socket.on('linked users data', function(data){
-    module.admin.renderLinkedUserData(data);
+    module.systemAdmin.renderLinkedUserData(data);
 });

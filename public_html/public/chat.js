@@ -24,8 +24,12 @@ module.chat = {
 }
 
 socket.on('status message', function(msg){
-	module.chat.renderSystemMessage(msg);
+	if(module.data.pos === 'lounge' || module.data.pos === 'room'){
+		module.chat.renderSystemMessage(msg);
+	}
 });
 socket.on('chat message', function(msg){
-	module.chat.renderChatMessage(msg);
+	if(module.data.pos === 'lounge' || module.data.pos === 'room'){
+		module.chat.renderSystemMessage(msg);
+	}
 });

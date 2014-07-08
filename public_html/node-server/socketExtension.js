@@ -16,26 +16,29 @@ module.exports = function socketExtension(socket, next){
         }
     };
 
-    socket.boot = function(){
-        this.renderBoot();
-        this.disconnect();
+    socket.isLoggedIn = function(){
+        return this.username ? true : false;
+    };
+    socket.isAdmin = function(){
+        return this.permission == 1 ? true : false;
+    };
+    socket.isInRoom = function(id){
+        return this.rooms.indexOf('/chatRoom/' + id) != -1 ? true : false;
     };
 
-    socket.renderErrorMsg = function(errorJSON){
-        this.emit('system message', errorJSON);
-        console.log(errorJSON);
-    };
     socket.setSocketUser = function(user){
         this.username = user.username;
         this.permission = user.permission;
         this.join('/private/user/'+this.username);
-        this.renderChat();
+        this.joinLounge();
     };
     socket.removeSocketUser = function(){
         this.leave('/private/user/'+this.username);
         delete this.username;
         delete this.permission;
+        //TODO:also remove from the chat room user is currently in!!!
     };
+
     socket.welcomeUser = function(){
         //console.log(this.username + ' is connected');
         //this.broadcast.emit('status message', this.username + ' has joined the conversation');
@@ -45,32 +48,80 @@ module.exports = function socketExtension(socket, next){
         //this.broadcast.emit('status message', this.username + ' has quitted the conversation');
     };
 
+    socket.joinLounge = function(){
+        this.join('/chatRoom/0');
+        this.renderLounge();
+    };
+
+    socket.joinRoom = function(id, name){
+        this.leave('/chatRoom/0');
+        this.join('/chatRoom/' + id);
+        this.renderRoom(id, name);
+    };
+    socket.leaveRoom = function(id){
+        this.leave('/chatRoom/' + id);
+        this.joinLounge();
+    };
+    socket.boot = function(){
+        this.renderBoot();
+        this.disconnect();
+    };
     socket.changePermission = function(permission){
         this.permission = permission;
-    }
-
-    socket.isLoggedIn = function(){
-        return this.username ? true : false;
     };
-    socket.isAdmin = function(){
-        return this.permission == 1 ? true : false;
-    };
-
     socket.renderLogin = function(){
-        this.emit('render message', 'login');
+        var res = {
+            target: 'login'
+        }
+        this.emit('render message', res);
     };
     socket.renderRegister = function(){
-        this.emit('render message', 'register');
+        var res = {
+            target: 'register'
+        }
+        this.emit('render message', res);
     };
-    socket.renderChat = function(){
-        this.emit('render message', 'chat');
+    socket.renderLounge = function(){
+        var res = {
+            target: 'lounge'
+        }
+        this.emit('render message', res);
     };
-    socket.renderAdmin = function(){
-        this.emit('render message', 'admin');
+    socket.renderRoom = function(id, name){
+        var res = {
+            target: 'room',
+            data: {
+                id: id,
+                name: name
+            }
+        }
+        this.emit('render message', res)
+    };
+    socket.renderSystemAdmin = function(){
+        var res = {
+            target: 'systemAdmin'
+        }
+        this.emit('render message', res);
+    };
+    socket.renderRoomAdmin = function(id){
+        var res = {
+            target: 'roomAdmin',
+            data: {
+                id: id
+            }
+        }
+        this.emit('render message', res);
     };
     socket.renderBoot = function(){
-        this.emit('render message', 'bootedPage');
-    }
+        var res = {
+            target: 'bootedPage'
+        }
+        this.emit('render message', res);
+    };
 
+    socket.renderErrorMsg = function(errorJSON){
+        this.emit('system message', errorJSON);
+        console.log(errorJSON);
+    };
     next();
 }

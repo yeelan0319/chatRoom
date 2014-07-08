@@ -2,7 +2,6 @@ var RoomItem = function(roomdata){
 	this.id = roomdata.id;
 	this.name = roomdata.name;
 	this.admins = roomdata.admins;
-	module.lounge.roomList.push(this.name);
 }
 
 RoomItem.prototype = {
@@ -12,10 +11,10 @@ RoomItem.prototype = {
 		that.$el.click(function(){that.join.apply(that)});
 		$('#room-list').append(that.$el);
 	},
+	destory: function(){
+		this.$el.remove();
+	},
 	join: function(){
 		socket.emit('joinRoomAction', this.id);
-	},
-	isAdmin: function(username){
-		return this.admins.indexOf(username) != -1 ? true : false;
 	}
 }
