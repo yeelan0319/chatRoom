@@ -7,12 +7,18 @@ module.roomAdmin = {
         $('#container').html($el);
 
         $('#back').click(function(){
-            window.location = './';
+            var id = module.data.room;
+            data = {
+                id: id,
+                name: module.data.roomList[id].name
+            }
+            module.room.renderIndex(data);
+
         });
         $('#delete-room').click(module.roomAdmin.destoryRoom);
         $('#realtime').click(function(){
             module.roomAdmin.linkedUserList = {};
-            socket.emit('retrieveRoomLinkedUserAction');
+            socket.emit('retrieveRoomLinkedUserAction', module.data.room);
         });
         $('#realtime').click();
     },
@@ -27,6 +33,7 @@ module.roomAdmin = {
 
             $.each(sockets, function(index, userdata){
                 var roomUserItem = module.roomAdmin.linkedUserList[userdata.username];
+                console.log(roomUserItem);
                 if(!roomUserItem){
                     roomUserItem = new RoomUserItem(userdata);
                 }
@@ -52,7 +59,10 @@ module.roomAdmin = {
     destoryRoom: function(){
         var confirmed = confirm("Are you sure to delete this room?");
         if(confirmed){
-            socket.emit('destoryRoomAction', module.data.room);
+            data = {
+                id: module.data.room
+            }
+            socket.emit('destoryRoomAction', JSON.stringify(data));
         }
     }
 

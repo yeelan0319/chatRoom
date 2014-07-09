@@ -49,7 +49,7 @@ RoomUserItem.prototype = {
 			permission: this.isAdminOfRoom
 		}
 		socket.emit("editRoomAdminAction", JSON.stringify(data));
-		if(isAdminOfRoom){
+		if(this.isAdminOfRoom){
 			this.$el.find(".change-permission").text('Unset administrator');
 		}
 		else{

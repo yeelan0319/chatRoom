@@ -51,8 +51,11 @@ module.exports = function(app){
         });
         socket.on('joinRoomAction', function(id){
             if(socket.isLoggedIn()){
-                var name = app.roomList[id].name;
-                socket.joinRoom(id, name);
+                var room = app.roomList[id];
+                if(room){
+                    var name = room.name;
+                    socket.joinRoom(id, name);
+                }
             }
         });
         socket.on('leaveRoomAction', function(id){
@@ -154,7 +157,7 @@ module.exports = function(app){
             var id = data.id;
             if(socket.isLoggedIn() && socket.isInRoom(id)){
                 var msg = data.msg;
-                io.to('/chatRoom/' + id).emit('chat message', socket.username + ': ' + msg);
+                app.io.to('/chatRoom/' + id).emit('chat message', socket.username + ': ' + msg);
             }
         });
         socket.on('createRoomAction', function(data){

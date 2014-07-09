@@ -20,7 +20,7 @@ module.lounge = {
       	});
       	$('#new-room').click(function(){
       		var name = prompt("please enter the name of your room");
-      		if(name && !module.data.roomList[name]){
+      		if(name && noDuplicateName(name)){
       			socket.emit('createRoomAction', JSON.stringify({name: name}));
       		}
       	});
@@ -29,19 +29,28 @@ module.lounge = {
 	renderRoom: function(data){
 		$.each(data, function(key, roomdata){
 			var room = new RoomItem(roomdata);
-			module.data.roomList[room.name] = room;
+			module.data.roomList[room.id] = room;
 			room.render();
 		});
 	},
 
 	deleteRoom: function(data){
 		$.each(data, function(key, roomdata){
-			var room = module.data.roomList[roomdata.name];
+			var room = module.data.roomList[roomdata._id];
 			if(room){
 				room.destory();
 				delete room;
 			}
 		});
+	},
+
+	noDuplicateName: function(name){
+		$.each(module.data.roomList, function(key, roomdata){
+			if(roomdata.name === name){
+				return false;
+			}
+		});
+		return true;
 	}
 };
 

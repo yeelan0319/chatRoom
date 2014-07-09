@@ -1,5 +1,5 @@
 var RoomItem = function(roomdata){
-	this.id = roomdata.id;
+	this.id = roomdata._id;
 	this.name = roomdata.name;
 	this.admins = roomdata.admins;
 }

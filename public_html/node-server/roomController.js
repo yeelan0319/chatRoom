@@ -1,6 +1,7 @@
 var util = require('util');
 var events = require('events');
 var responseJson = require('./responseJson');
+var ObjectID = require('mongodb').ObjectID;
 
 function RoomController(app){
 
@@ -117,7 +118,7 @@ function RoomController(app){
 
     this.destoryRoom = function(id){
         var that = this;
-        app.db.collection('rooms').findAndModify({_id:id}, [['_id','asc']], {$set:{destoryTime: Date.now()}}, {}, function(err, room){
+        app.db.collection('rooms').findAndModify({_id: new ObjectID(id)}, [['_id','asc']], {$set:{destoryTime: Date.now()}}, {}, function(err, room){
             if(err){
                 //this is socket-level info
                 //throw new DatabaseError();
@@ -135,7 +136,7 @@ function RoomController(app){
             type: 'add',
             data: {'1': room}
         }
-        io.to('/chatRoom/0').emit('room data', responseJson.success(data));
+        app.io.to('/chatRoom/0').emit('room data', responseJson.success(result));
     }
 
     function _deleteFromRoomListAndClearRoom(room){
@@ -143,7 +144,8 @@ function RoomController(app){
             type: 'delete',
             data: {'1': room}
         }
-        io.to('/chatRoom/0').emit('room data', responseJson.success(data));
+        console.log(room);
+        app.io.to('/chatRoom/0').emit('room data', responseJson.success(result));
 
         var chatroom = app.io.sockets.adapter.rooms['/chatRoom/' + room._id];
         for(var socketID in chatroom){
