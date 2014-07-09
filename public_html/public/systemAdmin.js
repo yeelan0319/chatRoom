@@ -11,13 +11,6 @@ module.systemAdmin = {
         });
         $('#realtime').click(function(){
             module.systemAdmin.linkedUserList = {};
-<<<<<<< HEAD:public_html/public/systemAdmin.js
-            socket.emit('retrieveLinkedUserAction', module.data.room);
-        });
-        $('#alluser').click(function(){
-            socket.emit('retrieveUserDataAction', module.data.room);
-        });
-=======
             socket.emit('retrieveLinkedUserAction');
         });
         if(module.data.room === 0){
@@ -25,7 +18,6 @@ module.systemAdmin = {
                 socket.emit('retrieveUserDataAction');
             });
         }
->>>>>>> roomstructure:public_html/public/systemAdmin.js
         $('#realtime').click();
     },
 
