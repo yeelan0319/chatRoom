@@ -1,7 +1,8 @@
 var module = {};
 module.data = {
-	pos : '',
-	room : ''
+	pos: '',
+	room: '',
+	roomList: {}
 }
 var socket = io();
 
@@ -31,8 +32,8 @@ socket.on('render message', function(res){
 			break;
 		case 'systemAdmin':
 			module.systemAdmin.renderIndex();
-			break;
 		case 'roomAdmin':
 			module.roomAdmin.renderIndex();
+			break;
 	}
 });

@@ -10,11 +10,7 @@ module.room = {
 		module.chat.renderChatPanel($('#container'));
 		
 		$('#back').click(function(){
-            window.location = './';
-            data = {
-				id: module.data.room,
-			}
-			socket.emit('leaveRoomAction', JSON.stringify(data));
+            socket.emit('leaveRoomAction', module.data.room);
         });
 		$('#signout').click(function(){
       		socket.emit('logoutAction');

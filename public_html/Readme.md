@@ -1,5 +1,190 @@
 #Chat room documentation
 
+
+##API documentation
+_all the following response level is based on the response level, since all request is send by socket level._
+###Socket Level Action:
+**Login Page Render:**
+
+Request: loginRender
+
+Response: render message - [target: login/lounge] 
+
+Process:
+
+1. Socket.isLoggedIn()
+2. If not logged in, Socket.renderLogin(); If logged in, Socket.renderLounge()
+
+
+**Register Page Render:**
+
+Request: registerRender
+
+Response: render message - [target: register/lounge]
+
+Process:
+
+1. Socket.isLoggedIn()
+2. If not logged in, Socket.renderRegister(); If logged in, Socket.renderLounge()
+
+**Load Room List:**
+
+Request: retrieveRoomListAction
+
+Response: room data - [type: reset, data: {room objs}]
+
+**Enter Room:**
+
+Request: joinRoomAction - [roomid]
+
+Response: render message - [target: room, data: roomid&name]
+
+**Leave Room:**
+
+Request: leaveRoomAction - [roomid]
+
+Response: render message - [target: lounge]
+
+**Admin Page Render:**
+
+Request: adminRender - [roomid]
+
+Response: render message - [target: systemAdmin/ target:roomAdmin, data:{id: id}]
+
+**Retrieve all linked user data:**
+
+Request: retrieveLinkedUserAction
+
+Response: linked users data - successJSON:[[simple socket objs]]
+
+**Retrieve all registered user data:**
+
+Request: retrieveUserDataAction
+
+Reponse: users data - successJSON:[[users objs]] 
+
+**retrieve room linked user & admin data:**
+
+Request: retrieveRoomLinkedUserAction - [roomid]
+
+Response: room linked users data - [sockets:[simple socket objs], admins: [usernames]]
+
+###Session Level Action:
+
+**Login:**
+
+Request: loginAction - [username, password]
+
+Response: render message - [target: lounge], if valid
+
+Process:
+
+1. ioController.loginUser(username, password)
+    - _findUserWithUsername(username) -> user
+    - compare password
+    - update session database
+    - _emit "succeesfullyLoggedInUser" event - [target: session.id, user: user]_ 
+ 2. welcomeSession(res)
+     - retrieve session socket list
+     - iterate over session socket list
+     - _welcomeUser(socket, user)
+         - socket.setSocketUser(user)
+             - set socket username, permission
+             - add socket to user room: /private/user/[username]
+             - joinLounge(renderLounge(), /chatRoom/0)
+         - socket.welcomeUser(user) 
+ 
+**Register:**
+
+Request: registerAction - [username, password]
+
+Response: render message - [target: lounge], if valid
+
+Process:
+
+1. ioController.createUser(username, password)
+    - _findUserWithUsername(username) -> no user
+    - create user
+ 2. ioController: loginUser(username, password)
+
+ **Logout:**
+ 
+Request: logoutAction
+
+Response: render message - [target: login]
+
+Process: 
+
+1. ioController.logoutUser(session)
+    	- update session database
+	-  _emit "succeesfullyLoggedOutUser" event - [target: session.id]_
+2. renderLoginSession(res)
+     - retrieve session socket list
+     - iterate over session socket list
+     - _seeyouUser(socket)
+         - socket.seeyouUser(user)
+         - socket.removeSocketUser
+             - delete socket username, permission
+             - leave socket to user room: /private/user/[username]
+             - leave current room **HOWTO**
+     - _renderLogin(socket) 
+
+###User Level Action:
+
+**Edit system admin:**
+
+Request: editPermissionAction - [username, permission]
+
+Response: No
+
+**Delete registered user:**
+
+Request: deleteUserAction - [username]
+
+Response: render message - [target: register]
+
+**System boot user:**
+
+Request: systemBootAction - [username]
+
+Response: render message - [target: bootedPage]
+
+**Edit room admin:**
+
+Request: editRoomAdminAction - [id, username, permission]
+
+Reponse: No
+
+**Room boot user:**
+
+Request: roomBootAction - [id, username]
+
+Response: render message - [target: lounge]
+
+ 
+###Room Level Action:
+
+**Chat:**
+
+Request: chatAction - [msg, roomid]
+
+Response: chat message - [msg]
+
+**Create Room:**
+
+Request: createRoomAction - [name]
+
+Response: room data - [type: add, data: {room obj}]
+
+**Destory Room:**
+
+Request: destoryRoomAction - [id]
+
+Response: room data - [type: delete, data: {room obj}]
+
+
+
+
 ###Server initalization:
 1. Mongo database connection. _(Robustness: iterate until successfully connected)_
 2. After successfully connected to Mongo database, **serverInitialization()**, which do the followings app initialization:
@@ -33,3 +218,12 @@
     - Delete one user
     - Delete one user with multiple socket but same session
     - Delete one user with multiple session, and of course sockets
+9. User is able to create a room and the information should be announced with all users at lounge
+10. User is able to enter a room and chat within the room
+11. User is able to go back to the room and chat in lounge
+12. Room admin/system admin is able to view the content of the room admin page
+13. Room admin/system admin can set others as room admin
+14.  Room admin/system admin is able to boot people to lounge
+15.  Room admin/system admin is able to delete a room
+
+

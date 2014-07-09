@@ -2,7 +2,7 @@ var MongoClient = require("mongodb").MongoClient;
 var util = require('util');
 var events = require('events');
 
-databaseManager = function(){
+function databaseManager(){
     events.EventEmitter.call(this);
 
     this.connect = function(){
@@ -18,7 +18,9 @@ databaseManager = function(){
             }
         });
     };
+
+    return this;
 };
 
 util.inherits(databaseManager, events.EventEmitter);
-module.exports = new databaseManager();
+module.exports = databaseManager;

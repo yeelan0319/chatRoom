@@ -12,13 +12,14 @@ var MongoStore = require('connect-mongo')(expressSession);
 var fs = require('fs');
 
 var socketGarbageCollector = require('./socketGarbageCollector');
-var databaseManager = require('./databaseManager');
+var databaseManagerModule = require('./databaseManager');
+var databaseManager = new databaseManagerModule();
 
 var app = {};
 var http;
 var https;
 
-var serverInitialization = function(db){  
+function serverInitialization(db){  
     app.express = express();
     app.io = socketio();
     app.io.socketList = app.io.of('/').connected;
@@ -55,7 +56,7 @@ var serverInitialization = function(db){
     app.io.attach(https);
 }
 
-var portListeningStart = function(){
+function portListeningStart(){
     //start listening to port and receive request
     http.listen(80, function(err){
         console.log("http listening on port: 80");
@@ -65,7 +66,7 @@ var portListeningStart = function(){
     });
 }
 
-exports.start = function start(){
+exports.start = function(){
     databaseManager.connect();
 
     databaseManager.on('connected',function(db){

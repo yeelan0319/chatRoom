@@ -11,17 +11,10 @@ RoomItem.prototype = {
 		that.$el.click(function(){that.join.apply(that)});
 		$('#room-list').append(that.$el);
 	},
-	join: function(){
-		var data = {
-			id: this.id,
-			name: this.name
-		}
-		socket.emit('joinRoomAction', JSON.stringify(data));
-	},
-	isAdmin: function(username){
-		return this.admins.indexOf(username) != -1 ? true : false;
-	},
 	destory: function(){
 		this.$el.remove();
+	},
+	join: function(){
+		socket.emit('joinRoomAction', this.id);
 	}
 }

@@ -99,7 +99,7 @@ function IoController(app){
         var result = {
             target: session.id
         };
-        this.emit('successfullyLoggedOutUser', result);
+        renderLoginSession(result);
     };
 
     this.retrieveUserList = function(socketID){
@@ -256,13 +256,13 @@ function IoController(app){
         socket.welcomeUser(); 
     }
 
+    function _renderLogin(socket){
+        socket.renderLogin();
+    }
+
     function _seeyouUser(socket){
         socket.seeyouUser();
         socket.removeSocketUser();
-    }
-
-    function _renderLogin(socket){
-        socket.renderLogin();
     }
 
     function _renderRegister(socket){
@@ -272,7 +272,6 @@ function IoController(app){
     this.on('userLoggedIn', welcomeSocket);
     this.on('userNotLoggedIn', renderLoginSocket);
     this.on('successfullyLoggedInUser', welcomeSession)
-    this.on('successfullyLoggedOutUser', renderLoginSession);
     this.on('successfullyRetrievedUserList', sendUserListSocket);
     this.on('successfullyChangedUserPermission', informChangedPermissionUser);
     this.on('successfullyDeletedUser', renderRegisterUser);

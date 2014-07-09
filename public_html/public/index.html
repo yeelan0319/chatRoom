@@ -23,6 +23,7 @@
     <script src="/main.js"></script>
     <script src="/userItem.js"></script>
     <script src="/linkedUserItem.js"></script>
+    <script src="/roomUserItem.js"></script>
     <script src="/roomItem.js"></script>
     <script src="/loginRegister.js"></script>
     <script src="/room.js"></script>
@@ -68,7 +69,7 @@
         	</td>
     	</tr>
     </script>
-    <script id="room-linked-user-item-tmpl" type="text/html">
+    <script id="room-user-item-tmpl" type="text/html">
         <tr>
             <td>
                 <span class="username">{{username}}</span>
@@ -82,14 +83,11 @@
             <td>
                 <span class="boot">Boot</span>
             </td>
-            <td> | </td>
             <td>
-                {{#isAdminOfRoom}}
-                <span class="changePermission">unset admin</span>
-                {{/isAdminOfRoom}}
-                {{^isAdminOfRoom}}
-                <span class="changePermission">set to admin</span>
-                {{/isAdminOfRoom}}
+                <span class="change-permission">
+                    {{#isAdminOfRoom}}Unset administrator{{/isAdminOfRoom}}
+                    {{^isAdminOfRoom}}Set as administrator{{/isAdminOfRoom}}
+                </span>
             </td>
         </tr>
     </script>
@@ -140,18 +138,26 @@
         <span id="admin">Admin</span>
         <h1>{{name}}</h1>
     </script>
-    <script id="admin-index-tmpl" type="text/html">
+    <script id="systemAdmin-index-tmpl" type="text/html">
     	<span id="back">Back</span>
     	<span> | </span>
     	<span id="realtime">Realtime linkage management</span>
     	<span> | </span>
-        {{^room}}
     	<span id="alluser">All registered user management</span>
-        {{/room}}
     	<br>
     	<h2>User List</h2>
         <table id="user-list">
         </table>
+    </script>
+    <script id="roomAdmin-index-tmpl" type="text/html">
+        <span id="back">Back</span>
+        <span> | </span>
+        <span id="realtime">Room user management</span>
+        <br>
+        <h2>User List</h2>
+        <table id="user-list">
+        </table>
+        <span id="delete-room">Delete this room</span>
     </script>
     <script id="chat-panel-tmpl" type="text/html">
         <ul id="messages"></ul>

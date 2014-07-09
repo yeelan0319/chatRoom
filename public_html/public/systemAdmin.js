@@ -2,7 +2,7 @@ module.systemAdmin = {
     linkedUserList:{},
 
     renderIndex: function(){
-        var tmpl = $.trim($('#admin-index-tmpl').html());
+        var tmpl = $.trim($('#systemAdmin-index-tmpl').html());
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
         $('#container').html($el);
 
@@ -11,11 +11,21 @@ module.systemAdmin = {
         });
         $('#realtime').click(function(){
             module.systemAdmin.linkedUserList = {};
+<<<<<<< HEAD:public_html/public/systemAdmin.js
             socket.emit('retrieveLinkedUserAction', module.data.room);
         });
         $('#alluser').click(function(){
             socket.emit('retrieveUserDataAction', module.data.room);
         });
+=======
+            socket.emit('retrieveLinkedUserAction');
+        });
+        if(module.data.room === 0){
+            $('#alluser').click(function(){
+                socket.emit('retrieveUserDataAction');
+            });
+        }
+>>>>>>> roomstructure:public_html/public/systemAdmin.js
         $('#realtime').click();
     },
 

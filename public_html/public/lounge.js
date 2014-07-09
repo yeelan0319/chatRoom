@@ -1,5 +1,4 @@
 module.lounge = {
-	roomList: {},
 
 	renderIndex: function(){
 		module.data.pos = 'lounge';
@@ -21,44 +20,56 @@ module.lounge = {
       	});
       	$('#new-room').click(function(){
       		var name = prompt("please enter the name of your room");
-      		if(name && !module.lounge.roomList[name]){
+      		if(name && noDuplicateName(name)){
       			socket.emit('createRoomAction', JSON.stringify({name: name}));
       		}
-      	})
+      	});
 	},
 
-	renderRoomData: function(roomList){
-		$.each(roomList, function(key, roomdata){
+	renderRoom: function(data){
+		$.each(data, function(key, roomdata){
 			var room = new RoomItem(roomdata);
-			module.lounge.roomList[room.name] = room;
+			module.data.roomList[room.id] = room;
 			room.render();
 		});
 	},
 
-	destoryRoomData: function(roomList){
-		$.each(roomList, function(key, roomdata){
-			var room = module.lounge.roomList[roomdata.name];
+	deleteRoom: function(data){
+		$.each(data, function(key, roomdata){
+			var room = module.data.roomList[roomdata._id];
 			if(room){
 				room.destory();
 				delete room;
 			}
-		})
+		});
+	},
+
+	noDuplicateName: function(name){
+		$.each(module.data.roomList, function(key, roomdata){
+			if(roomdata.name === name){
+				return false;
+			}
+		});
+		return true;
 	}
 };
 
 socket.on('room data', function(data){
 	if(module.data.pos === 'lounge'){
 		data = JSON.parse(data);
-		if(data.meta.status === 200){
-			if(data.data.type === 'destory'){
-				module.lounge.destoryRoomData(data.data.roomList);
-			}
-			else{
-				if(data.data.type === 'reset'){
-					$('#room-list').html('');
-				}
-				module.lounge.renderRoomData(data.data.roomList);
-			}
+		if(data.meta.status == 200){
+			switch(data.data.type){
+			case 'reset':
+				$('#room-list').html('');
+				module.lounge.renderRoom(data.data.data);
+				break;
+			case 'add':
+				module.lounge.renderRoom(data.data.data);
+				break;
+			case 'delete':
+				module.lounge.deleteRoom(data.data.data);
+				break;
+			}	
 		}
 	}
 });
