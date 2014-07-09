@@ -218,5 +218,12 @@ Response: room data - [type: delete, data: {room obj}]
     - Delete one user
     - Delete one user with multiple socket but same session
     - Delete one user with multiple session, and of course sockets
+9. User is able to create a room and the information should be announced with all users at lounge
+10. User is able to enter a room and chat within the room
+11. User is able to go back to the room and chat in lounge
+12. Room admin/system admin is able to view the content of the room admin page
+13. Room admin/system admin can set others as room admin
+14.  Room admin/system admin is able to boot people to lounge
+15.  Room admin/system admin is able to delete a room
 
 
