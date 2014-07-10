@@ -10,7 +10,25 @@
 }
 
 /*Overwrite some default lib style*/
+u{
+  font-size:13px;
+  cursor: pointer;
+}
 
+textarea{
+  resize:none;
+}
+
+.btn{
+  margin-top:10px;
+}
+
+.datepicker-dropdown{
+  opacity: 1;
+  visibility: visible;
+  -webkit-transition: 0s;
+  transition: 0s; 
+}
 
 
 /* Custom default button */
@@ -31,34 +49,30 @@
 html,
 body {
   height: 100%;
-  background-color: #333;
 }
 body {
   color: #fff;
   text-shadow: 0 1px 3px rgba(0,0,0,.5);
+  background-color: #333;
 }
 
 /* Extra markup and styles for table-esque vertical and horizontal centering */
 .site-wrapper {
-  display: table;
   width: 100%;
-  height: 100%; /* For at least Firefox */
   min-height: 100%;
+  padding-bottom: 20px;
+  background-color: #333;
   -webkit-box-shadow: inset 0 0 100px rgba(0,0,0,.5);
-          box-shadow: inset 0 0 100px rgba(0,0,0,.5);
+  box-shadow: inset 0 0 100px rgba(0,0,0,.5);
 }
-.site-wrapper-inner {
-  display: table-cell;
-  vertical-align: top;
-}
-.cover-container {
+.loginRegister-container {
   margin-right: auto;
   margin-left: auto;
 }
 
 /* Padding for spacing */
 .inner {
-  padding: 30px;
+  padding: 30px 30px 0px 30px;
 }
 
 
@@ -71,18 +85,12 @@ body {
   font-family: 'orbitron-light',Sans-Serif;
 }
 
-@media (min-width: 768px) {
-  .masthead-brand {
-    float: left;
-  }
-}
-
 
 /*
  * Footer
  */
 
-#mastfoot p{
+.site-footer p{
   color: #999; /* IE8 proofing */
   color: rgba(255,255,255,.5);
   font-size: 10px;
@@ -96,30 +104,12 @@ body {
 
 @media (min-width: 768px) {
   /* Pull out the header and footer */
-  #masthead {
-    position: fixed;
-    top: 0;
-  }
-  #mastfoot {
+  .site-footer {
     position: fixed;
     bottom: 0;
   }
-  /* Start the vertical centering */
-  .site-wrapper-inner {
-    vertical-align: middle;
-  }
-  /* Handle the widths */
-  #masthead,
-  #mastfoot,
-  .cover-container {
-    width: 100%; /* Must be percentage or pixels for horizontal alignment */
-  }
-}
 
-@media (min-width: 992px) {
-  #masthead,
-  #mastfoot,
-  .cover-container {
-    width: 700px;
+  .loginRegister-container{
+    width:550px;
   }
 }

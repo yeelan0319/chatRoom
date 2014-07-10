@@ -47,6 +47,11 @@ module.loginRegister = {
         });
         $('#login').click(function(){
         	socket.emit('loginRender');
-        })
+        });
+        $('.input-group.date').datepicker({
+		    startDate: "01/01/1940",
+		    startView: 2,
+		    autoclose: true
+		});
 	}
 }
