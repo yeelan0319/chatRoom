@@ -4,7 +4,7 @@ module.roomAdmin = {
     renderIndex: function(){
         var tmpl = $.trim($('#roomAdmin-index-tmpl').html());
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
-        $('#container').html($el);
+        $('.container-idle').html($el);
 
         $('#back').click(function(){
             var id = module.data.room;

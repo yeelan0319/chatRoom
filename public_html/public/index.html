@@ -1,11 +1,30 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Socket.IO chat</title>
+<!DOCTYPE html>
+<!-- saved from url=(0037)http://v3.bootcss.com/examples/cover/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Board Room Infinite @ Symbolic IO">
+    <meta name="author" content="Yiran Mao">
+    <link rel="icon" href="/img/favicon.ico">
+
+    <title>Secret Board Room for Everyone</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/flat-ui.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/css/main.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="/lib/html5shiv.min.js"></script>
+      <script src="/lib/respond.min.js"></script>
+    <![endif]-->
     <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { height:100%; font: 13px Helvetica, Arial; }
-      #container {position:relative; height:100%;}
+      html, body {height:100%;}
+      .container-idle {position:relative; height:100%;}
       #chat-input { background: #000; padding: 3px; position: absolute; bottom: 0; width: 100%; }
       #chat-input input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
       #chat-input button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
@@ -16,10 +35,56 @@
       #right-container {width:18%; height:100%; float:left; padding-left: 20px}
       #room-list { list-style-type: none;}
     </style>
+ </head>
+
+  <body>
+
+    <div class="site-wrapper">
+
+      <div class="site-wrapper-inner">
+
+        <div class="cover-container">
+
+          <div id="masthead" class="clearfix">
+            <div class="inner">
+              <h3 class="masthead-brand">Symbolic IO Socket</h3>
+            </div>
+          </div>
+
+          <div class="inner">
+            <div class="container-in-use"></div>
+            <div class="container-idle"></div>
+          </div>
+
+          <div id="mastfoot">
+            <div class="inner">
+              <p>Copyright Symbolic IO™ @ 2014</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/lib/jquery-1.11.1.min.js"></script>
     <script src="/lib/mustache.min.js"></script>
     <script src="/lib/jquery.cookie.min.js"></script>
+    <script src="/lib/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="/lib/jquery.ui.touch-punch.min.js"></script>
+    <script src="/lib/bootstrap.min.js"></script>
+    <script src="/lib/bootstrap-select.js"></script>
+    <script src="/lib/bootstrap-switch.js"></script>
+    <script src="/lib/flatui-checkbox.js"></script>
+    <script src="/lib/flatui-radio.js"></script>
+    <script src="/lib/jquery.tagsinput.js"></script>
+    <script src="/lib/jquery.placeholder.js"></script>
+
     <script src="/main.js"></script>
     <script src="/userItem.js"></script>
     <script src="/linkedUserItem.js"></script>
@@ -31,43 +96,42 @@
     <script src="/chat.js"></script>
     <script src="/systemAdmin.js"></script>
     <script src="/roomAdmin.js"></script>
-  </head>
-  <body>	
-  <div id="container"></div>
+
+    <!-- Templates of chat room -->
     <script id="user-item-tmpl" type="text/html">
-    	<tr>
-        	<td>
-        		<span class="username">{{username}}</span>
-        	</td>
-        	<td>
-        		<select class="permission">
-        			<option value="admin" {{#permission}} selected="selected"{{/permission}}>admin</option>
-        			<option value="user" {{^permission}} selected="selected"{{/permission}}>user</option>
-        		</select>
-        	</td>
-        	<td>
-        		<span class="delete">Delete</span>
-        	</td>
-        	<td>
-        		<span class="status-box"></span>
-        	</td>
-    	</tr>
+        <tr>
+            <td>
+                <span class="username">{{username}}</span>
+            </td>
+            <td>
+                <select class="permission">
+                    <option value="admin" {{#permission}} selected="selected"{{/permission}}>admin</option>
+                    <option value="user" {{^permission}} selected="selected"{{/permission}}>user</option>
+                </select>
+            </td>
+            <td>
+                <span class="delete">Delete</span>
+            </td>
+            <td>
+                <span class="status-box"></span>
+            </td>
+        </tr>
     </script>
     <script id="linked-user-item-tmpl" type="text/html">
-    	<tr>
-        	<td>
-        		<span class="username">{{username}}</span>
-        	</td>
-        	<td>
-        		<span class="sessionNumber">sessionNumber: {{sessionNumber}} | </span>
-        	</td>
-        	<td>
-        		<span class="socketNumber">SocketNumber: {{socketNumber}}</span>
-        	</td>
-        	<td>
-        		<span class="boot">Boot</span>
-        	</td>
-    	</tr>
+        <tr>
+            <td>
+                <span class="username">{{username}}</span>
+            </td>
+            <td>
+                <span class="sessionNumber">sessionNumber: {{sessionNumber}} | </span>
+            </td>
+            <td>
+                <span class="socketNumber">SocketNumber: {{socketNumber}}</span>
+            </td>
+            <td>
+                <span class="boot">Boot</span>
+            </td>
+        </tr>
     </script>
     <script id="room-user-item-tmpl" type="text/html">
         <tr>
@@ -92,25 +156,28 @@
         </tr>
     </script>
     <script id="login-index-tmpl" type="text/html">
-    	<h1>Welcome to chat room</h1>
-        <br>
-        <p>Please login</p>
-        <form action="">
-            <input id="username" autocomplete="on" placeholder = "username" />
-            <input id="password" type="password" placeholder = "password" />
-            <button>Login</button>
+        <form role="form">
+            <div class="form-group">
+                <label for="username">Email address</label>
+                <input id="username" autocomplete="on" type="text" class="form-control" placeholder = "Enter Email"/>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" type="password" class="form-control" placeholder = "password"/>
+            </div>
+            <button class="btn btn-inverse btn-wide">Login</button>
         </form>
         <br>
         <span id="register">Not a user?</span>
     </script>
     <script id="register-index-tmpl" type="text/html">
-    	<h1>Welcome to chat room</h1>
-        <br>
-        <p>Create your account below</p>
-        <form>
-            <input id="username" autocomplete="on" placeholder = "username" />
-            <input id="password" type="password" placeholder = "password" />
+        <form role="form">
+            <input id="username" name="emailAddress" autocomplete="on" placeholder = "email" />
+            <input id="password" name="" type="password" placeholder = "password" />
             <input id="passwordConfirm" type="password" placeholder = "password Confirmation" />
+            <input id="firstName" name="firstName" placeholder="first name">
+            <input id="lastName" name="lastName" placeholder="last name">
+            <input id="phoneNumber" name="phoneNumber" placeholder="phone">
             <button>Signup</button>
         </form>
         <br>
@@ -119,6 +186,8 @@
     <script id="lounge-index-tmpl" type="text/html">
         <div id="left-container">
             <span id="signout">Logout</span>
+            <span> | </span>
+            <span id="profile">profile</span>
             <span> | </span>
             <span id="admin">Admin</span>
             <h1>Lounge</h1>
@@ -134,19 +203,21 @@
     <script id="room-index-tmpl" type="text/html">
         <span id="signout">Logout</span>
         <span> | </span>
+        <span id="profile">profile</span>
+        <span> | </span>
         <span id="back">back</span>
         <span> | </span>
         <span id="admin">Admin</span>
         <h1>{{name}}</h1>
     </script>
     <script id="systemAdmin-index-tmpl" type="text/html">
-    	<span id="back">Back</span>
-    	<span> | </span>
-    	<span id="realtime">Realtime linkage management</span>
-    	<span> | </span>
-    	<span id="alluser">All registered user management</span>
-    	<br>
-    	<h2>User List</h2>
+        <span id="back">Back</span>
+        <span> | </span>
+        <span id="realtime">Realtime linkage management</span>
+        <span> | </span>
+        <span id="alluser">All registered user management</span>
+        <br>
+        <h2>User List</h2>
         <table id="user-list">
         </table>
     </script>

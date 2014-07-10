@@ -6,7 +6,7 @@ module.lounge = {
 
 		var tmpl = $.trim($('#lounge-index-tmpl').html());
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
-		$('#container').html($el);
+		$('.container-idle').html($el);
 		module.chat.renderChatPanel($('#left-container'));
 
 		socket.emit('retrieveRoomListAction');
@@ -20,7 +20,7 @@ module.lounge = {
       	});
       	$('#new-room').click(function(){
       		var name = prompt("please enter the name of your room");
-      		if(name && noDuplicateName(name)){
+      		if(name && module.lounge.noDuplicateName(name)){
       			socket.emit('createRoomAction', JSON.stringify({name: name}));
       		}
       	});

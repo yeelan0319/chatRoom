@@ -49,7 +49,7 @@ function IoController(app){
         }); 
     };
         
-    this.createNewUser = function(username, password, session){
+    this.createNewUser = function(username, password, firstName, lastName, phoneNumber, session){
         var that = this;
         _findUserWithUsername(username, function(user){
             if(user){
@@ -57,7 +57,14 @@ function IoController(app){
                 //that.emit('excepetion', new ExistingUserError());
             }
             else{
-                var user = {'username': username, 'password': crypto.createHash('sha1').update(password).digest('hex'), 'permission':0};
+                var user = {
+                    'username': username, 
+                    'password': crypto.createHash('sha1').update(password).digest('hex'), 
+                    'firstName': firstName, 
+                    'lastName':lastName, 
+                    'phoneNumber':phoneNumber, 
+                    'permission':0
+                };
                 app.db.collection('users').insert(user, {w:1}, function(err, result) {
                     if(err){
                         //this is socket-level info

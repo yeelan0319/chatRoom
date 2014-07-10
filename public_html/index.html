@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height:100%; font: 13px Helvetica, Arial; }
+      #container {position:relative; height:100%;}
+      #chat-input { background: #000; padding: 3px; position: absolute; bottom: 0; width: 100%; }
+      #chat-input input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      #chat-input button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin-top: 10px; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+      #left-container {position:relative; width:82%; height:100%; border-right: 1px solid #333; float:left;}
+      #right-container {width:18%; height:100%; float:left; padding-left: 20px}
+      #room-list { list-style-type: none;}
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/lib/jquery-1.11.1.min.js"></script>
+    <script src="/lib/mustache.min.js"></script>
+    <script src="/lib/jquery.cookie.min.js"></script>
+    <script src="/main.js"></script>
+    <script src="/userItem.js"></script>
+    <script src="/linkedUserItem.js"></script>
+    <script src="/roomUserItem.js"></script>
+    <script src="/roomItem.js"></script>
+    <script src="/loginRegister.js"></script>
+    <script src="/room.js"></script>
+    <script src="/lounge.js"></script>
+    <script src="/chat.js"></script>
+    <script src="/systemAdmin.js"></script>
+    <script src="/roomAdmin.js"></script>
+  </head>
+  <body>	
+  <div id="container"></div>
+    <script id="user-item-tmpl" type="text/html">
+    	<tr>
+        	<td>
+        		<span class="username">{{username}}</span>
+        	</td>
+        	<td>
+        		<select class="permission">
+        			<option value="admin" {{#permission}} selected="selected"{{/permission}}>admin</option>
+        			<option value="user" {{^permission}} selected="selected"{{/permission}}>user</option>
+        		</select>
+        	</td>
+        	<td>
+        		<span class="delete">Delete</span>
+        	</td>
+        	<td>
+        		<span class="status-box"></span>
+        	</td>
+    	</tr>
+    </script>
+    <script id="linked-user-item-tmpl" type="text/html">
+    	<tr>
+        	<td>
+        		<span class="username">{{username}}</span>
+        	</td>
+        	<td>
+        		<span class="sessionNumber">sessionNumber: {{sessionNumber}} | </span>
+        	</td>
+        	<td>
+        		<span class="socketNumber">SocketNumber: {{socketNumber}}</span>
+        	</td>
+        	<td>
+        		<span class="boot">Boot</span>
+        	</td>
+    	</tr>
+    </script>
+    <script id="room-user-item-tmpl" type="text/html">
+        <tr>
+            <td>
+                <span class="username">{{username}}</span>
+            </td>
+            <td>
+                <span class="sessionNumber">sessionNumber: {{sessionNumber}} | </span>
+            </td>
+            <td>
+                <span class="socketNumber">SocketNumber: {{socketNumber}}</span>
+            </td>
+            <td>
+                <span class="boot">Boot</span>
+            </td>
+            <td>
+                <span class="change-permission">
+                    {{#isAdminOfRoom}}Unset administrator{{/isAdminOfRoom}}
+                    {{^isAdminOfRoom}}Set as administrator{{/isAdminOfRoom}}
+                </span>
+            </td>
+        </tr>
+    </script>
+    <script id="login-index-tmpl" type="text/html">
+    	<h1>Welcome to chat room</h1>
+        <br>
+        <p>Please login</p>
+        <form action="">
+            <input id="username" autocomplete="on" placeholder = "username" />
+            <input id="password" type="password" placeholder = "password" />
+            <button>Login</button>
+        </form>
+        <br>
+        <span id="register">Not a user?</span>
+    </script>
+    <script id="register-index-tmpl" type="text/html">
+    	<h1>Welcome to chat room</h1>
+        <br>
+        <p>Create your account below</p>
+        <form>
+            <input id="username" name="emailAddress" autocomplete="on" placeholder = "email" />
+            <input id="password" name="" type="password" placeholder = "password" />
+            <input id="passwordConfirm" type="password" placeholder = "password Confirmation" />
+            <input id="firstName" name="firstName" placeholder="first name">
+            <input id="lastName" name="lastName" placeholder="last name">
+            <input id="phoneNumber" name="phoneNumber" placeholder="phone">
+            <button>Signup</button>
+        </form>
+        <br>
+        <span id="login">Already have account?</span>
+    </script>
+    <script id="lounge-index-tmpl" type="text/html">
+        <div id="left-container">
+            <span id="signout">Logout</span>
+            <span> | </span>
+            <span id="profile">profile</span>
+            <span> | </span>
+            <span id="admin">Admin</span>
+            <h1>Lounge</h1>
+        </div>
+        <div id="right-container">
+            <h3>Room list</h3>
+            <ul id="room-list">
+            </ul>
+            <span id="new-room"> + New room</span>
+
+        </div>
+    </script>
+    <script id="room-index-tmpl" type="text/html">
+        <span id="signout">Logout</span>
+        <span> | </span>
+        <span id="profile">profile</span>
+        <span> | </span>
+        <span id="back">back</span>
+        <span> | </span>
+        <span id="admin">Admin</span>
+        <h1>{{name}}</h1>
+    </script>
+    <script id="systemAdmin-index-tmpl" type="text/html">
+    	<span id="back">Back</span>
+    	<span> | </span>
+    	<span id="realtime">Realtime linkage management</span>
+    	<span> | </span>
+    	<span id="alluser">All registered user management</span>
+    	<br>
+    	<h2>User List</h2>
+        <table id="user-list">
+        </table>
+    </script>
+    <script id="roomAdmin-index-tmpl" type="text/html">
+        <span id="back">Back</span>
+        <span> | </span>
+        <span id="realtime">Room user management</span>
+        <br>
+        <h2>User List</h2>
+        <table id="user-list">
+        </table>
+        <span id="delete-room">Delete this room</span>
+    </script>
+    <script id="chat-panel-tmpl" type="text/html">
+        <ul id="messages"></ul>
+        <form id="chat-input" action = "">
+          <input id="m" autocomplete="off" />
+          <button>Send</button>
+        </form>
+    </script>
+  </body>
+</html>

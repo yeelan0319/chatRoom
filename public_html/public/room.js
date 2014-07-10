@@ -5,8 +5,8 @@ module.room = {
 
 		var tmpl = $.trim($('#room-index-tmpl').html());
 		var $el = $(Mustache.to_html(tmpl, data).replace(/^\s*/mg, ''));
-		$('#container').html($el);
-		module.chat.renderChatPanel($('#container'));
+		$('.container-idle').html($el);
+		module.chat.renderChatPanel($('.container-idle'));
 		
 		$('#back').click(function(){
             socket.emit('leaveRoomAction', module.data.room);

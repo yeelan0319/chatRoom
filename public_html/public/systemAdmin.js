@@ -4,7 +4,7 @@ module.systemAdmin = {
     renderIndex: function(){
         var tmpl = $.trim($('#systemAdmin-index-tmpl').html());
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
-        $('#container').html($el);
+        $('.container-idle').html($el);
 
         $('#back').click(function(){
             window.location = './';

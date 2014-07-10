@@ -105,7 +105,10 @@ module.exports = function(app){
             if(!socket.isLoggedIn()){
                 var username = data.username;
                 var password = data.password;
-                ioController.createNewUser(username, password, session);
+                var firstName = data.firstName;
+                var lastName = data.lastName;
+                var phoneNumber = data.phoneNumber;
+                ioController.createNewUser(username, password, firstName, lastName, phoneNumber, session);
             }
         });
         socket.on('logoutAction', function(){
