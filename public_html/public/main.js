@@ -17,17 +17,21 @@ socket.on('render message', function(res){
 	}
 
 	switch(res.target){
+		case 'login':
+			module.loginRegister.renderSessionFrame();
+			module.loginRegister.renderLogin();
+			break;
+		case 'register':
+			module.loginRegister.renderSessionFrame();
+			module.loginRegister.renderRegister();
+			break;
+		case 'chatFrame':
+			module.lounge.renderFrame(res.data);
 		case 'lounge':
 			module.lounge.renderIndex();
 			break;
 		case 'room':
 			module.room.renderIndex(res.data);
-			break;
-		case 'login':
-			module.loginRegister.renderLogin();
-			break;
-		case 'register':
-			module.loginRegister.renderRegister();
 			break;
 		case 'systemAdmin':
 			module.systemAdmin.renderIndex();

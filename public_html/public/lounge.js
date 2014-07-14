@@ -1,4 +1,40 @@
 module.lounge = {
+	renderFrame: function(data){
+		$('body').addClass('symbolic');
+		$('.main-container').removeClass('session-container').addClass('chat-container');
+
+		var tmpl = $.trim($('#user-panel-tmpl').html());
+		var $el = $(Mustache.to_html(tmpl, data).replace(/^\s*/mg, ''));
+		$el.find('#signout').click(function(){
+			socket.emit('leaveRoomAction', module.data.room);
+	  		socket.emit('logoutAction');
+	  		$.removeCookie('PHPSESSID');
+	  	});
+	  	$el.find('#admin').click(function(){
+	  		socket.emit('adminRender', module.data.room);
+	  	});
+	  	$('#user-panel').html($el);
+
+
+	  	socket.emit('retrieveRoomListAction');
+	  	$('.left-container').animate({
+			left: 0
+		},600);
+		$('#lounge').click(function(){
+			data = {
+				from: module.data.room,
+				to: 0
+			}
+			socket.emit('joinRoomAction', JSON.stringify(data));
+		});
+
+	  	$('#new-room').click(function(){
+	  		var name = prompt("please enter the name of your room");
+	  		if(name && module.lounge.noDuplicateName(name)){
+	  			socket.emit('createRoomAction', JSON.stringify({name: name}));
+	  		}
+	  	});
+	},
 
 	renderIndex: function(){
 		module.data.pos = 'lounge';
@@ -7,23 +43,7 @@ module.lounge = {
 		var tmpl = $.trim($('#lounge-index-tmpl').html());
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
 		$('.container-idle').html($el);
-		module.chat.renderChatPanel($('#left-container'));
-
-		socket.emit('retrieveRoomListAction');
-
-		$('#signout').click(function(){
-      		socket.emit('logoutAction');
-      		$.removeCookie('PHPSESSID');
-      	});
-      	$('#admin').click(function(){
-      		socket.emit('adminRender', module.data.room);
-      	});
-      	$('#new-room').click(function(){
-      		var name = prompt("please enter the name of your room");
-      		if(name && module.lounge.noDuplicateName(name)){
-      			socket.emit('createRoomAction', JSON.stringify({name: name}));
-      		}
-      	});
+		module.chat.renderChatPanel($('.container-idle'));
 	},
 
 	renderRoom: function(data){
@@ -55,21 +75,19 @@ module.lounge = {
 };
 
 socket.on('room data', function(data){
-	if(module.data.pos === 'lounge'){
-		data = JSON.parse(data);
-		if(data.meta.status == 200){
-			switch(data.data.type){
-			case 'reset':
-				$('#room-list').html('');
-				module.lounge.renderRoom(data.data.data);
-				break;
-			case 'add':
-				module.lounge.renderRoom(data.data.data);
-				break;
-			case 'delete':
-				module.lounge.deleteRoom(data.data.data);
-				break;
-			}	
-		}
+	data = JSON.parse(data);
+	if(data.meta.status == 200){
+		switch(data.data.type){
+		case 'reset':
+			$('#room-list').html('');
+			module.lounge.renderRoom(data.data.data);
+			break;
+		case 'add':
+			module.lounge.renderRoom(data.data.data);
+			break;
+		case 'delete':
+			module.lounge.deleteRoom(data.data.data);
+			break;
+		}	
 	}
 });

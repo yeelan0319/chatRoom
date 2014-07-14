@@ -3,15 +3,13 @@ module.chat = {
 		var tmpl = $.trim($('#chat-panel-tmpl').html());
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
 		targetContainer.append($el);
-		$('form').submit(function(){
-			var data = {
-				msg: $('#m').val(),
-				id: module.data.room
+		$('#m').keydown(function(event){
+			if(event.which == 13){
+				module.chat.sendMessage();
+				return false;
 			}
-			socket.emit('chatAction', JSON.stringify(data));
-			$('#m').val('');
-			return false;
 		});
+		$('#m-send').click(module.chat.sendMessage);
 	},
 
 	renderChatMessage: function(msg){
@@ -20,6 +18,19 @@ module.chat = {
 
 	renderSystemMessage: function(msg){
 		$('#messages').append($('<li class="system-message">').text(msg));
+	},
+
+	sendMessage: function(){
+		var msg = $('#m').val();
+		if(msg){
+			var data = {
+				msg: msg,
+				id: module.data.room
+			}
+			socket.emit('chatAction', JSON.stringify(data));
+			$('#m').val('').focus();
+		}
+		return false;
 	}
 }
 

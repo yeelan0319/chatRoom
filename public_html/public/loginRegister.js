@@ -53,5 +53,14 @@ module.loginRegister = {
 		    startView: 2,
 		    autoclose: true
 		});
+	},
+
+	renderSessionFrame: function(){
+		$('#user-panel').html('');
+		$('body').removeClass('symbolic');
+		$('.main-container').removeClass('chat-container').addClass('session-container');
+		$('.left-container').animate({
+			left: -200
+		},600);
 	}
 }

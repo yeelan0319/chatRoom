@@ -49,12 +49,22 @@ module.exports = function(app){
                 roomController.retrieveRoomList(socketID);
             }
         });
-        socket.on('joinRoomAction', function(id){
+        socket.on('joinRoomAction', function(data){
+            data = _parseData(data);
             if(socket.isLoggedIn()){
-                var room = app.roomList[id];
-                if(room){
-                    var name = room.name;
-                    socket.joinRoom(id, name);
+                var from = data.from;
+                var to = data.to;
+                socket.leaveRoom(from);
+
+                if(to === 0){
+                    socket.joinLounge();
+                }
+                else{
+                    var targetRoom = app.roomList[to];
+                    if(targetRoom){
+                        var name = targetRoom.name;
+                        socket.joinRoom(to, name);
+                    }
                 }
             }
         });

@@ -1,4 +1,5 @@
 module.room = {
+
 	renderIndex: function(data){
 		module.data.pos = 'room';
 		module.data.room = data.id;
@@ -8,13 +9,6 @@ module.room = {
 		$('.container-idle').html($el);
 		module.chat.renderChatPanel($('.container-idle'));
 		
-		$('#back').click(function(){
-            socket.emit('leaveRoomAction', module.data.room);
-        });
-		$('#signout').click(function(){
-      		socket.emit('logoutAction');
-      		$.removeCookie('PHPSESSID');
-      	});
       	$('#admin').click(function(){
       		socket.emit('adminRender', module.data.room);
       	});

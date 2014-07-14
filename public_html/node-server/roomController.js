@@ -136,7 +136,7 @@ function RoomController(app){
             type: 'add',
             data: {'1': room}
         }
-        app.io.to('/chatRoom/0').emit('room data', responseJson.success(result));
+        app.io.sockets.emit('room data', responseJson.success(result));
     }
 
     function _deleteFromRoomListAndClearRoom(room){
@@ -145,7 +145,7 @@ function RoomController(app){
             data: {'1': room}
         }
         console.log(room);
-        app.io.to('/chatRoom/0').emit('room data', responseJson.success(result));
+        app.io.sockets.emit('room data', responseJson.success(result));
 
         var chatroom = app.io.sockets.adapter.rooms['/chatRoom/' + room._id];
         for(var socketID in chatroom){

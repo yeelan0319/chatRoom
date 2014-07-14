@@ -23,24 +23,21 @@
       <script src="/lib/html5shiv.min.js"></script>
       <script src="/lib/respond.min.js"></script>
     <![endif]-->
-    <style>
-      #chat-input { background: #000; padding: 3px; position: absolute; bottom: 0; width: 100%; }
-      #chat-input input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      #chat-input button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin-top: 10px; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-      #left-container {position:relative; width:82%; height:100%; border-right: 1px solid #333; float:left;}
-      #right-container {width:18%; height:100%; float:left; padding-left: 20px}
-      #room-list { list-style-type: none;}
-    </style>
  </head>
 
   <body>
 
     <div class="site-wrapper">
-        <div class="loginRegister-container container-idle"></div>
-        <div class="loginRegister-container container-in-use"></div>
+        <div id="user-panel" class="dropdown"></div>
+        <div class="main-container container-idle"></div>
+        <!--<div class="main-container container-in-use"></div>-->
+        <div class="left-container">
+            <h6>Room list</h6>
+            <span id='lounge'>Lounge</span>
+            <ul id="room-list" class="list-unstyled">
+            </ul>
+            <span id="new-room"> + New room</span>
+        </div>
     </div>
     <div class="site-footer">
         <div class="inner">
@@ -136,7 +133,7 @@
         </tr>
     </script>
     <script id="login-index-tmpl" type="text/html">
-        <div id="masthead" class="clearfix">
+        <div id="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">Symbolic IO Socket</h3>
             </div>
@@ -157,7 +154,7 @@
         </div>
     </script>
     <script id="register-index-tmpl" type="text/html">
-        <div id="masthead" class="clearfix">
+        <div id="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">Welcome</h3>
             </div>
@@ -205,31 +202,18 @@
         </div>
     </script>
     <script id="lounge-index-tmpl" type="text/html">
-        <div id="left-container">
-            <span id="signout">Logout</span>
-            <span> | </span>
-            <span id="profile">profile</span>
-            <span> | </span>
-            <span id="admin">Admin</span>
-            <h1>Lounge</h1>
-        </div>
-        <div id="right-container">
-            <h3>Room list</h3>
-            <ul id="room-list">
-            </ul>
-            <span id="new-room"> + New room</span>
-
+        <div id="masthead">
+            <div class="inner">
+                <h3 class="masthead-brand">Lounge</h3>
+            </div>
         </div>
     </script>
     <script id="room-index-tmpl" type="text/html">
-        <span id="signout">Logout</span>
-        <span> | </span>
-        <span id="profile">profile</span>
-        <span> | </span>
-        <span id="back">back</span>
-        <span> | </span>
-        <span id="admin">Admin</span>
-        <h1>{{name}}</h1>
+        <div id="masthead">
+            <div class="inner">
+                <h3 class="masthead-brand">{{name}}</h3>
+            </div>
+        </div>
     </script>
     <script id="systemAdmin-index-tmpl" type="text/html">
         <span id="back">Back</span>
@@ -253,11 +237,21 @@
         <span id="delete-room">Delete this room</span>
     </script>
     <script id="chat-panel-tmpl" type="text/html">
-        <ul id="messages"></ul>
-        <form id="chat-input" action = "">
-          <input id="m" autocomplete="off" />
-          <button>Send</button>
-        </form>
+        <div id="chat-panel" class="panel">
+            <ul id="messages" class="list-unstyled"></ul>
+            <form id="chat-input">
+              <textarea id="m"></textarea>
+              <button id="m-send" class="btn btn-warning">Send</button>
+            </form>
+        </div>
+    </script>
+    <script id="user-panel-tmpl" type="text/html">
+        <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">{{firstName}}<span class="caret"></span></button>
+        <ul class="dropdown-menu dropdown-inverse">
+            <li><a id="profile">Profile</a></li>
+            {{#permission}}<li><a id="admin">System Manage</a></li>{{/permission}}
+            <li><a id="signout">Logout</a></li>
+        </ul>
     </script>
   </body>
 </html>

@@ -29,7 +29,10 @@ module.exports = function socketExtension(socket, next){
     socket.setSocketUser = function(user){
         this.username = user.username;
         this.permission = user.permission;
+        this.firstName = user.firstName;
+        this.lastName = user.lastName;
         this.join('/private/user/'+this.username);
+        this.renderChatFrame();
         this.joinLounge();
     };
     socket.removeSocketUser = function(){
@@ -54,13 +57,11 @@ module.exports = function socketExtension(socket, next){
     };
 
     socket.joinRoom = function(id, name){
-        this.leave('/chatRoom/0');
         this.join('/chatRoom/' + id);
         this.renderRoom(id, name);
     };
     socket.leaveRoom = function(id){
         this.leave('/chatRoom/' + id);
-        this.joinLounge();
     };
     socket.boot = function(){
         this.renderBoot();
@@ -81,6 +82,16 @@ module.exports = function socketExtension(socket, next){
         }
         this.emit('render message', res);
     };
+    socket.renderChatFrame = function(){
+        var res = {
+            target: 'chatFrame',
+            data: {
+                firstName: this.username,
+                permission: this.permission
+            }
+        }
+        this.emit('render message', res);
+    }
     socket.renderLounge = function(){
         var res = {
             target: 'lounge'
