@@ -34,6 +34,11 @@ module.lounge = {
 	  			socket.emit('createRoomAction', JSON.stringify({name: name}));
 	  		}
 	  	});
+
+	  	$('#adminTab a').click(function (e) {
+		  e.preventDefault()
+		  $(this).tab('show')
+		});
 	},
 
 	renderIndex: function(){

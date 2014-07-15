@@ -4,21 +4,17 @@ module.systemAdmin = {
     renderIndex: function(){
         var tmpl = $.trim($('#systemAdmin-index-tmpl').html());
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
-        $('.container-idle').html($el);
-
-        $('#back').click(function(){
-            window.location = './';
+        $('.site-wrapper').append($el);
+        $('#adminModal').modal('toggle').on('hidden.bs.modal', function(e){
+            $('#adminModal').remove();
         });
         $('#realtime').click(function(){
             module.systemAdmin.linkedUserList = {};
             socket.emit('retrieveLinkedUserAction');
-        });
-        if(module.data.room === 0){
-            $('#alluser').click(function(){
-                socket.emit('retrieveUserDataAction');
-            });
-        }
-        $('#realtime').click();
+        }).click();
+        $('#alluser').click(function(){
+            socket.emit('retrieveUserDataAction');
+        });     
     },
 
     renderRegisterUserData: function(data){

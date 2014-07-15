@@ -216,25 +216,49 @@
         </div>
     </script>
     <script id="systemAdmin-index-tmpl" type="text/html">
-        <span id="back">Back</span>
-        <span> | </span>
-        <span id="realtime">Realtime linkage management</span>
-        <span> | </span>
-        <span id="alluser">All registered user management</span>
-        <br>
-        <h2>User List</h2>
-        <table id="user-list">
-        </table>
+        <div class="modal fade" id="adminModal" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h6 class="modal-title">System Management</h6>
+              </div>
+              <div class="modal-body">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="adminTab" role="tablist">
+                  <li class="active"><a role="tab" data-toggle="tab" id="realtime">Realtime linkage management</a></li>
+                  <li><a role="tab" data-toggle="tab" id="alluser">All registered user management</a></li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                  <div class="tab-pane active" id="user-list"></div>
+                </div>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
     </script>
     <script id="roomAdmin-index-tmpl" type="text/html">
-        <span id="back">Back</span>
-        <span> | </span>
-        <span id="realtime">Room user management</span>
-        <br>
-        <h2>User List</h2>
-        <table id="user-list">
-        </table>
-        <span id="delete-room">Delete this room</span>
+        <div class="modal fade" id="adminModal" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h6 class="modal-title">Room Management</h6>
+              </div>
+              <div class="modal-body">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" id="adminTab" role="tablist">
+                  <li class="active"><a role="tab" data-toggle="tab">Room user management</a></li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                  <div class="tab-pane active" id="user-list"></div>
+                </div>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
     </script>
     <script id="chat-panel-tmpl" type="text/html">
         <div id="chat-panel" class="panel">

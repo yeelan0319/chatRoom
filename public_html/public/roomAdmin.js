@@ -4,17 +4,8 @@ module.roomAdmin = {
     renderIndex: function(){
         var tmpl = $.trim($('#roomAdmin-index-tmpl').html());
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
-        $('.container-idle').html($el);
+        $('.site-wrapper').append($el);
 
-        $('#back').click(function(){
-            var id = module.data.room;
-            data = {
-                id: id,
-                name: module.data.roomList[id].name
-            }
-            module.room.renderIndex(data);
-
-        });
         $('#delete-room').click(module.roomAdmin.destoryRoom);
         $('#realtime').click(function(){
             module.roomAdmin.linkedUserList = {};
