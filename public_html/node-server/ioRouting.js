@@ -73,6 +73,11 @@ module.exports = function(app){
                 socket.leaveRoom(id);
             }
         });
+        socket.on('retrievePastMessage', function(id){
+            if(socket.isLoggedIn()){
+                ioController.retrievePastMessage(id, socketID);
+            }
+        });
         socket.on('adminRender', function(id){
             if(id===0){
                 if(socket.isAdmin()){
@@ -172,7 +177,7 @@ module.exports = function(app){
             var id = data.id;
             if(socket.isLoggedIn() && socket.isInRoom(id)){
                 var msg = data.msg;
-                app.io.to('/chatRoom/' + id).emit('chat message', socket.username + ': ' + msg);
+                ioController.sendChatMessage(socket.username, id, msg);
             }
         });
         socket.on('createRoomAction', function(data){

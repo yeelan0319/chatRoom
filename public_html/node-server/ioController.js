@@ -2,6 +2,7 @@ var util = require('util');
 var events = require('events');
 var crypto = require('crypto');
 var responseJson = require('./responseJson');
+var MINUTE = 1000*60;
 
 function IoController(app){
     events.EventEmitter.call(this);
@@ -191,6 +192,45 @@ function IoController(app){
         }
     };
 
+    this.sendChatMessage = function(username, id, msg){
+        var message = {
+            'username': username, 
+            'room': id, 
+            'msg': msg, 
+            'ctime':Date.now()
+        };
+        app.db.collection('messages').insert(message, {w:1}, function(err, result) {
+            if(err){
+                //this is socket-level info
+                //that.emit('excepetion', new ExistingUserError());
+                //redo the work
+            }
+            else{
+                var messages = [message];
+                app.io.to('/chatRoom/' + id).emit('chat messages', responseJson.success(messages));
+            }
+        });
+    };
+
+    this.retrievePastMessage = function(id, socketID){
+        var that = this;
+        var duration = 10 * MINUTE;
+        app.db.collection('messages').find({room: id, ctime:{$gt: Date.now() - duration}}).toArray(function(err, messages){
+            if(err){
+                //this is socket-level info
+                //throw new DatabaseError();
+                //redo the work
+            }
+            else{
+                var result = {
+                    target: socketID,
+                    data: messages
+                };
+                that.emit('successfullyRetrievedMessages', result);
+            }
+        });
+    }
+
     function welcomeSocket(res){
         var socket = app.io.socketList[res.target];
         _welcomeUser(socket, res.user);
@@ -225,6 +265,11 @@ function IoController(app){
     function sendUserListSocket(res){
         var socket = app.io.socketList[res.target];
         socket.emit('users data', responseJson.success(res.data));
+    }
+
+    function sendPastMessageSocket(res){
+        var socket = app.io.socketList[res.target];
+        socket.emit('chat messages', responseJson.success(res.data));
     }
 
     function informChangedPermissionUser(res){
@@ -275,6 +320,7 @@ function IoController(app){
     this.on('successfullyRetrievedUserList', sendUserListSocket);
     this.on('successfullyChangedUserPermission', informChangedPermissionUser);
     this.on('successfullyDeletedUser', renderRegisterUser);
+    this.on('successfullyRetrievedMessages', sendPastMessageSocket);
 };
 
 util.inherits(IoController, events.EventEmitter);

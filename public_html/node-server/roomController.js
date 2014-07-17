@@ -84,6 +84,7 @@ function RoomController(app){
                 var targetSocket = app.io.socketList[socketID];
                 if(targetSocket.username === username){
                     targetSocket.leaveRoom(id);
+                    targetSocket.joinLounge();
                 }
             }
         }
