@@ -81,10 +81,13 @@
                 <span class="username">{{username}}</span>
             </td>
             <td>
-                <select class="permission">
-                    <option value="admin" {{#permission}} selected="selected"{{/permission}}>admin</option>
-                    <option value="user" {{^permission}} selected="selected"{{/permission}}>user</option>
-                </select>
+                <label class="checkbox permission" for="permission-{{username}}">
+                  <input type="checkbox" {{#permission}}checked="checked"{{/permission}} id="permission-{{username}}" data-toggle="checkbox">
+                  <span class="permission-label">
+                    {{#permission}}Administrator{{/permission}}
+                    {{^permission}}User{{/permission}}
+                  </span>
+                </label>
             </td>
             <td>
                 <span class="delete">Delete</span>
@@ -100,10 +103,10 @@
                 <span class="username">{{username}}</span>
             </td>
             <td>
-                <span class="sessionNumber">sessionNumber: {{sessionNumber}} | </span>
+                <span class="sessionNumber">{{sessionNumber}}</span>
             </td>
             <td>
-                <span class="socketNumber">SocketNumber: {{socketNumber}}</span>
+                <span class="socketNumber">{{socketNumber}}</span>
             </td>
             <td>
                 <span class="boot">Boot</span>
@@ -116,19 +119,22 @@
                 <span class="username">{{username}}</span>
             </td>
             <td>
-                <span class="sessionNumber">sessionNumber: {{sessionNumber}} | </span>
+                <span class="sessionNumber">{{sessionNumber}}</span>
             </td>
             <td>
-                <span class="socketNumber">SocketNumber: {{socketNumber}}</span>
+                <span class="socketNumber">{{socketNumber}}</span>
+            </td>
+            <td>
+                <label class="checkbox roomAdmin" for="roomAdmin-{{username}}">
+                  <input type="checkbox" {{#isAdminOfRoom}}checked="checked"{{/isAdminOfRoom}} id="roomAdmin-{{username}}" data-toggle="checkbox">
+                  <span class="roomAdmin-label">
+                    {{#isAdminOfRoom}}Administrator{{/isAdminOfRoom}}
+                    {{^isAdminOfRoom}}User{{/isAdminOfRoom}}
+                  </span>
+                </label>
             </td>
             <td>
                 <span class="boot">Boot</span>
-            </td>
-            <td>
-                <span class="change-permission">
-                    {{#isAdminOfRoom}}Unset administrator{{/isAdminOfRoom}}
-                    {{^isAdminOfRoom}}Set as administrator{{/isAdminOfRoom}}
-                </span>
             </td>
         </tr>
     </script>
@@ -188,7 +194,7 @@
                         <div class="col-md-6">
                             <div class="input-group date">
                               <input id="birthday" type="text" name="birthday" class="form-control" placeholder="Birthday">
-                              <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                              <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
                             </div>
                         </div>
                     </div>
@@ -212,6 +218,7 @@
         <div id="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">{{name}}</h3>
+                <span id="room-admin" class="fui-gear" title="Room Administration"></span>
             </div>
         </div>
     </script>
@@ -226,12 +233,36 @@
               <div class="modal-body">
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" id="adminTab" role="tablist">
-                  <li class="active"><a role="tab" data-toggle="tab" id="realtime">Realtime linkage management</a></li>
-                  <li><a role="tab" data-toggle="tab" id="alluser">All registered user management</a></li>
+                  <li class="active"><a href="#realtime-pane" role="tab" data-toggle="tab" id="realtime">Realtime linkage management</a></li>
+                  <li><a href="#alluser-pane" role="tab" data-toggle="tab" id="alluser">All registered user management</a></li>
                 </ul>
                 <!-- Tab panes -->
                 <div class="tab-content">
-                  <div class="tab-pane active" id="user-list"></div>
+                  <div class="tab-pane active" id="realtime-pane">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                              <th>Username</th>
+                              <th>Session Number</th>
+                              <th>Socket Number</th>
+                              <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="realtime-userlist"></tbody>
+                    </table>
+                  </div>
+                  <div class="tab-pane" id="alluser-pane">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                              <th class="col-md-4">Username</th>
+                              <th class="col-md-4">Permission Level</th>
+                              <th class="col-md-4"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="alluser-userlist"></tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div><!-- /.modal-content -->
@@ -249,11 +280,25 @@
               <div class="modal-body">
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" id="adminTab" role="tablist">
-                  <li class="active"><a role="tab" data-toggle="tab">Room user management</a></li>
+                  <li class="active"><a href="#realtime-pane" role="tab" data-toggle="tab" id="realtime">Room user management</a></li>
                 </ul>
+                <button class="btn btn-danger" id="delete-room">Delete Room</button>
                 <!-- Tab panes -->
                 <div class="tab-content">
-                  <div class="tab-pane active" id="user-list"></div>
+                  <div class="tab-pane active" id="realtime-pane">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                              <th class="col-md-3">Username</th>
+                              <th class="col-md-2">Session Number</th>
+                              <th class="col-md-2">Socket Number</th>
+                              <th class="col-md-3">Permission</th>
+                              <th class="col-md-2"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="realtime-userlist"></tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div><!-- /.modal-content -->
@@ -273,7 +318,7 @@
         <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">{{firstName}}<span class="caret"></span></button>
         <ul class="dropdown-menu dropdown-inverse">
             <li><a id="profile">Profile</a></li>
-            {{#permission}}<li><a id="admin">System Manage</a></li>{{/permission}}
+            <li><a id="admin">System Manage</a></li>
             <li><a id="signout">Logout</a></li>
         </ul>
     </script>

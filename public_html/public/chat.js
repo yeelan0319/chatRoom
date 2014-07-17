@@ -1,5 +1,6 @@
 module.chat = {
 	renderChatPanel: function(targetContainer){
+		socket.emit('retrievePastMessage', module.data.room);
 		var tmpl = $.trim($('#chat-panel-tmpl').html());
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
 		targetContainer.append($el);
@@ -39,8 +40,14 @@ socket.on('status message', function(msg){
 		module.chat.renderSystemMessage(msg);
 	}
 });
-socket.on('chat message', function(msg){
-	if(module.data.pos === 'lounge' || module.data.pos === 'room'){
-		module.chat.renderSystemMessage(msg);
+socket.on('chat messages', function(data){
+	data = JSON.parse(data);
+	if(data.meta.status == 200){
+		if(module.data.pos === 'lounge' || module.data.pos === 'room'){
+			$.each(data.data, function(index, message){
+				var msg = message.username + ": " + message.msg;
+				module.chat.renderSystemMessage(msg);
+			});
+		}
 	}
 });

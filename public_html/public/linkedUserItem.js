@@ -13,7 +13,7 @@ LinkedUserItem.prototype = {
 		var linkedUserItemTmpl = $.trim($('#linked-user-item-tmpl').html());
 		that.$el = $(Mustache.to_html(linkedUserItemTmpl, that).replace(/^\s*/mg, ''));
 		that.$el.find('.boot').click(function(){that.boot.apply(that)});
-		$('#user-list').append(that.$el);
+		$('#realtime-userlist').append(that.$el);
 	},
 	addSession: function(session){
 		if(this.sessions.indexOf(session) == -1){

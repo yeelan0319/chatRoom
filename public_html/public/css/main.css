@@ -49,12 +49,13 @@ textarea{
 html,
 body {
   height: 100%;
+  background-color:#222;
 }
 body {
   color: #fff;
   text-shadow: 0 1px 3px rgba(0,0,0,.5);
-  background-color: #444;
   font-size:15px;
+  overflow:hidden;
 }
 
 body.symbolic{
@@ -70,6 +71,7 @@ body.symbolic{
   background: rgba(33,33,33,0.75);
   -webkit-box-shadow: inset 0 0 100px rgba(0,0,0,.5);
   box-shadow: inset 0 0 100px rgba(0,0,0,.5);
+  overflow:scroll;
 }
 
 .main-container {
@@ -79,6 +81,7 @@ body.symbolic{
 }
 
 .inner {
+  position: relative;
   padding: 25px 30px 0px 30px;
 }
 
@@ -93,6 +96,11 @@ body.symbolic{
   font-family: 'orbitron-light',Sans-Serif;
 }
 
+#room-admin{
+  position: absolute;
+  left: 5px;
+  top: 25px;
+}
 
 /*
  * Footer
@@ -245,7 +253,7 @@ body.symbolic{
   border-bottom: 1px solid #222;
 }
 
-#adminModal .modal-title, #adminModal .modal-header .close{
+#adminModal .modal-title, #adminModal .modal-header .close, #adminModal .checkbox.checked, #adminModal .checkbox.checked .second-icon{
   color:#862828;
   text-shadow: 0px 1px 2px #333;
   opacity: 1;
@@ -257,7 +265,7 @@ body.symbolic{
 }
 
 #adminModal #adminTab.nav-tabs{
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid #333;
 }
 
 #adminModal #adminTab.nav-tabs .tab{
@@ -284,6 +292,37 @@ body.symbolic{
   border: 1px solid transparent;
   border-bottom: 1px solid #222;
   background: rgba(0,0,0,0.4);
+}
+
+#adminModal .tab-content{
+  font-size: 13px !important;
+}
+
+#adminModal .table>thead>tr>th{
+  border:none;
+}
+
+#adminModal .table>tbody>tr>td{
+  border-color:#222;
+}
+
+#adminModal .checkbox {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+#adminModal .btn-danger{
+  position: absolute;
+  right: 15px;
+  top: 8px;
+  padding: 7px 10px;
+  background-color: #862828;
+  color: #999;
+}
+
+#adminModal .btn-danger:hover{
+  background-color: #B93528;
+  color:#eee;
 }
 /*
  * Affix and center

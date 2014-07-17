@@ -9,7 +9,7 @@ module.room = {
 		$('.container-idle').html($el);
 		module.chat.renderChatPanel($('.container-idle'));
 		
-      	$('#admin').click(function(){
+      	$('#room-admin').click(function(){
       		socket.emit('adminRender', module.data.room);
       	});
 	}

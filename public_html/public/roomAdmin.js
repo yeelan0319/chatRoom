@@ -5,13 +5,15 @@ module.roomAdmin = {
         var tmpl = $.trim($('#roomAdmin-index-tmpl').html());
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
         $('.site-wrapper').append($el);
+        $('#adminModal').modal('toggle').on('hidden.bs.modal', function(e){
+            $('#adminModal').remove();
+        });
 
         $('#delete-room').click(module.roomAdmin.destoryRoom);
         $('#realtime').click(function(){
             module.roomAdmin.linkedUserList = {};
             socket.emit('retrieveRoomLinkedUserAction', module.data.room);
-        });
-        $('#realtime').click();
+        }).click();
     },
 
     renderLinkedUserData:function(data){
@@ -20,11 +22,10 @@ module.roomAdmin = {
         if(data.meta.status == 200){
             var admins = data.data.admins;
             var sockets = data.data.sockets;
-            $('#user-list').html('');
+            $('#realtime-userlist').html('');
 
             $.each(sockets, function(index, userdata){
                 var roomUserItem = module.roomAdmin.linkedUserList[userdata.username];
-                console.log(roomUserItem);
                 if(!roomUserItem){
                     roomUserItem = new RoomUserItem(userdata);
                 }

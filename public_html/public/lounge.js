@@ -11,7 +11,7 @@ module.lounge = {
 	  		$.removeCookie('PHPSESSID');
 	  	});
 	  	$el.find('#admin').click(function(){
-	  		socket.emit('adminRender', module.data.room);
+	  		socket.emit('adminRender', 0);
 	  	});
 	  	$('#user-panel').html($el);
 

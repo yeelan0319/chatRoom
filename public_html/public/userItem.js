@@ -9,19 +9,17 @@ UserItem.prototype = {
 		var userTmpl = $.trim($('#user-item-tmpl').html());
 		that.$el = $(Mustache.to_html(userTmpl, that).replace(/^\s*/mg, ''));
 		that.$el.find('.delete').click(function(){that.destroy.apply(that)});
-		that.$el.find('.permission').change(function(){that.edit.apply(that)});
-		$('#user-list').append(that.$el);
+		that.$el.find('.permission :checkbox').checkbox().on('change', function(){that.edit.apply(that)});
+		$('#alluser-userlist').append(that.$el);
 	},
 	edit: function(){
-		var that = this;
-		var username = that.username;
-		var permission = that.$el.find('.permission').val() === 'admin'? 1 : 0;
-		if(that.permission != permission){
-			//send request to update information
-			data = {username: username, permission: permission};
-			socket.emit("editPermissionAction", JSON.stringify(data));
-			that.permission = permission;
-		}
+		this.permission = this.permission^1;
+		data = {
+			username: this.username, 
+			permission: this.permission
+		};
+		socket.emit("editPermissionAction", JSON.stringify(data));
+		this.$el.find('.permission .permission-label').text(this.permission?'Administrator':'User');
 	},
 	destroy: function(){
 		var confirmed = confirm("Are you sure to delete this user?");

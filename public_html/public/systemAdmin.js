@@ -21,7 +21,7 @@ module.systemAdmin = {
         module.data.pos = 'admin-alluser';
         data = JSON.parse(data);
         if(data.meta.status == 200){
-            $('#user-list').html('');
+            $('#alluser-userlist').html('');
             $.each(data.data, function(index, userdata){
                 var user = new UserItem(userdata);
                 user.render();
@@ -33,7 +33,7 @@ module.systemAdmin = {
         module.data.pos = 'admin-linkeduser';
         data = JSON.parse(data);
         if(data.meta.status == 200){
-            $('#user-list').html('');
+            $('#realtime-userlist').html('');
             $.each(data.data, function(index, userdata){
                 var linkedUserItem = module.systemAdmin.linkedUserList[userdata.username];
                 if(!linkedUserItem){

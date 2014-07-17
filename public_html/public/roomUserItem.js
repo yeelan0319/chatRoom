@@ -14,8 +14,8 @@ RoomUserItem.prototype = {
 		var roomUserItemTmpl = $.trim($('#room-user-item-tmpl').html());
 		that.$el = $(Mustache.to_html(roomUserItemTmpl, that).replace(/^\s*/mg, ''));
 		that.$el.find('.boot').click(function(){that.boot.apply(that)});
-		that.$el.find('.change-permission').click(function(){that.changePermission.apply(that)});
-		$('#user-list').append(that.$el);
+		that.$el.find('.roomAdmin :checkbox').checkbox().on('change', function(){that.changePermission.apply(that)});
+		$('#realtime-userlist').append(that.$el);
 	},
 	addSession: function(session){
 		if(this.sessions.indexOf(session) == -1){
@@ -49,11 +49,6 @@ RoomUserItem.prototype = {
 			permission: this.isAdminOfRoom
 		}
 		socket.emit("editRoomAdminAction", JSON.stringify(data));
-		if(this.isAdminOfRoom){
-			this.$el.find(".change-permission").text('Unset administrator');
-		}
-		else{
-			this.$el.find(".change-permission").text('Set as administrator');
-		}	
+		this.$el.find('.roomAdmin .roomAdmin-label').text(this.isAdminOfRoom?'Administrator':'User');	
 	}
 };

@@ -11,6 +11,7 @@ socket.on('session extension', function(){
 });
 
 socket.on('render message', function(res){
+	console.log(res);
 	if(res.target == 'bootedPage'){
 		$('body').html('');
 		alert("You've been booted out of the system by administrator");
@@ -27,6 +28,7 @@ socket.on('render message', function(res){
 			break;
 		case 'chatFrame':
 			module.lounge.renderFrame(res.data);
+			break;
 		case 'lounge':
 			module.lounge.renderIndex();
 			break;
