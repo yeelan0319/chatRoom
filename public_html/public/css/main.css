@@ -324,6 +324,27 @@ body.symbolic{
   background-color: #B93528;
   color:#eee;
 }
+
+#adminModal .input-group-addon{
+  padding:8px 10px;
+  background-color: transparent;
+  border: 1px solid #353636;
+}
+
+#adminModal .input-sm{
+  background:transparent;
+  border-color:#353636;
+}
+
+#adminModal #chatHistory-pane{
+  padding-top:15px;
+}
+
+#adminModal #search-message{
+  margin: 0px;
+  padding: 7px 10px;
+  font-size: 14px;
+}
 /*
  * Affix and center
  */
