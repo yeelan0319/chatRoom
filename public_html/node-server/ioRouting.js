@@ -118,7 +118,9 @@ module.exports = function(app){
                 var firstName = data.firstName;
                 var lastName = data.lastName;
                 var phoneNumber = data.phoneNumber;
-                ioController.createNewUser(username, password, firstName, lastName, phoneNumber, session);
+                var birthday = data.birthday;
+                var jobDescription = data.jobDescription;
+                ioController.createNewUser(username, password, firstName, lastName, phoneNumber, birthday, jobDescription, session);
             }
         });
         socket.on('logoutAction', function(){

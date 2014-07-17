@@ -33,12 +33,16 @@ module.loginRegister = {
             var firstName = $("#firstName").val() || '';
             var lastName = $("#lastName").val() || '';
             var phoneNumber = $("#phoneNumber").val() || '';
+            var birthday = $("#birthday").val()||'';
+            var jobDescription = $("#job").val()||'';
             var data = {
             	username: username,
             	password: password,
             	firstName: firstName,
             	lastName: lastName,
-            	phoneNumber: phoneNumber
+            	phoneNumber: phoneNumber,
+            	birthday: birthday,
+            	jobDescription: jobDescription
             }
             if(password === passwordConfirm){
             	socket.emit('registerAction', JSON.stringify(data));

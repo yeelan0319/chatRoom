@@ -49,7 +49,7 @@ function IoController(app){
         }); 
     };
         
-    this.createNewUser = function(username, password, firstName, lastName, phoneNumber, session){
+    this.createNewUser = function(username, password, firstName, lastName, phoneNumber, birthday, jobDescription, session){
         var that = this;
         _findUserWithUsername(username, function(user){
             if(user){
@@ -63,6 +63,8 @@ function IoController(app){
                     'firstName': firstName, 
                     'lastName':lastName, 
                     'phoneNumber':phoneNumber, 
+                    'birthday': birthday,
+                    'jobDescription': jobDescription,
                     'permission':0
                 };
                 app.db.collection('users').insert(user, {w:1}, function(err, result) {
