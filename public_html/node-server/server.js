@@ -50,7 +50,7 @@ function serverInitialization(db){
         res.end();
     });
     https = httpsModule.Server({
-        key: fs.readFileSync('/path/to/server.key.orig'),
+        key: fs.readFileSync('/path/to/server.key'),
         cert: fs.readFileSync('/path/to/server.crt')
     }, app.express);
     app.io.attach(https);
