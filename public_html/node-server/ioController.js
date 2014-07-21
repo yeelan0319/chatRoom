@@ -182,6 +182,24 @@ function IoController(app){
         socket.emit('linked users data', responseJson.success(data));
     };
 
+    this.retrieveChatLog = function(constraints, socketID){
+        var that = this;
+        app.db.collection('messages').find(constraints).toArray(function(err, documents){
+            if(err){
+                //this is socket-level info
+                //throw new DatabaseError();
+                //redo the work
+            }
+            else{
+                var result = {
+                    target: socketID,
+                    data: documents
+                };
+                that.emit('successfullyRetrievedChatLog', result);
+            }
+        });
+    };
+
     this.bootUser = function(username){
         var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
         for(var socketID in userRoom){
@@ -276,6 +294,11 @@ function IoController(app){
         socket.emit('users data', responseJson.success(res.data));
     }
 
+    function sendChatLogSocket(res){
+        var socket = app.io.socketList[res.target];
+        socket.emit('chat log', responseJson.success(res.data));
+    }
+
     function sendPastMessageSocket(res){
         var socket = app.io.socketList[res.target];
         socket.emit('chat messages', responseJson.success(res.data));
@@ -330,6 +353,7 @@ function IoController(app){
     this.on('successfullyChangedUserPermission', informChangedPermissionUser);
     this.on('successfullyDeletedUser', renderRegisterUser);
     this.on('successfullyRetrievedMessages', sendPastMessageSocket);
+    this.on('successfullyRetrievedChatLog', sendChatLogSocket);
 };
 
 util.inherits(IoController, events.EventEmitter);

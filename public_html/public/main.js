@@ -109,4 +109,8 @@ $(document).ready(function(){
 	socket.on('linked users data', function(data){
 	    module.systemAdmin.renderLinkedUserData(data);
 	});
+
+	socket.on('chat log', function(data){
+		module.systemAdmin.renderChatLogData(data);
+	});
 });

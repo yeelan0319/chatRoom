@@ -33,7 +33,7 @@ module.lounge = {
 
 	  	$('#new-room').click(function(){
 	  		var name = prompt("please enter the name of your room");
-	  		if(name && module.lounge.noDuplicateName(name)){
+	  		if(name && !module.lounge.findRoomIDWithName(name)){
 	  			socket.emit('createRoomAction', JSON.stringify({name: name}));
 	  		}
 	  	});
@@ -81,13 +81,17 @@ module.lounge = {
 		});
 	},
 
-	noDuplicateName: function(name){
+	findRoomIDWithName: function(name){
+		var id;
+		if(name.toLowerCase() === 'lounge'){
+			id = 0;
+		}
 		$.each(module.data.roomList, function(key, roomdata){
-			if(roomdata.name === name){
-				return false;
+			if(roomdata.name.toLowerCase() === name.toLowerCase()){
+				id = key;
 			}
 		});
-		return true;
+		return id;
 	}
 };
 

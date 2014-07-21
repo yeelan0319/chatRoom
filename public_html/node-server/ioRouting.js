@@ -78,6 +78,11 @@ module.exports = function(app){
                 ioController.retrievePastMessage(id, socketID);
             }
         });
+        socket.on('retrieveUserProfileAction', function(){
+            if(socket.isLoggedIn()){
+                ioController.retrieveUserProfile(socketID);
+            }
+        });
         socket.on('adminRender', function(id){
             if(id===0){
                 if(socket.isAdmin()){
@@ -105,9 +110,10 @@ module.exports = function(app){
                 roomController.retrieveLinkedUser(id, socketID);
             }
         });
-        socket.on('retrieveUserProfileAction', function(){
-            if(socket.isLoggedIn()){
-                ioController.retrieveUserProfile(socketID);
+        socket.on('retrieveChatLogAction', function(constraints){
+            constraints = _parseData(constraints);
+            if(socket.isAdmin()){
+                ioController.retrieveChatLog(constraints, socketID);
             }
         });
         socket.on('loginAction', function(data){

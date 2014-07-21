@@ -267,26 +267,35 @@
                   <div class="tab-pane" id="chatHistory-pane">
                     <div class="row">
                         <div class="col-md-3">
-                            <input type="text" placeholder="Email" class="form-control input-sm" />
+                            <input type="text" id="search-username" placeholder="Email" class="form-control input-sm" />
                         </div>
                         <div class="col-md-2">
-                            <input type="text" placeholder="Room Name" class="form-control input-sm" />
+                            <input type="text" id="search-room" placeholder="Room Name" class="form-control input-sm" />
                         </div>
                         <div class="col-md-3">
                             <div class="input-group date">
-                            <input id="startDate" type="text" name="startDate" class="form-control input-sm" placeholder="Start Date">
+                            <input id="search-startDate" type="text" name="startDate" class="form-control input-sm" placeholder="Start Date">
                             <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
                           </div>
                         </div>
                         <div class="col-md-3">
                             <div class="input-group date">
-                              <input id="endDate" type="text" name="endDate" class="form-control input-sm" placeholder="End Date">
+                              <input id="search-endDate" type="text" name="endDate" class="form-control input-sm" placeholder="End Date">
                               <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
                             </div>
                         </div>
                         <div class="col-md-1">
                             <button class="btn btn-inverse" id="search-message">Go</button>
                         </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <small>*leave it blank if you do not want to specify it</small>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <ul class="col-md-12 list-unstyled" id="chatlog-container">
+                        </ul>
                     </div>
                   </div>
                 </div>
