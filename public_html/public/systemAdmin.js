@@ -2,7 +2,7 @@ module.systemAdmin = {
     linkedUserList:{},
 
     renderIndex: function(){
-        var tmpl = $.trim($('#systemAdmin-index-tmpl').html());
+        var tmpl = module.template.systemAdminIndexTmpl;
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
         $('.site-wrapper').append($el);
         $('#adminModal').modal('toggle').on('hidden.bs.modal', function(e){
@@ -50,10 +50,3 @@ module.systemAdmin = {
         }
     }
 };
-
-socket.on('users data', function(data){
-    module.systemAdmin.renderRegisterUserData(data);
-});
-socket.on('linked users data', function(data){
-    module.systemAdmin.renderLinkedUserData(data);
-});

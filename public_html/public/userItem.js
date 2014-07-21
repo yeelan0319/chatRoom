@@ -6,7 +6,7 @@ var UserItem = function(userdata){
 UserItem.prototype = {
 	render:function(){
 		var that = this;
-		var userTmpl = $.trim($('#user-item-tmpl').html());
+		var userTmpl = module.template.userItemTmpl;
 		that.$el = $(Mustache.to_html(userTmpl, that).replace(/^\s*/mg, ''));
 		that.$el.find('.delete').click(function(){that.destroy.apply(that)});
 		that.$el.find('.permission :checkbox').checkbox().on('change', function(){that.edit.apply(that)});

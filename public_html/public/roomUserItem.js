@@ -11,7 +11,7 @@ var RoomUserItem = function(userdata){
 RoomUserItem.prototype = {
 	render: function(){
 		var that = this;
-		var roomUserItemTmpl = $.trim($('#room-user-item-tmpl').html());
+		var roomUserItemTmpl = module.template.roomUserItemTmpl;
 		that.$el = $(Mustache.to_html(roomUserItemTmpl, that).replace(/^\s*/mg, ''));
 		that.$el.find('.boot').click(function(){that.boot.apply(that)});
 		that.$el.find('.roomAdmin :checkbox').checkbox().on('change', function(){that.changePermission.apply(that)});

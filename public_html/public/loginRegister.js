@@ -3,7 +3,7 @@ module.loginRegister = {
 		module.data.pos = 'login';
 		module.data.room = '';
 
-		var tmpl = $.trim($('#login-index-tmpl').html());
+		var tmpl = module.template.loginIndexTmpl;
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
 		$('.container-idle').html($el);
 
@@ -22,7 +22,7 @@ module.loginRegister = {
 		module.data.pos = 'register';
 		module.data.room = '';
 
-		var tmpl = $.trim($('#register-index-tmpl').html());
+		var tmpl = module.template.registerIndexTmpl;
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
 		$('.container-idle').html($el);
 

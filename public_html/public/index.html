@@ -75,7 +75,7 @@
     <script src="/roomAdmin.js"></script>
 
     <!-- Templates of chat room -->
-    <script id="user-item-tmpl" type="text/html">
+    <script id="user-item-tmpl" type="text/html" class="template">
         <tr>
             <td>
                 <span class="username">{{username}}</span>
@@ -97,7 +97,7 @@
             </td>
         </tr>
     </script>
-    <script id="linked-user-item-tmpl" type="text/html">
+    <script id="linked-user-item-tmpl" type="text/html" class="template">
         <tr>
             <td>
                 <span class="username">{{username}}</span>
@@ -113,7 +113,7 @@
             </td>
         </tr>
     </script>
-    <script id="room-user-item-tmpl" type="text/html">
+    <script id="room-user-item-tmpl" type="text/html" class="template">
         <tr>
             <td>
                 <span class="username">{{username}}</span>
@@ -138,7 +138,7 @@
             </td>
         </tr>
     </script>
-    <script id="login-index-tmpl" type="text/html">
+    <script id="login-index-tmpl" type="text/html" class="template">
         <div id="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">Symbolic IO Socket</h3>
@@ -159,7 +159,7 @@
             <u id="register">Not a user?</u>
         </div>
     </script>
-    <script id="register-index-tmpl" type="text/html">
+    <script id="register-index-tmpl" type="text/html" class="template">
         <div id="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">Welcome</h3>
@@ -207,14 +207,14 @@
             <u id="login">Already have account?</u>
         </div>
     </script>
-    <script id="lounge-index-tmpl" type="text/html">
+    <script id="lounge-index-tmpl" type="text/html" class="template">
         <div id="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">Lounge</h3>
             </div>
         </div>
     </script>
-    <script id="room-index-tmpl" type="text/html">
+    <script id="room-index-tmpl" type="text/html" class="template">
         <div id="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">{{name}}</h3>
@@ -222,7 +222,7 @@
             </div>
         </div>
     </script>
-    <script id="systemAdmin-index-tmpl" type="text/html">
+    <script id="systemAdmin-index-tmpl" type="text/html" class="template">
         <div class="modal fade" id="adminModal" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -295,7 +295,7 @@
           </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
     </script>
-    <script id="roomAdmin-index-tmpl" type="text/html">
+    <script id="roomAdmin-index-tmpl" type="text/html" class="template">
         <div class="modal fade" id="adminModal" tabindex="-1" role="dialog" aria-hidden="true">
           <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -331,7 +331,7 @@
           </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
     </script>
-    <script id="chat-panel-tmpl" type="text/html">
+    <script id="chat-panel-tmpl" type="text/html" class="template">
         <div id="chat-panel" class="panel">
             <ul id="messages" class="list-unstyled"></ul>
             <form id="chat-input">
@@ -340,7 +340,7 @@
             </form>
         </div>
     </script>
-    <script id="user-panel-tmpl" type="text/html">
+    <script id="user-panel-tmpl" type="text/html" class="template">
         <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">{{firstName}}<span class="caret"></span></button>
         <ul class="dropdown-menu dropdown-inverse">
             <li><a id="profile">Profile</a></li>

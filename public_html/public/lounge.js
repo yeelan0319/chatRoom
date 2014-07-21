@@ -3,7 +3,7 @@ module.lounge = {
 		$('body').addClass('symbolic');
 		$('.main-container').removeClass('session-container').addClass('chat-container');
 
-		var tmpl = $.trim($('#user-panel-tmpl').html());
+		var tmpl = module.template.userPanelTmpl;
 		var $el = $(Mustache.to_html(tmpl, data).replace(/^\s*/mg, ''));
 		$el.find('#signout').click(function(){
 			socket.emit('leaveRoomAction', module.data.room);
@@ -45,7 +45,7 @@ module.lounge = {
 		module.data.pos = 'lounge';
 		module.data.room = 0;
 
-		var tmpl = $.trim($('#lounge-index-tmpl').html());
+		var tmpl = module.template.loungeIndexTmpl;
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
 		$('.container-idle').html($el);
 		module.chat.renderChatPanel($('.container-idle'));
@@ -79,20 +79,3 @@ module.lounge = {
 	}
 };
 
-socket.on('room data', function(data){
-	data = JSON.parse(data);
-	if(data.meta.status == 200){
-		switch(data.data.type){
-		case 'reset':
-			$('#room-list').html('');
-			module.lounge.renderRoom(data.data.data);
-			break;
-		case 'add':
-			module.lounge.renderRoom(data.data.data);
-			break;
-		case 'delete':
-			module.lounge.deleteRoom(data.data.data);
-			break;
-		}	
-	}
-});

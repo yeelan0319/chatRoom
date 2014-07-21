@@ -2,7 +2,7 @@ module.roomAdmin = {
     linkedUserList:{},
 
     renderIndex: function(){
-        var tmpl = $.trim($('#roomAdmin-index-tmpl').html());
+        var tmpl = module.template.roomAdminIndexTmpl;
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
         $('.site-wrapper').append($el);
         $('#adminModal').modal('toggle').on('hidden.bs.modal', function(e){
@@ -59,7 +59,3 @@ module.roomAdmin = {
     }
 
 };
-
-socket.on('room linked users data', function(data){
-    module.roomAdmin.renderLinkedUserData(data);
-});
