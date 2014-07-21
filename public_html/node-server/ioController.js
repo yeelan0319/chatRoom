@@ -192,9 +192,11 @@ function IoController(app){
         }
     };
 
-    this.sendChatMessage = function(username, id, msg){
+    this.sendChatMessage = function(username, firstName, lastName, id, msg){
         var message = {
-            'username': username, 
+            'username': username,
+            'firstName':firstName,
+            'lastName':lastName, 
             'room': id, 
             'msg': msg, 
             'ctime':Date.now()

@@ -86,7 +86,7 @@ module.exports = function socketExtension(socket, next){
         var res = {
             target: 'chatFrame',
             data: {
-                firstName: this.username,
+                firstName: this.firstName,
                 permission: this.permission
             }
         }

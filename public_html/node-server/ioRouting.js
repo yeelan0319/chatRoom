@@ -177,7 +177,7 @@ module.exports = function(app){
             var id = data.id;
             if(socket.isLoggedIn() && socket.isInRoom(id)){
                 var msg = data.msg;
-                ioController.sendChatMessage(socket.username, id, msg);
+                ioController.sendChatMessage(socket.username, socket.firstName, socket.lastName, id, msg);
             }
         });
         socket.on('createRoomAction', function(data){
