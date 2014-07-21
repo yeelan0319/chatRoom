@@ -18,7 +18,8 @@ $(document).ready(function(){
 		systemAdminIndexTmpl: $.trim($('#systemAdmin-index-tmpl').html()),
 		roomAdminIndexTmpl: $.trim($('#roomAdmin-index-tmpl').html()),
 		chatPanelTmpl: $.trim($('#chat-panel-tmpl').html()),
-		userPanelTmpl: $.trim($('#user-panel-tmpl').html())
+		userPanelTmpl: $.trim($('#user-panel-tmpl').html()),
+		profileTmpl: $.trim($('#profile-index-tmpl').html())
 	}
 	$('.template').remove();
 
@@ -43,6 +44,9 @@ $(document).ready(function(){
 				break;
 			case 'chatFrame':
 				module.lounge.renderFrame(res.data);
+				break;
+			case 'profile':
+				module.lounge.renderProfile(res.data);
 				break;
 			case 'lounge':
 				module.lounge.renderIndex();

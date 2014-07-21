@@ -5,6 +5,9 @@ module.lounge = {
 
 		var tmpl = module.template.userPanelTmpl;
 		var $el = $(Mustache.to_html(tmpl, data).replace(/^\s*/mg, ''));
+		$el.find('#profile').click(function(){
+			socket.emit('retrieveUserProfileAction');
+		});
 		$el.find('#signout').click(function(){
 			socket.emit('leaveRoomAction', module.data.room);
 	  		socket.emit('logoutAction');
@@ -39,6 +42,15 @@ module.lounge = {
 		  e.preventDefault()
 		  $(this).tab('show')
 		});
+	},
+
+	renderProfile: function(data){
+		var profileTmpl = module.template.profileTmpl;
+		var $el = $(Mustache.to_html(profileTmpl, data.user).replace(/^\s*/mg, ''));
+		$('.site-wrapper').append($el);
+        $('#profileModal').modal('toggle').on('hidden.bs.modal', function(e){
+            $('#profileModal').remove();
+        });
 	},
 
 	renderIndex: function(){

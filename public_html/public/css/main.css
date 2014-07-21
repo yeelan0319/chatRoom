@@ -236,7 +236,7 @@ body.symbolic{
   width:62%;
 }
 
-#adminModal .modal-content{
+#adminModal .modal-content, #profileModal .modal-content{
   color: #999;
   border: 1px solid rgba(0,0,0,0.5);
   border-radius: 10px 10px 2px 2px;
@@ -249,18 +249,18 @@ body.symbolic{
   -ms-user-select: none;
 }
 
-#adminModal .modal-header{
+#adminModal .modal-header, #profileModal .modal-header{
   border-bottom: 1px solid #222;
 }
 
-#adminModal .modal-title, #adminModal .modal-header .close, #adminModal .checkbox.checked, #adminModal .checkbox.checked .second-icon{
+#adminModal .modal-title, #adminModal .modal-header .close, #adminModal .checkbox.checked, #adminModal .checkbox.checked .second-icon, #profileModal .modal-title, #profileModal .modal-header .close{
   color:#862828;
   text-shadow: 0px 1px 2px #333;
   opacity: 1;
   outline:none;
 }
 
-#adminModal .modal-body{
+#adminModal .modal-body, #profileModal .modal-body{
   border-top: 1px solid #222;
 }
 
@@ -298,7 +298,7 @@ body.symbolic{
   font-size: 13px !important;
 }
 
-#adminModal .table>thead>tr>th{
+#adminModal .table>thead>tr>th, #profileModal .table td{
   border:none;
 }
 

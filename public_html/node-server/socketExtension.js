@@ -129,6 +129,15 @@ module.exports = function socketExtension(socket, next){
         }
         this.emit('render message', res);
     };
+    socket.renderProfile = function(user){
+        var res = {
+            target: 'profile',
+            data: {
+                user: user
+            }
+        }
+        this.emit('render message', res);
+    };
 
     socket.renderErrorMsg = function(errorJSON){
         this.emit('system message', errorJSON);

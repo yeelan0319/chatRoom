@@ -105,7 +105,11 @@ module.exports = function(app){
                 roomController.retrieveLinkedUser(id, socketID);
             }
         });
-
+        socket.on('retrieveUserProfileAction', function(){
+            if(socket.isLoggedIn()){
+                ioController.retrieveUserProfile(socketID);
+            }
+        });
         socket.on('loginAction', function(data){
             data = _parseData(data);
             if(!socket.isLoggedIn()){

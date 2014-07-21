@@ -231,6 +231,13 @@ function IoController(app){
                 that.emit('successfullyRetrievedMessages', result);
             }
         });
+    };
+
+    this.retrieveUserProfile = function(socketID){
+        var socket = app.io.socketList[socketID];
+        _findUserWithUsername(socket.username, function(user){
+            socket.renderProfile(user);
+        });
     }
 
     function welcomeSocket(res){
