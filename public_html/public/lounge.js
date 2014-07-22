@@ -16,8 +16,9 @@ module.lounge = {
 	  	$el.find('#admin').click(function(){
 	  		socket.emit('adminRender', 0);
 	  	});
-	  	$('#user-panel').html($el);
-
+	  	$('.site-wrapper').append($el);
+	  	
+	  	module.privateMessage.init();
 
 	  	socket.emit('retrieveRoomListAction');
 	  	$('.left-container').animate({

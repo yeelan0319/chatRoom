@@ -19,7 +19,9 @@ $(document).ready(function(){
 		roomAdminIndexTmpl: $.trim($('#roomAdmin-index-tmpl').html()),
 		chatPanelTmpl: $.trim($('#chat-panel-tmpl').html()),
 		userPanelTmpl: $.trim($('#user-panel-tmpl').html()),
-		profileTmpl: $.trim($('#profile-index-tmpl').html())
+		profileTmpl: $.trim($('#profile-index-tmpl').html()),
+		pmItemTmpl: $.trim($('#pm-item-tmpl').html()),
+		pmContainerTmpl: $.trim($('#pm-container-tmpl').html())
 	}
 	$('.template').remove();
 

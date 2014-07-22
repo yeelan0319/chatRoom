@@ -28,7 +28,6 @@
   <body>
 
     <div class="site-wrapper">
-        <div id="user-panel" class="dropdown"></div>
         <div class="main-container container-idle"></div>
         <!--<div class="main-container container-in-use"></div>-->
         <div class="left-container">
@@ -37,11 +36,6 @@
             <ul id="room-list" class="list-unstyled">
             </ul>
             <span id="new-room"> + New room</span>
-        </div>
-    </div>
-    <div class="site-footer">
-        <div class="inner">
-            <p>Copyright Symbolic IO™ @ 2014</p>
         </div>
     </div>
     <!-- Bootstrap core JavaScript
@@ -67,6 +61,7 @@
     <script src="/linkedUserItem.js"></script>
     <script src="/roomUserItem.js"></script>
     <script src="/roomItem.js"></script>
+    <script src="/privateMessage.js"></script>
     <script src="/loginRegister.js"></script>
     <script src="/room.js"></script>
     <script src="/lounge.js"></script>
@@ -75,6 +70,21 @@
     <script src="/roomAdmin.js"></script>
 
     <!-- Templates of chat room -->
+    <script id="pm-item-tmpl" type="text/html" class="template">
+        <div class="pm-box-outer pm-item active">
+            <div class="pm-box-inner">
+                <div class="pm-header">
+                    <span>{{firstName}} {{lastName}}</span>
+                    <span class="fui-cross pm-close"></span>
+                </div>
+                <div class="pm-content">
+                    <ul class="list-unstyled">
+                    </ul>
+                    <textarea class='pm-input form-control'></textarea>
+                </div>
+            </div>
+        </div>
+    </script>
     <script id="user-item-tmpl" type="text/html" class="template">
         <tr>
             <td>
@@ -386,12 +396,24 @@
         </div>
     </script>
     <script id="user-panel-tmpl" type="text/html" class="template">
-        <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">{{firstName}}<span class="caret"></span></button>
-        <ul class="dropdown-menu dropdown-inverse">
-            <li><a id="profile">Profile</a></li>
-            <li><a id="admin">System Manage</a></li>
-            <li><a id="signout">Logout</a></li>
-        </ul>
+        <div id="user-panel" class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">{{firstName}}<span class="caret"></span></button>
+            <ul class="dropdown-menu dropdown-inverse">
+                <li><a id="profile">Profile</a></li>
+                <li><a id="admin">System Manage</a></li>
+                <li><a id="signout">Logout</a></li>
+            </ul>
+        </div>
+    </script>
+    <script id="pm-container-tmpl" type="text/html" class="template">
+        <div class="pm-container">
+            <div class="new-pm-outer pm-item">
+                <div class="new-pm pm-box-inner">
+                    <span class="fui-search"></span>
+                    <input class="search-input" type="text" placeholder="Search by email address" style="display:none"/>   
+                </div>
+            </div>
+        </div>
     </script>
   </body>
 </html>
