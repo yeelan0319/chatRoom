@@ -345,7 +345,7 @@ body.symbolic{
 #adminModal input, .pm-content textarea, .pm-content textarea:focus{
   background:transparent;
   border-color:#353636;
-  color:#999;
+  color:#eee;
   font-size:13px;
 }
 
@@ -462,6 +462,10 @@ body.symbolic{
 
 .new-pm .search-input:-ms-input-placeholder {  
    color: #eee;   
+}
+
+.oldMessage{
+  color:#888;
 }
 
 @media (min-width: 768px) {

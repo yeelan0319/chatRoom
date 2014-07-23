@@ -4,12 +4,16 @@ var Message = function(data){
 	this.firstName = data.fromFirstName;
 	this.lastName = data.fromLastName;
 	this.username = data.fromUsername;
+	this.hasRead = data.hasRead;
 	return this;
 }
 
 Message.prototype = {
 	render: function(){
 		this.$el = $('<li>' + this.firstName + ' ' + this.lastName + ': ' + this.msg + '</li>');
+		if(this.hasRead){
+			this.$el.addClass('oldMessage');
+		}
 		return this.$el;
 	}
 }
@@ -37,7 +41,14 @@ PmItem.prototype = {
 
 		that.$el.find('.pm-header').click(function(){that.toggle.apply(that)});
 		that.$el.find('.pm-close').click(function(){that.close.apply(that)});
-		return this.$el;
+		that.$el.find('.pm-input').keydown(function(event){
+			if(event.which == 13){
+				that.sendpm.apply(that);
+				return false;
+			}
+		});
+		that.open();
+		return that.$el;
 	},
 
 	renderMessage: function(){
@@ -51,6 +62,12 @@ PmItem.prototype = {
 
 	toggle: function(){
 		this.$el.toggleClass('active');
+		if(this.$el.is('.active')){
+			var data = {
+				fromUsername: this.username
+			}
+			socket.emit('readPmAction', JSON.stringify(data));
+		}
 	},
 
 	close: function(){
@@ -59,12 +76,23 @@ PmItem.prototype = {
 	},
 
 	open: function(){
-		this.$el.addClass('active').show();
+		this.$el.addClass('active').show().find('.pm-input').focus();
+		var data = {
+			fromUsername: this.username
+		}
+		socket.emit('readPmAction', JSON.stringify(data));
 		return this;
 	},
 
 	sendpm: function(){
-		//emit and send pm
+		var $input = this.$el.find('.pm-input');
+		var msg = $input.val();
+		var pm = {
+			toUsername: this.username,
+			msg: msg
+		}
+		socket.emit('sendPmAction', JSON.stringify(pm));
+		$input.val('');
 	}
 }
 
@@ -86,10 +114,13 @@ module.privateMessage = {
 	},
 
 	findUserWithUsername: function(username){
-		//emit and send the user information back, in dummy data format
+		var data = {
+			username: username
+		}
+		socket.emit('createPmAction', JSON.stringify(data));
 	},
 
-	_createNewPm: function(data){
+	createNewPm: function(data){
 		var pmItem = new PmItem(data);
 		$('.pm-container').append(pmItem.render());
 		module.privateMessage.pmList[pmItem.username] = pmItem;
@@ -97,11 +128,12 @@ module.privateMessage = {
 	},
 
 	receivepm: function(data){
-		// data = JSON.parse(data);
-		// if(data.meta.status == 200){
+		data = JSON.parse(data);
+		if(data.meta.status == 200){
+			data = data.data;
 			var pmItem = module.privateMessage.pmList[data.username];
 			if(!pmItem){
-				pmItem = module.privateMessage._createNewPm(data);
+				pmItem = module.privateMessage.createNewPm(data);
 			}
 			else{
 				$.each(data.messageArr, function(index, messageData){
@@ -110,12 +142,21 @@ module.privateMessage = {
 				});
 				pmItem.open().renderMessage();
 			}
-	// 	}
+		}
 	},
 
 	searchIconClicked: function(){
 		if($('.new-pm-outer').is('.active')){
 			//search
+			var username = $('.new-pm .search-input').val();
+			var pmItem = module.privateMessage.pmList[username];
+			if(pmItem){
+				pmItem.open();
+			}
+			else{
+				module.privateMessage.findUserWithUsername(username);	
+			}
+			module.privateMessage.searchClose();
 		}
 		else{
 			module.privateMessage.searchOpen();
@@ -125,7 +166,7 @@ module.privateMessage = {
 	searchOpen: function(){
 		$('.new-pm-outer').addClass('active').animate({
 			width: 195
-		},600, function(){
+		},500, function(){
 			$('.new-pm .search-input').show().focus();
 		});
 	},
@@ -133,7 +174,7 @@ module.privateMessage = {
 	searchClose: function(){
 		$('.new-pm-outer').removeClass('active').animate({
 			width: 35
-		},600, function(){
+		},0, function(){
 			$('.new-pm .search-input').val('').hide();
 		});
 	}
@@ -148,13 +189,15 @@ var dummyData = {
 		ctime: Date.now(),
 		fromFirstName: 'Yiran',
 		fromLastName: 'Mao',
-		fromUsername: 'yiranmao@gmail.com'
+		fromUsername: 'yiranmao@gmail.com',
+		hasRead: true
 	},{
 		msg: 'haha',
 		ctime: Date.now(),
 		fromFirstName: 'yeelan',
 		fromLastName: 'Mao',
-		fromUsername: 'yiranmao@gmail.com'
+		fromUsername: 'yiranmao@gmail.com',
+		hasRead: false
 	}]
 }
 
@@ -167,12 +210,14 @@ var dummyData2 = {
 		ctime: Date.now(),
 		fromFirstName: 'Yiran',
 		fromLastName: 'Mao',
-		fromUsername: 'yiranmao@gmail.com'
+		fromUsername: 'yiranmao@gmail.com',
+		hasRead: false
 	},{
 		msg: 'haha1111',
 		ctime: Date.now(),
 		fromFirstName: 'yeelan',
 		fromLastName: 'Mao',
-		fromUsername: 'yiranmao@gmail.com'
+		fromUsername: 'yiranmao@gmail.com',
+		hasRead: false
 	}]
 }

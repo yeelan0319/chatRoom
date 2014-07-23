@@ -83,6 +83,13 @@ module.exports = function(app){
                 ioController.retrieveUserProfile(socketID);
             }
         });
+        socket.on('createPmAction', function(data){
+            data = _parseData(data);
+            if(socket.isLoggedIn()){
+                var username = data.username;
+                ioController.retrievePm(username, socketID);
+            }
+        });
         socket.on('adminRender', function(id){
             if(id===0){
                 if(socket.isAdmin()){
@@ -163,6 +170,22 @@ module.exports = function(app){
             if(socket.isAdmin()){
                 var username = data.username;
                 ioController.bootUser(username);
+            }
+        });
+        socket.on('sendPmAction', function(data){
+            data = _parseData(data);
+            if(socket.isLoggedIn()){
+                var toUsername = data.toUsername;
+                var msg = data.msg;
+                ioController.sendPm(toUsername, msg, socketID);     
+            }
+        });
+        socket.on('readPmAction', function(data){
+            data = _parseData(data);
+            if(socket.isLoggedIn()){
+                var fromUsername = data.fromUsername;
+                var toUsername = socket.username;
+                ioController.readPm(fromUsername, toUsername);
             }
         });
         socket.on('editRoomAdminAction', function(data){

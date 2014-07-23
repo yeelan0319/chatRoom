@@ -35,7 +35,7 @@ Response: room data - [type: reset, data: {room objs}]
 
 **Enter Room:**
 
-Request: joinRoomAction - [roomid]
+Request: joinRoomAction - [data:{from, to}]
 
 Response: render message - [target: room, data: roomid&name]
 
@@ -44,6 +44,24 @@ Response: render message - [target: room, data: roomid&name]
 Request: leaveRoomAction - [roomid]
 
 Response: render message - [target: lounge]
+
+**Retrieve the past 10 minutes message within room:**
+
+Request: retrievePastMessage - [roomid]
+
+Response: chat messages - [[messages]]
+
+**Retrieve the user profile:**:
+
+Request: retrieveUserProfileAction
+
+Response: render message- [target: profile, data: user]
+
+**Create private message:**
+
+Request: createPmAction - [username]
+
+Response: private messages - [{username, firstName, lastName, messageArr:[msg, ctime, fromUsername, fromFirstName, fromLastName, hasRead]}]
 
 **Admin Page Render:**
 
@@ -68,6 +86,11 @@ Reponse: users data - successJSON:[[users objs]]
 Request: retrieveRoomLinkedUserAction - [roomid]
 
 Response: room linked users data - [sockets:[simple socket objs], admins: [usernames]]
+
+**retrieve chat log with room/user/date constraint:**
+
+Request: retrieveChatLogAction - constaints
+Response: chat log - [[messages]]
 
 ###Session Level Action:
 
@@ -149,17 +172,17 @@ Request: systemBootAction - [username]
 
 Response: render message - [target: bootedPage]
 
-**Edit room admin:**
+**Send private message:**
 
-Request: editRoomAdminAction - [id, username, permission]
+Request: sendPmAction - [toUsername, msg]
 
-Reponse: No
+Response: private messages - [{username, firstName, lastName, messageArr:[msg, ctime, fromUsername, fromFirstName, fromLastName, hasRead]}]
+	
+**Read private message:**
 
-**Room boot user:**
+Request: readPmAction - [fromUsername]
 
-Request: roomBootAction - [id, username]
-
-Response: render message - [target: lounge]
+Response: No
 
  
 ###Room Level Action:
@@ -168,7 +191,7 @@ Response: render message - [target: lounge]
 
 Request: chatAction - [msg, roomid]
 
-Response: chat message - [msg]
+Response: chat messages - [[msg]]
 
 **Create Room:**
 
@@ -182,7 +205,17 @@ Request: destoryRoomAction - [id]
 
 Response: room data - [type: delete, data: {room obj}]
 
+**Edit room admin:**
 
+Request: editRoomAdminAction - [id, username, permission]
+
+Reponse: No
+
+**Room boot user:**
+
+Request: roomBootAction - [id, username]
+
+Response: render message - [target: lounge]
 
 
 ###Server initalization:

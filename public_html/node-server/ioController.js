@@ -256,7 +256,97 @@ function IoController(app){
         _findUserWithUsername(socket.username, function(user){
             socket.renderProfile(user);
         });
-    }
+    };
+
+    this.sendPm = function(toUsername, msg, socketID){
+        var socket = app.io.socketList[socketID];
+        if(socket.username === toUsername) return;
+        _findUserWithUsername(toUsername, function(user){
+            if(user){
+                var pm = {
+                    toUsername: user.username,
+                    toFirstName: user.firstName,
+                    toLastName: user.lastName,
+                    fromUsername: socket.username,
+                    fromFirstName: socket.firstName,
+                    fromLastName: socket.lastName,
+                    ctime: Date.now(),
+                    msg: msg,
+                    hasRead: false
+                }
+                app.db.collection('pms').insert(pm, {w:1}, function(err, result) {
+                    if(err){
+                        //this is socket-level info
+                        //that.emit('excepetion', new ExistingUserError());
+                        //redo the work
+                    }
+                    else{
+                        var receiverPmItemData = {
+                            username: socket.username,
+                            firstName: socket.firstName,
+                            lastName: socket.lastName,
+                            messageArr: [pm]
+                        };
+                        var senderPmItemData = {
+                            username: user.username,
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            messageArr: [pm]
+                        };
+                        app.io.to('/private/user/' + user.username).emit('private messages', responseJson.success(receiverPmItemData));
+                        app.io.to('/private/user/' + socket.username).emit('private messages', responseJson.success(senderPmItemData));
+                    }
+                });
+            }
+        });
+    };
+
+    this.retrievePm = function(username, socketID){
+        var socket = app.io.socketList[socketID];
+        //if(socket.username === username) return;
+
+        var duration = 60 * MINUTE;
+        _findUserWithUsername(username, function(user){
+            if(user){
+                app.db.collection('pms').find({toUsername: user.username, ctime:{$gt: Date.now() - duration}}).toArray(function(err, pms){
+                    if(err){
+                        //this is socket-level info
+                        //throw new DatabaseError();
+                        //redo the work
+                    }
+                    else{
+                        var pmItemData = {
+                            username: user.username,
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            messageArr: pms
+                        };
+                        app.io.to('/private/user/' + socket.username).emit('private messages', responseJson.success(pmItemData));
+                    }
+                });
+            }
+            else{
+                //should tell user that the user not exist
+            }
+        });
+    };
+
+    this.readPm = function(fromUsername, toUsername){
+        var conditions = {
+            fromUsername: fromUsername, 
+            toUsername: toUsername, 
+            ctime:{
+                $lt: Date.now()
+            }
+        }
+        app.db.collection('pms').update(conditions, {$set: {hasRead: true}}, {multi: true}, function(err, result){
+            if(err){
+                //this is socket-level info
+                //throw new DatabaseError();
+                //redo the work
+            }
+        });
+    };
 
     function welcomeSocket(res){
         var socket = app.io.socketList[res.target];
