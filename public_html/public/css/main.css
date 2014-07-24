@@ -366,7 +366,7 @@ body.symbolic{
  * Affix and center
  */
 
-.pm-container{
+#pm-container{
   position: fixed;
   right:0px;
   bottom: 0px;

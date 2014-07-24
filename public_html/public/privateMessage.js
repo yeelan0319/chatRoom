@@ -11,9 +11,9 @@ var Message = function(data){
 Message.prototype = {
 	render: function(){
 		this.$el = $('<li>' + this.firstName + ' ' + this.lastName + ': ' + this.msg + '</li>');
-		if(this.hasRead){
-			this.$el.addClass('oldMessage');
-		}
+		// if(this.hasRead){
+		// 	this.$el.addClass('oldMessage');
+		// }
 		return this.$el;
 	}
 }
@@ -39,8 +39,8 @@ PmItem.prototype = {
 		
 		that.renderMessage();
 
-		that.$el.find('.pm-header').click(function(){that.toggle.apply(that)});
-		that.$el.find('.pm-close').click(function(){that.close.apply(that)});
+		that.$el.find('.pm-header').click(function(){that.toggle.apply(that); return false;});
+		that.$el.find('.pm-close').click(function(){that.close.apply(that); return false;});
 		that.$el.find('.pm-input').keydown(function(event){
 			if(event.which == 13){
 				that.sendpm.apply(that);
@@ -61,18 +61,17 @@ PmItem.prototype = {
 	},
 
 	toggle: function(){
-		this.$el.toggleClass('active');
 		if(this.$el.is('.active')){
-			var data = {
-				fromUsername: this.username
-			}
-			socket.emit('readPmAction', JSON.stringify(data));
+			this.$el.removeClass('active');
+		}
+		else{
+			this.open();
 		}
 	},
 
 	close: function(){
 		this.$el.hide();
-		return false;
+		return this;
 	},
 
 	open: function(){
@@ -122,7 +121,7 @@ module.privateMessage = {
 
 	createNewPm: function(data){
 		var pmItem = new PmItem(data);
-		$('.pm-container').append(pmItem.render());
+		$('#pm-container').append(pmItem.render());
 		module.privateMessage.pmList[pmItem.username] = pmItem;
 		return pmItem;
 	},

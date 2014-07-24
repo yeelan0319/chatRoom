@@ -87,7 +87,7 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isLoggedIn()){
                 var username = data.username;
-                ioController.retrievePm(username, socketID);
+                ioController.createPm(username, socketID);
             }
         });
         socket.on('adminRender', function(id){
