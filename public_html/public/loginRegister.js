@@ -60,6 +60,9 @@ module.loginRegister = {
 	},
 
 	renderSessionFrame: function(){
+		module.data.user = {};
+		module.data.roomList = {};
+		module.data.pmList = {};
 		$('#user-panel, #pm-container').remove();
 		$('body').removeClass('symbolic');
 		$('.main-container').removeClass('chat-container').addClass('session-container');

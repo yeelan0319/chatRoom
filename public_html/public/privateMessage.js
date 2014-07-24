@@ -96,8 +96,6 @@ PmItem.prototype = {
 }
 
 module.privateMessage = {
-	pmList:{},
-
 	init: function(){
 		var tmpl = module.template.pmContainerTmpl;
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
@@ -122,7 +120,7 @@ module.privateMessage = {
 	createNewPm: function(data){
 		var pmItem = new PmItem(data);
 		$('#pm-container').append(pmItem.render());
-		module.privateMessage.pmList[pmItem.username] = pmItem;
+		module.data.pmList[pmItem.username] = pmItem;
 		return pmItem;
 	},
 
@@ -130,7 +128,7 @@ module.privateMessage = {
 		data = JSON.parse(data);
 		if(data.meta.status == 200){
 			data = data.data;
-			var pmItem = module.privateMessage.pmList[data.username];
+			var pmItem = module.data.pmList[data.username];
 			if(!pmItem){
 				pmItem = module.privateMessage.createNewPm(data);
 			}
@@ -148,7 +146,7 @@ module.privateMessage = {
 		if($('.new-pm-outer').is('.active')){
 			//search
 			var username = $('.new-pm .search-input').val();
-			var pmItem = module.privateMessage.pmList[username];
+			var pmItem = module.data.pmList[username];
 			if(pmItem){
 				pmItem.open();
 			}

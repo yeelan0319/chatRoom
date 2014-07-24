@@ -5,7 +5,8 @@ $(document).ready(function(){
 	module.data = {
 		pos: '',
 		room: '',
-		roomList: {}
+		roomList: {},
+		pmList:{}
 	}
 	module.template = {
 		userItemTmpl: $.trim($('#user-item-tmpl').html()),

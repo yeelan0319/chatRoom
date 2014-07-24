@@ -77,7 +77,7 @@ module.lounge = {
 			var room = module.data.roomList[roomdata._id];
 			if(room){
 				room.destory();
-				delete room;
+				delete module.data.roomList[roomdata._id];
 			}
 		});
 	},
