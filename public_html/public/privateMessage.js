@@ -52,7 +52,7 @@ PmItem.prototype = {
 
 	renderMessage: function(){
 		var that = this;
-		var pmContainer = that.$el.find('.pm-content>ul');
+		var pmContainer = that.$el.find('.pm-content>.pm-message-container>ul');
 		pmContainer.html('');
 		$.each(that.messageArr, function(index, message){
 			pmContainer.append(message.render());
@@ -76,7 +76,9 @@ PmItem.prototype = {
 	open: function(){
 		this.$el.show();
 		module.privateMessage.closeOverfitPm();
-		this.$el.addClass('active').find('.pm-input').focus()
+		this.$el.addClass('active').find('.pm-input').focus();
+
+		this.$el.find('.pm-message-container').scrollTop(this.$el.find('.pm-message-container')[0].scrollHeight);
 		var data = {
 			fromUsername: this.username
 		}

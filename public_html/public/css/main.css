@@ -468,7 +468,7 @@ body.symbolic{
   color:#888;
 }
 
-#adminModal .modal-content .tab-pane{
+#adminModal .modal-content .tab-pane, .pm-message-container{
   overflow-x: hidden;
   overflow-y: scroll;
 }
@@ -494,6 +494,10 @@ body.symbolic{
   #adminModal .modal-content .tab-pane{
     height:200px;
   }
+
+  .pm-message-container{
+    max-height:300px;
+  }
 }
 
 @media (min-height:600px) and (max-height: 1000px){
@@ -504,6 +508,10 @@ body.symbolic{
   #adminModal .modal-content .tab-pane{
     height:400px;
   }
+
+  .pm-message-container{
+    max-height:500px;
+  }
 }
 
 @media (min-height: 1000px){
@@ -513,6 +521,10 @@ body.symbolic{
 
   #adminModal .modal-content .tab-pane{
     height:600px;
+  }
+
+  .pm-message-container{
+    max-height:700px;
   }
 }
 
