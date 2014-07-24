@@ -1,10 +1,10 @@
 module.lounge = {
-	renderFrame: function(data){
+	renderFrame: function(user){
 		$('body').addClass('symbolic');
 		$('.main-container').removeClass('session-container').addClass('chat-container');
 
 		var tmpl = module.template.userPanelTmpl;
-		var $el = $(Mustache.to_html(tmpl, data).replace(/^\s*/mg, ''));
+		var $el = $(Mustache.to_html(tmpl, user).replace(/^\s*/mg, ''));
 		$el.find('#profile').click(function(){
 			socket.emit('retrieveUserProfileAction');
 		});
@@ -25,7 +25,7 @@ module.lounge = {
 			left: 0
 		},600);
 		$('#lounge').click(function(){
-			data = {
+			var data = {
 				from: module.data.room,
 				to: 0
 			}

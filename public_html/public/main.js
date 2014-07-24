@@ -45,6 +45,7 @@ $(document).ready(function(){
 				module.loginRegister.renderRegister();
 				break;
 			case 'chatFrame':
+				module.data.user = res.data;
 				module.lounge.renderFrame(res.data);
 				break;
 			case 'profile':
