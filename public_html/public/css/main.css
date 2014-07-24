@@ -468,6 +468,11 @@ body.symbolic{
   color:#888;
 }
 
+#adminModal .modal-content .tab-pane{
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
 @media (min-width: 768px) {
   /* Pull out the header and footer */
   .site-footer {
@@ -485,17 +490,29 @@ body.symbolic{
   #chat-panel{
     height:400px;
   }
+
+  #adminModal .modal-content .tab-pane{
+    height:200px;
+  }
 }
 
 @media (min-height:600px) and (max-height: 1000px){
   #chat-panel{
       height:600px;
     }
+
+  #adminModal .modal-content .tab-pane{
+    height:400px;
+  }
 }
 
 @media (min-height: 1000px){
   #chat-panel{
       height:800px;
     }
+
+  #adminModal .modal-content .tab-pane{
+    height:600px;
+  }
 }
 

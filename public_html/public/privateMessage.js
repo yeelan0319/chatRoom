@@ -101,6 +101,12 @@ module.privateMessage = {
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
 
 		$el.find('.new-pm .fui-search').click(module.privateMessage.searchIconClicked);
+		$el.find('.new-pm .search-input').keydown(function(event){
+			if(event.which == 13){
+				module.privateMessage.searchIconClicked();
+				return false;
+			}
+		});
 		$(document).on('click.bs.pm', function(e){
 			var clickWithinNewPm = $(e.target).closest('.new-pm').length == 0? false : true;
 			if(!clickWithinNewPm && $('.new-pm-outer').is('.active')){
