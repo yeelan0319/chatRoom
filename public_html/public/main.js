@@ -78,7 +78,7 @@ $(document).ready(function(){
 			if(module.data.pos === 'lounge' || module.data.pos === 'room'){
 				$.each(data.data, function(index, message){
 					var msg = message.firstName + ": " + message.msg;
-					module.chat.renderSystemMessage(msg);
+					module.chat.renderChatMessage(msg);
 				});
 			}
 		}

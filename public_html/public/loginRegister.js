@@ -60,11 +60,11 @@ module.loginRegister = {
 	},
 
 	renderSessionFrame: function(){
-		$('#user-panel').html('');
+		$('#user-panel, #pm-container').remove();
 		$('body').removeClass('symbolic');
 		$('.main-container').removeClass('chat-container').addClass('session-container');
 		$('.left-container').animate({
 			left: -200
-		},600);
+		},600).find('#room-list').html('');
 	}
 }

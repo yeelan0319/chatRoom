@@ -55,6 +55,7 @@ module.roomAdmin = {
                 id: module.data.room
             }
             socket.emit('destoryRoomAction', JSON.stringify(data));
+            $('#adminModal').modal('hide');
         }
     }
 

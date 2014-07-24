@@ -145,13 +145,14 @@ function RoomController(app){
             type: 'delete',
             data: {'1': room}
         }
-        console.log(room);
         app.io.sockets.emit('room data', responseJson.success(result));
 
         var chatroom = app.io.sockets.adapter.rooms['/chatRoom/' + room._id];
         for(var socketID in chatroom){
             if(chatroom.hasOwnProperty(socketID)){
-                app.io.socketList[socketID].leaveRoom(room._id);
+                var targetSocket = app.io.socketList[socketID];
+                targetSocket.leaveRoom(room._id);
+                targetSocket.joinLounge();
             }
         }
     }
