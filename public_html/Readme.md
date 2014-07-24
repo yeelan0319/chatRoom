@@ -236,27 +236,29 @@ Response: render message - [target: lounge]
 ###Service Test list
 1.  User is able to login/logout/register with multiple tabs
 2.  User is able to perserve proper login/logout status
-3.  User is able to chat with each other
-4.  Admin is able to view the content of the admin page
-5.  Admin is able to go back and foreth between admin and chat page
-6.  Admin is able to boot user
+3.  User is able to create a room and the information should be announced with all users at lounge, no duplicate name for active room
+4.  User is able to enter/leave the room and lounge
+5.  User is able to chat with each other in lounge and room, the traffic won't interrupt each other
+6.  When enter a room/lounge, show past 10 minutes messages
+7.  User is able to view profile
+8.  Admin is able to view the content of the admin page
+9.  Admin is able to boot user
     - Boot one user
     - Boot one user with multiple socket but same session
     - Boot one user with multiple session, and of course sockets
-7. Admin is able to change the permission of user
+10. Admin is able to change the permission of user
     - Change one user
     - Change one user with multiple socket but same session
     - Change one user with multiple session, and of course sockets
-8. Admin is able to delete user
+11. Admin is able to delete user
     - Delete one user
     - Delete one user with multiple socket but same session
     - Delete one user with multiple session, and of course sockets
-9. User is able to create a room and the information should be announced with all users at lounge
-10. User is able to enter a room and chat within the room
-11. User is able to go back to the room and chat in lounge
 12. Room admin/system admin is able to view the content of the room admin page
 13. Room admin/system admin can set others as room admin
 14.  Room admin/system admin is able to boot people to lounge
 15.  Room admin/system admin is able to delete a room
-
+16.  System admin is able to retrieve chat traffic for active room and filter with username, room, start and end date
+17.  User is able to send PM between each other
+18.  Unread PM will pop out when user login
 
