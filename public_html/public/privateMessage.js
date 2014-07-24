@@ -47,7 +47,6 @@ PmItem.prototype = {
 				return false;
 			}
 		});
-		that.open();
 		return that.$el;
 	},
 
@@ -70,12 +69,14 @@ PmItem.prototype = {
 	},
 
 	close: function(){
-		this.$el.hide();
+		this.$el.removeClass('active').hide();
 		return this;
 	},
 
 	open: function(){
-		this.$el.addClass('active').show().find('.pm-input').focus();
+		this.$el.show();
+		module.privateMessage.closeOverfitPm();
+		this.$el.addClass('active').find('.pm-input').focus()
 		var data = {
 			fromUsername: this.username
 		}
@@ -113,6 +114,7 @@ module.privateMessage = {
 				module.privateMessage.searchClose();
 			}
 		});
+		$(window).resize(module.privateMessage.closeOverfitPm);
 		$('.site-wrapper').append($el);
 	},
 
@@ -123,9 +125,16 @@ module.privateMessage = {
 		socket.emit('createPmAction', JSON.stringify(data));
 	},
 
+	closeOverfitPm: function(){
+		if($(window).width() - $('#pm-container').width() < 200){
+			$('.pm-box-outer.active').first().find('.pm-close').click();
+		}	
+	},
+
 	createNewPm: function(data){
 		var pmItem = new PmItem(data);
 		$('#pm-container').append(pmItem.render());
+		pmItem.open();
 		module.data.pmList[pmItem.username] = pmItem;
 		return pmItem;
 	},
@@ -181,46 +190,4 @@ module.privateMessage = {
 			$('.new-pm .search-input').val('').hide();
 		});
 	}
-}
-
-var dummyData = {
-	username: 'yiranmao@gmail.com',
-	firstName: 'Yiran',
-	lastName: 'Mao',
-	messageArr: [{
-		msg: 'test',
-		ctime: Date.now(),
-		fromFirstName: 'Yiran',
-		fromLastName: 'Mao',
-		fromUsername: 'yiranmao@gmail.com',
-		hasRead: true
-	},{
-		msg: 'haha',
-		ctime: Date.now(),
-		fromFirstName: 'yeelan',
-		fromLastName: 'Mao',
-		fromUsername: 'yiranmao@gmail.com',
-		hasRead: false
-	}]
-}
-
-var dummyData2 = {
-	username: 'ym731@nyu.com',
-	firstName: 'Yiran',
-	lastName: 'Mao',
-	messageArr: [{
-		msg: 'test1111',
-		ctime: Date.now(),
-		fromFirstName: 'Yiran',
-		fromLastName: 'Mao',
-		fromUsername: 'yiranmao@gmail.com',
-		hasRead: false
-	},{
-		msg: 'haha1111',
-		ctime: Date.now(),
-		fromFirstName: 'yeelan',
-		fromLastName: 'Mao',
-		fromUsername: 'yiranmao@gmail.com',
-		hasRead: false
-	}]
 }
