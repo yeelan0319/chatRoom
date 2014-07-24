@@ -44,11 +44,6 @@ module.exports = function(app){
         socket.on('registerRender', function(){
             socket.isLoggedIn() ? socket.renderLounge() : socket.renderRegister();
         });
-        socket.on('retrieveRoomListAction', function(){
-            if(socket.isLoggedIn()){
-                roomController.retrieveRoomList(socketID);
-            }
-        });
         socket.on('joinRoomAction', function(data){
             data = _parseData(data);
             if(socket.isLoggedIn()){

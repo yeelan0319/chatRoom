@@ -460,10 +460,20 @@ function IoController(app){
         }
     }
 
+    function _retrieveRoomList(socket){
+        var result = {
+            type: 'reset',
+            data: app.roomList
+        }
+        socket.emit('room data', responseJson.success(result));     
+    }
+
     function _welcomeUser(socket, user){
         socket.setSocketUser(user);
         socket.welcomeUser(); 
         _checkUnreadPm(socket);
+        _retrieveRoomList(socket);
+
     }
 
     function _renderLogin(socket){

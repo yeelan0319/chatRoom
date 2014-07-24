@@ -21,15 +21,6 @@ function RoomController(app){
         });
     })();
 
-    this.retrieveRoomList = function(socketID){
-        var socket = app.io.socketList[socketID];
-        var result = {
-            type: 'reset',
-            data: app.roomList
-        }
-        socket.emit('room data', responseJson.success(result));     
-    };
-
     this.isAdminOfRoom = function(id, username){
         return app.roomList[id].adminOfRoom.indexOf(username) != -1 ? true : false;
     };

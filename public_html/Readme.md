@@ -8,7 +8,11 @@ _all the following response level is based on the response level, since all requ
 
 Request: loginRender
 
-Response: render message - [target: login/lounge] 
+Response: 
+
+1. render message - [target: login/lounge] 
+2. private messages(only if there is unread message)
+3. room data - [type: reset, data: {room objs}]
 
 Process:
 
@@ -26,12 +30,6 @@ Process:
 
 1. Socket.isLoggedIn()
 2. If not logged in, Socket.renderRegister(); If logged in, Socket.renderLounge()
-
-**Load Room List:**
-
-Request: retrieveRoomListAction
-
-Response: room data - [type: reset, data: {room objs}]
 
 **Enter Room:**
 

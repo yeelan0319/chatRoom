@@ -20,7 +20,6 @@ module.lounge = {
 	  	
 	  	module.privateMessage.init();
 
-	  	socket.emit('retrieveRoomListAction');
 	  	$('.left-container').animate({
 			left: 0
 		},600);
