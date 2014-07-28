@@ -110,7 +110,7 @@ module.privateMessage = {
 				return false;
 			}
 		});
-		$(document).on('click.bs.pm', function(e){
+		$(document).unbind('.symbolic.pm').on('click.symbolic.pm', function(e){
 			var clickWithinNewPm = $(e.target).closest('.new-pm').length == 0? false : true;
 			if(!clickWithinNewPm && $('.new-pm-outer').is('.active')){
 				module.privateMessage.searchClose();
