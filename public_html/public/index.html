@@ -230,7 +230,7 @@
         <div id="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">{{name}}</h3>
-                <span id="room-admin" class="fui-gear" title="Room Administration"></span>
+                {{#isAdminOfRoom}}<span id="room-admin" class="fui-gear" title="Room Administration"></span>{{/isAdminOfRoom}}
             </div>
         </div>
     </script>
@@ -402,7 +402,7 @@
             <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">{{firstName}}<span class="caret"></span></button>
             <ul class="dropdown-menu dropdown-inverse">
                 <li><a id="profile">Profile</a></li>
-                <li><a id="admin">System Manage</a></li>
+                {{#permission}}<li><a id="admin">System Manage</a></li>{{/permission}}
                 <li><a id="signout">Logout</a></li>
             </ul>
         </div>

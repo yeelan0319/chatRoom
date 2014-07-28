@@ -56,9 +56,9 @@ module.exports = function socketExtension(socket, next){
         this.renderLounge();
     };
 
-    socket.joinRoom = function(id, name){
+    socket.joinRoom = function(id, name, isAdminOfRoom){
         this.join('/chatRoom/' + id);
-        this.renderRoom(id, name);
+        this.renderRoom(id, name, isAdminOfRoom);
     };
     socket.leaveRoom = function(id){
         this.leave('/chatRoom/' + id);
@@ -100,12 +100,13 @@ module.exports = function socketExtension(socket, next){
         }
         this.emit('render message', res);
     };
-    socket.renderRoom = function(id, name){
+    socket.renderRoom = function(id, name, isAdminOfRoom){
         var res = {
             target: 'room',
             data: {
                 id: id,
-                name: name
+                name: name,
+                isAdminOfRoom: isAdminOfRoom
             }
         }
         this.emit('render message', res)

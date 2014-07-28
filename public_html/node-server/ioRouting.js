@@ -58,7 +58,8 @@ module.exports = function(app){
                     var targetRoom = app.roomList[to];
                     if(targetRoom){
                         var name = targetRoom.name;
-                        socket.joinRoom(to, name);
+                        var isAdminOfRoom = socket.isAdmin()||roomController.isAdminOfRoom(to, socket.username);
+                        socket.joinRoom(to, name, isAdminOfRoom);
                     }
                 }
             }
