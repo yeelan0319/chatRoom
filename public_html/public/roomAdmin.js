@@ -6,6 +6,7 @@ module.roomAdmin = {
         var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
         $('.site-wrapper').append($el);
         $('#adminModal').modal('toggle').on('hidden.bs.modal', function(e){
+            module.data.pos = 'room'; 
             $('#adminModal').remove();
         });
 

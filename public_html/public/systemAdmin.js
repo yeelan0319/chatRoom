@@ -9,6 +9,7 @@ module.systemAdmin = {
         });
         $('.site-wrapper').append($el);
         $('#adminModal').modal('toggle').on('hidden.bs.modal', function(e){
+            module.data.pos = module.data.room == 0 ? 'lounge' : 'room'; 
             $('#adminModal').remove();
         });
         $('#realtime').click(function(){
