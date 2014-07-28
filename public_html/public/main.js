@@ -34,6 +34,7 @@ $(document).ready(function(){
 		if(res.target == 'bootedPage'){
 			$('body').html('');
 			alert("You've been booted out of the system by administrator");
+			//TODO: change it to Modal
 		}
 
 		switch(res.target){
@@ -76,12 +77,12 @@ $(document).ready(function(){
 	socket.on('chat messages', function(data){
 		data = JSON.parse(data);
 		if(data.meta.status == 200){
-			if(module.data.pos === 'lounge' || module.data.pos === 'room'){
-				$.each(data.data, function(index, message){
+			$.each(data.data, function(index, message){
+				if(message.room == module.data.room){
 					var msg = message.firstName + ": " + message.msg;
 					module.chat.renderChatMessage(msg);
-				});
-			}
+				}
+			});
 		}
 	});
 
