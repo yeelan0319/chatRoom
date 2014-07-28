@@ -14,6 +14,8 @@
 
 /*Overwrite some default lib style*/
 u{
+  position: relative;
+  top:10px;
   font-size:13px;
   cursor: pointer;
 }
@@ -80,6 +82,10 @@ body.symbolic{
   box-shadow: inset 0 0 100px rgba(0,0,0,.5);
   overflow:scroll;
   min-width: 1024px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  cursor:default;
 }
 
 .main-container {
@@ -110,6 +116,9 @@ body.symbolic{
   top: 25px;
 }
 
+.roomAdmin, .boot{
+  cursor: pointer;
+}
 /*
  * Footer
  */
@@ -162,9 +171,6 @@ body.symbolic{
   min-width:125px;
   margin-top:-8px;
   margin-left:-15px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   background:rgba(48,40,40,0.43);
   border:1px solid #333;
   box-shadow: 1px 0px 5px rgba(0,0,0,.75);
@@ -255,9 +261,6 @@ body.symbolic{
   -moz-box-shadow: 0 2px 6px rgba(255, 32, 32, 0.5), inset 0 1px rgba(223, 134, 134, 0.3), inset 0 7px rgba(226, 149, 149, 0.2), inset 0 15px 20px rgba(255, 255, 255, 0.05), inset 0 -15px 30px rgba(0,0,0,0.3);
   box-shadow: 0 2px 6px rgba(255, 32, 32, 0.5), inset 0 1px rgba(223, 134, 134, 0.3), inset 0 7px rgba(226, 149, 149, 0.2), inset 0 15px 20px rgba(255, 255, 255, 0.05), inset 0 -15px 30px rgba(0,0,0,0.3);
   background: rgba(0, 0, 0, 0.6);
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
 }
 
 #adminModal .modal-header, #profileModal .modal-header{
