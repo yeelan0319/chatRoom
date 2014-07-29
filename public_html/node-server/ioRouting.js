@@ -49,29 +49,16 @@ module.exports = function(app){
             if(socket.isLoggedIn()){
                 var from = data.from;
                 var to = data.to;
+                
                 socket.leaveRoom(from);
-
-                if(to === 0){
-                    socket.joinLounge();
-                }
-                else{
-                    var targetRoom = app.roomList[to];
-                    if(targetRoom){
-                        var name = targetRoom.name;
-                        var isAdminOfRoom = socket.isAdmin()||roomController.isAdminOfRoom(to, socket.username);
-                        socket.joinRoom(to, name, isAdminOfRoom);
-                    }
-                }
+                roomController.joinRoom(to, socketID);
             }
         });
-        socket.on('leaveRoomAction', function(id){
+        socket.on('leaveRoomAction', function(data){
+            data = _parseData(data);
             if(socket.isLoggedIn()){
+                var id = data.id;
                 socket.leaveRoom(id);
-            }
-        });
-        socket.on('retrievePastMessage', function(id){
-            if(socket.isLoggedIn()){
-                ioController.retrievePastMessage(id, socketID);
             }
         });
         socket.on('retrieveUserProfileAction', function(){
@@ -137,8 +124,9 @@ module.exports = function(app){
                 var lastName = data.lastName;
                 var phoneNumber = data.phoneNumber;
                 var birthday = data.birthday;
+                var email = data.email;
                 var jobDescription = data.jobDescription;
-                ioController.createNewUser(username, password, firstName, lastName, phoneNumber, birthday, jobDescription, session);
+                ioController.createNewUser(username, password, firstName, lastName, phoneNumber, birthday, email, jobDescription, session);
             }
         });
         socket.on('logoutAction', function(){
@@ -206,7 +194,7 @@ module.exports = function(app){
             var id = data.id;
             if(socket.isLoggedIn() && socket.isInRoom(id)){
                 var msg = data.msg;
-                ioController.sendChatMessage(socket.username, socket.firstName, socket.lastName, id, msg);
+                ioController.sendChatMessage(socket.username, id, msg);
             }
         });
         socket.on('createRoomAction', function(data){

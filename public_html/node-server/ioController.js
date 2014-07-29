@@ -2,9 +2,11 @@ var util = require('util');
 var events = require('events');
 var crypto = require('crypto');
 var responseJson = require('./responseJson');
-var MINUTE = 1000*60;
+var DAY = 1000*60*60*24;
 
 function IoController(app){
+    var roomController = require('./roomController')(app);
+
     events.EventEmitter.call(this);
 
     this.checkLoginStatus = function(session, socketID){
@@ -50,7 +52,7 @@ function IoController(app){
         }); 
     };
         
-    this.createNewUser = function(username, password, firstName, lastName, phoneNumber, birthday, jobDescription, session){
+    this.createNewUser = function(username, password, firstName, lastName, phoneNumber, birthday, email, jobDescription, session){
         var that = this;
         _findUserWithUsername(username, function(user){
             if(user){
@@ -65,6 +67,7 @@ function IoController(app){
                     'lastName':lastName, 
                     'phoneNumber':phoneNumber, 
                     'birthday': birthday,
+                    'email': email,
                     'jobDescription': jobDescription,
                     'permission':0
                 };
@@ -210,11 +213,9 @@ function IoController(app){
         }
     };
 
-    this.sendChatMessage = function(username, firstName, lastName, id, msg){
+    this.sendChatMessage = function(username, id, msg){
         var message = {
             'username': username,
-            'firstName':firstName,
-            'lastName':lastName, 
             'room': id, 
             'msg': msg, 
             'ctime':Date.now()
@@ -228,25 +229,6 @@ function IoController(app){
             else{
                 var messages = [message];
                 app.io.to('/chatRoom/' + id).emit('chat messages', responseJson.success(messages));
-            }
-        });
-    };
-
-    this.retrievePastMessage = function(id, socketID){
-        var that = this;
-        var duration = 10 * MINUTE;
-        app.db.collection('messages').find({room: id, ctime:{$gt: Date.now() - duration}}).toArray(function(err, messages){
-            if(err){
-                //this is socket-level info
-                //throw new DatabaseError();
-                //redo the work
-            }
-            else{
-                var result = {
-                    target: socketID,
-                    data: messages
-                };
-                that.emit('successfullyRetrievedMessages', result);
             }
         });
     };
@@ -270,11 +252,7 @@ function IoController(app){
                 var pm = {
                     pmid: pmid,
                     toUsername: user.username,
-                    toFirstName: user.firstName,
-                    toLastName: user.lastName,
                     fromUsername: socket.username,
-                    fromFirstName: socket.firstName,
-                    fromLastName: socket.lastName,
                     ctime: Date.now(),
                     msg: msg,
                     hasRead: false
@@ -288,14 +266,10 @@ function IoController(app){
                     else{
                         var receiverPmItemData = {
                             username: socket.username,
-                            firstName: socket.firstName,
-                            lastName: socket.lastName,
                             messageArr: [pm]
                         };
                         var senderPmItemData = {
                             username: user.username,
-                            firstName: user.firstName,
-                            lastName: user.lastName,
                             messageArr: [pm]
                         };
                         app.io.to('/private/user/' + user.username).emit('private messages', responseJson.success(receiverPmItemData));
@@ -317,8 +291,6 @@ function IoController(app){
                 _retrievePm(pmid, function(pms){
                     var pmItemData = {
                         username: user.username,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
                         messageArr: pms
                     };
                     app.io.to('/private/user/' + socket.username).emit('private messages', responseJson.success(pmItemData));
@@ -331,7 +303,7 @@ function IoController(app){
     };
 
     function _retrievePm(pmid, callback){
-        var duration = 60 * MINUTE * 24 * 10;
+        var duration = DAY * 10;
         app.db.collection('pms').find({pmid: pmid, ctime:{$gt: Date.now() - duration}}).toArray(function(err, pms){
             if(err){
                 //this is socket-level info
@@ -378,8 +350,6 @@ function IoController(app){
                         for(var j in pms){
                             if(pms[j].fromUsername !== socket.username){
                                 pmItemData.username = pms[j].fromUsername;
-                                pmItemData.firstName = pms[j].fromFirstName;
-                                pmItemData.lastName = pms[j].fromLastName;
                                 break;
                             }
                         }
@@ -431,11 +401,6 @@ function IoController(app){
         socket.emit('chat log', responseJson.success(res.data));
     }
 
-    function sendPastMessageSocket(res){
-        var socket = app.io.socketList[res.target];
-        socket.emit('chat messages', responseJson.success(res.data));
-    }
-
     function informChangedPermissionUser(res){
         var username = res.target;
         var permission = res.permission;
@@ -473,7 +438,7 @@ function IoController(app){
         socket.welcomeUser(); 
         _checkUnreadPm(socket);
         _retrieveRoomList(socket);
-
+        roomController.joinRoom(0, socket.id);
     }
 
     function _renderLogin(socket){
@@ -495,7 +460,6 @@ function IoController(app){
     this.on('successfullyRetrievedUserList', sendUserListSocket);
     this.on('successfullyChangedUserPermission', informChangedPermissionUser);
     this.on('successfullyDeletedUser', renderRegisterUser);
-    this.on('successfullyRetrievedMessages', sendPastMessageSocket);
     this.on('successfullyRetrievedChatLog', sendChatLogSocket);
 };
 

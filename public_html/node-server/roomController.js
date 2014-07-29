@@ -2,27 +2,58 @@ var util = require('util');
 var events = require('events');
 var responseJson = require('./responseJson');
 var ObjectID = require('mongodb').ObjectID;
+var MINUTE = 1000*60;
 
 function RoomController(app){
-
     events.EventEmitter.call(this);
 
-    (function initRoomList(){
-        app.db.collection('rooms').find({'destoryTime': 0}).toArray(function(err, documents){
-            if(err){
-                //redo the work
+    app.db.collection('rooms').find({'destoryTime': 0}).toArray(function(err, documents){
+        if(err){
+            //redo the work
+        }
+        else{
+            for(var i in documents){
+                var room = documents[i];
+                app.roomList[room._id] = room;
             }
-            else{
-                for(var i in documents){
-                    var room = documents[i];
-                    app.roomList[room._id] = room;
-                }
-            }
-        });
-    })();
+        }
+    });
 
     this.isAdminOfRoom = function(id, username){
         return app.roomList[id].adminOfRoom.indexOf(username) != -1 ? true : false;
+    };
+
+    this.joinRoom = function(to, socketID){
+        var socket = app.io.socketList[socketID];
+        var that = this;
+        _retrievePastMessage(to, function(messages){
+            if(to === 0){
+                socket.joinLounge(messages);
+            }
+            else{
+                var targetRoom = app.roomList[to];
+                if(targetRoom){
+                    var name = targetRoom.name;
+                    var isAdminOfRoom = socket.isAdmin()||that.isAdminOfRoom(to, socket.username);
+                    socket.joinRoom(to, name, isAdminOfRoom, messages);
+                }
+            }
+        });
+    };
+
+    function _retrievePastMessage(id, callback){
+        var that = this;
+        var duration = 10 * MINUTE;
+        app.db.collection('messages').find({room: id, ctime:{$gt: Date.now() - duration}}).toArray(function(err, messages){
+            if(err){
+                //this is socket-level info
+                //throw new DatabaseError();
+                //redo the work
+            }
+            else{
+                callback(messages);
+            }
+        });
     };
 
     this.retrieveLinkedUser = function(id, socketID){
@@ -75,7 +106,7 @@ function RoomController(app){
                 var targetSocket = app.io.socketList[socketID];
                 if(targetSocket.username === username){
                     targetSocket.leaveRoom(id);
-                    targetSocket.joinLounge();
+                    this.joinRoom(0, socketID);
                 }
             }
         }

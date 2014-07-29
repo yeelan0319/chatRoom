@@ -94,7 +94,7 @@ module.systemAdmin = {
         if(data.meta.status == 200 && module.data.pos === 'admin-chatlog'){
             $('#chatlog-container').html('');
             $.each(data.data, function(index, message){
-                $('#chatlog-container').append('<li>' + message.firstName + ' ' + message.lastName + ': ' + message.msg + '</li>');
+                $('#chatlog-container').append('<li>' + message.username + ': ' + message.msg + '</li>');
             });
         }
     }

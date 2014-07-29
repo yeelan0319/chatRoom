@@ -33,8 +33,9 @@ module.loginRegister = {
             var firstName = $("#firstName").val() || '';
             var lastName = $("#lastName").val() || '';
             var phoneNumber = $("#phoneNumber").val() || '';
-            var birthday = $("#birthday").val()||'';
-            var jobDescription = $("#job").val()||'';
+            var birthday = $("#birthday").val() || '';
+            var email = $("#email").val() || '';
+            var jobDescription = $("#job").val() || '';
             var data = {
             	username: username,
             	password: password,
@@ -42,6 +43,7 @@ module.loginRegister = {
             	lastName: lastName,
             	phoneNumber: phoneNumber,
             	birthday: birthday,
+            	email: email,
             	jobDescription: jobDescription
             }
             if(password === passwordConfirm){

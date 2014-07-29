@@ -244,10 +244,7 @@ Response: render message - [target: lounge]
     - Boot one user
     - Boot one user with multiple socket but same session
     - Boot one user with multiple session, and of course sockets
-10. Admin is able to change the permission of user
-    - Change one user
-    - Change one user with multiple socket but same session
-    - Change one user with multiple session, and of course sockets
+10. Admin is able to change the permission of user(Not realtime but after refresh/reload)
 11. Admin is able to delete user
     - Delete one user
     - Delete one user with multiple socket but same session

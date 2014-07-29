@@ -1,24 +1,26 @@
 module.chat = {
-	renderChatPanel: function(targetContainer){
-		socket.emit('retrievePastMessage', module.data.room);
+	renderChatPanel: function(targetContainer, messages){
 		var tmpl = module.template.chatPanelTmpl;
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
+		$.each(messages, function(index, message){
+			$el.find('#messages').append(module.chat.renderChatMessage(message));
+		})
 		targetContainer.append($el);
-		$('#m').keydown(function(event){
+		$el.find('#m').unbind('keydown').keydown(function(event){
 			if(event.which == 13){
 				module.chat.sendMessage();
 				return false;
 			}
 		});
-		$('#m-send').click(module.chat.sendMessage);
+		$el.find('#m-send').unbind('click').click(module.chat.sendMessage);
 	},
 
-	renderChatMessage: function(msg){
-		$('#messages').append($('<li>').text(msg));
+	renderChatMessage: function(message){
+		return $('<li>').text(message.username + ": " + message.msg);
 	},
 
-	renderSystemMessage: function(msg){
-		$('#messages').append($('<li class="system-message">').text(msg));
+	renderSystemMessage: function(message){
+		return $('<li class="system-message">').text(message.username + ": " + message.msg);
 	},
 
 	sendMessage: function(){

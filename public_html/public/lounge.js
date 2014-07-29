@@ -9,7 +9,7 @@ module.lounge = {
 			socket.emit('retrieveUserProfileAction');
 		});
 		$el.find('#signout').click(function(){
-			socket.emit('leaveRoomAction', module.data.room);
+			socket.emit('leaveRoomAction', JSON.stringify(module.data.room));
 	  		socket.emit('logoutAction');
 	  		$.removeCookie('PHPSESSID');
 	  	});
@@ -23,7 +23,7 @@ module.lounge = {
 	  	$('.left-container').animate({
 			left: 0
 		},600);
-		$('#lounge').click(function(){
+		$('#lounge').unbind('click').click(function(){
 			var data = {
 				from: module.data.room,
 				to: 0
@@ -31,7 +31,7 @@ module.lounge = {
 			socket.emit('joinRoomAction', JSON.stringify(data));
 		});
 
-	  	$('#new-room').click(function(){
+	  	$('#new-room').unbind('click').click(function(){
 	  		var name = prompt("please enter the name of your room");
 	  		if(name && !module.lounge.findRoomIDWithName(name)){
 	  			socket.emit('createRoomAction', JSON.stringify({name: name}));
@@ -53,14 +53,14 @@ module.lounge = {
         });
 	},
 
-	renderIndex: function(){
+	renderIndex: function(data){
 		module.data.pos = 'lounge';
 		module.data.room = 0;
 
 		var tmpl = module.template.loungeIndexTmpl;
 		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
 		$('.container-idle').html($el);
-		module.chat.renderChatPanel($('.container-idle'));
+		module.chat.renderChatPanel($('.container-idle'), data.messages);
 	},
 
 	renderRoom: function(data){

@@ -74,7 +74,7 @@
         <div class="pm-box-outer pm-item">
             <div class="pm-box-inner">
                 <div class="pm-header">
-                    <span>{{firstName}} {{lastName}}</span>
+                    <span>{{username}}</span>
                     <span class="fui-cross pm-close"></span>
                 </div>
                 <div class="pm-content">
@@ -159,8 +159,8 @@
         <div class="inner">
             <form role="form">
                 <div class="form-group">
-                    <label for="username">Email address</label>
-                    <input id="username" autocomplete="on" type="text" class="form-control" placeholder = "Enter Email"/>
+                    <label for="username">Username</label>
+                    <input id="username" autocomplete="on" type="text" class="form-control" placeholder = "Enter Username"/>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
@@ -180,7 +180,7 @@
         <div class="inner">
             <form role="form">
                 <div class="form-group">
-                    <input id="username" autocomplete="on" type="text" class="form-control" placeholder = "Enter Email"/>
+                    <input id="username" autocomplete="on" type="text" class="form-control" placeholder = "Enter Username"/>
                 </div>
                 <div class="form-group">
                     <input id="password" type="password" class="form-control" placeholder = "Password"/>
@@ -210,6 +210,9 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="form-group">
+                    <input id="email" autocomplete="on" type="text" class="form-control" placeholder = "Email"/>
                 </div>
                 <div class="form-group">
                     <textarea id="job" name="job" class="form-control" rows="3" placeholder="Job Description: title, position..."></textarea>
@@ -358,7 +361,7 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h6 class="modal-title">{{firstName}}&#39;s profile</h6>
+                <h6 class="modal-title">{{username}}&#39;s profile</h6>
               </div>
               <div class="modal-body">
                 <table class="table">
@@ -368,7 +371,7 @@
                   </tr>
                   <tr>
                     <td>Email:</td>
-                    <td>{{username}}</td>
+                    <td>{{email}}</td>
                   </tr>
                   <tr>
                     <td>Phone:</td>
@@ -399,7 +402,7 @@
     </script>
     <script id="user-panel-tmpl" type="text/html" class="template">
         <div id="user-panel" class="dropdown">
-            <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">{{firstName}}<span class="caret"></span></button>
+            <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">{{username}}<span class="caret"></span></button>
             <ul class="dropdown-menu dropdown-inverse">
                 <li><a id="profile">Profile</a></li>
                 {{#permission}}<li><a id="admin">System Manage</a></li>{{/permission}}

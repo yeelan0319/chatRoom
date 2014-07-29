@@ -1,8 +1,6 @@
 var Message = function(data){
 	this.msg = data.msg;
 	this.ctime = data.ctime;
-	this.firstName = data.fromFirstName;
-	this.lastName = data.fromLastName;
 	this.username = data.fromUsername;
 	this.hasRead = data.hasRead;
 	return this;
@@ -10,7 +8,7 @@ var Message = function(data){
 
 Message.prototype = {
 	render: function(){
-		this.$el = $('<li>' + this.firstName + ' ' + this.lastName + ': ' + this.msg + '</li>');
+		this.$el = $('<li>' + this.username + ': ' + this.msg + '</li>');
 		// if(this.hasRead){
 		// 	this.$el.addClass('oldMessage');
 		// }
@@ -21,8 +19,6 @@ Message.prototype = {
 var PmItem = function(data){
 	var that = this;
 	this.username = data.username;
-	this.firstName = data.firstName;
-	this.lastName = data.lastName;
 	this.messageArr = [];
 	$.each(data.messageArr, function(index, messageData){
 		var message = new Message(messageData);

@@ -1,3 +1,5 @@
+var responseJson = require('./responseJson');
+
 module.exports = function socketExtension(socket, next){
     socket.extendSessionAge = function(){
         var session = this.request.session;
@@ -33,7 +35,6 @@ module.exports = function socketExtension(socket, next){
         this.lastName = user.lastName;
         this.join('/private/user/'+this.username);
         this.renderChatFrame();
-        this.joinLounge();
     };
     socket.removeSocketUser = function(){
         this.leave('/private/user/'+this.username);
@@ -51,14 +52,14 @@ module.exports = function socketExtension(socket, next){
         //this.broadcast.emit('status message', this.username + ' has quitted the conversation');
     };
 
-    socket.joinLounge = function(){
+    socket.joinLounge = function(messages){
         this.join('/chatRoom/0');
-        this.renderLounge();
+        this.renderLounge(messages);
     };
 
-    socket.joinRoom = function(id, name, isAdminOfRoom){
+    socket.joinRoom = function(id, name, isAdminOfRoom, messages){
         this.join('/chatRoom/' + id);
-        this.renderRoom(id, name, isAdminOfRoom);
+        this.renderRoom(id, name, isAdminOfRoom, messages);
     };
     socket.leaveRoom = function(id){
         this.leave('/chatRoom/' + id);
@@ -74,48 +75,50 @@ module.exports = function socketExtension(socket, next){
         var res = {
             target: 'login'
         }
-        this.emit('render message', res);
+        this.emit('render message', responseJson.success(res));
     };
     socket.renderRegister = function(){
         var res = {
             target: 'register'
         }
-        this.emit('render message', res);
+        this.emit('render message', responseJson.success(res));
     };
     socket.renderChatFrame = function(){
         var res = {
             target: 'chatFrame',
             data: {
                 username: this.username,
-                firstName: this.firstName,
-                lastName: this.lastName,
                 permission: this.permission
             }
         }
-        this.emit('render message', res);
+        this.emit('render message', responseJson.success(res));
     }
-    socket.renderLounge = function(){
+    socket.renderLounge = function(messages){
         var res = {
-            target: 'lounge'
+            target: 'lounge',
+            data: {
+                messages: messages
+            }
         }
-        this.emit('render message', res);
+        this.emit('render message', responseJson.success(res));
     };
-    socket.renderRoom = function(id, name, isAdminOfRoom){
+    socket.renderRoom = function(id, name, isAdminOfRoom, messages){
         var res = {
             target: 'room',
             data: {
                 id: id,
                 name: name,
-                isAdminOfRoom: isAdminOfRoom
+                isAdminOfRoom: isAdminOfRoom,
+                messages: messages
             }
         }
-        this.emit('render message', res)
+        this.emit('render message', responseJson.success(res));
     };
     socket.renderSystemAdmin = function(){
         var res = {
             target: 'systemAdmin'
         }
-        this.emit('render message', res);
+        this.emit('render message', responseJson.success(res));
     };
     socket.renderRoomAdmin = function(id){
         var res = {
@@ -124,13 +127,13 @@ module.exports = function socketExtension(socket, next){
                 id: id
             }
         }
-        this.emit('render message', res);
+        this.emit('render message', responseJson.success(res));
     };
     socket.renderBoot = function(){
         var res = {
             target: 'bootedPage'
         }
-        this.emit('render message', res);
+        this.emit('render message', responseJson.success(res));
     };
     socket.renderProfile = function(user){
         var res = {
@@ -139,7 +142,7 @@ module.exports = function socketExtension(socket, next){
                 user: user
             }
         }
-        this.emit('render message', res);
+        this.emit('render message', responseJson.success(res));
     };
 
     socket.renderErrorMsg = function(errorJSON){

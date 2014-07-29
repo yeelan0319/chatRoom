@@ -31,40 +31,44 @@ $(document).ready(function(){
 	});
 
 	socket.on('render message', function(res){
-		if(res.target == 'bootedPage'){
-			$('body').html('');
-			alert("You've been booted out of the system by administrator");
-			//TODO: change it to Modal
-		}
+		res = JSON.parse(res);
+		if(res.meta.status == 200){
+			res = res.data;
+			if(res.target == 'bootedPage'){
+				$('body').html('');
+				alert("You've been booted out of the system by administrator");
+				//TODO: change it to Modal
+			}
 
-		switch(res.target){
-			case 'login':
-				module.loginRegister.renderSessionFrame();
-				module.loginRegister.renderLogin();
-				break;
-			case 'register':
-				module.loginRegister.renderSessionFrame();
-				module.loginRegister.renderRegister();
-				break;
-			case 'chatFrame':
-				module.data.user = res.data;
-				module.lounge.renderFrame(res.data);
-				break;
-			case 'profile':
-				module.lounge.renderProfile(res.data);
-				break;
-			case 'lounge':
-				module.lounge.renderIndex();
-				break;
-			case 'room':
-				module.room.renderIndex(res.data);
-				break;
-			case 'systemAdmin':
-				module.systemAdmin.renderIndex();
-				break;
-			case 'roomAdmin':
-				module.roomAdmin.renderIndex();
-				break;
+			switch(res.target){
+				case 'login':
+					module.loginRegister.renderSessionFrame();
+					module.loginRegister.renderLogin();
+					break;
+				case 'register':
+					module.loginRegister.renderSessionFrame();
+					module.loginRegister.renderRegister();
+					break;
+				case 'chatFrame':
+					module.data.user = res.data;
+					module.lounge.renderFrame(res.data);
+					break;
+				case 'profile':
+					module.lounge.renderProfile(res.data);
+					break;
+				case 'lounge':
+					module.lounge.renderIndex(res.data);
+					break;
+				case 'room':
+					module.room.renderIndex(res.data);
+					break;
+				case 'systemAdmin':
+					module.systemAdmin.renderIndex();
+					break;
+				case 'roomAdmin':
+					module.roomAdmin.renderIndex();
+					break;
+			}
 		}
 	});
 
@@ -79,8 +83,7 @@ $(document).ready(function(){
 		if(data.meta.status == 200){
 			$.each(data.data, function(index, message){
 				if(message.room == module.data.room){
-					var msg = message.firstName + ": " + message.msg;
-					module.chat.renderChatMessage(msg);
+					$("#messages").append(module.chat.renderChatMessage(message));
 				}
 			});
 		}
