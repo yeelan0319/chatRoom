@@ -3,8 +3,7 @@ module.lounge = {
 		$('body').addClass('symbolic');
 		$('.main-container').removeClass('session-container').addClass('chat-container');
 
-		var tmpl = module.template.userPanelTmpl;
-		var $el = $(Mustache.to_html(tmpl, user).replace(/^\s*/mg, ''));
+		var $el = $(module.template.userPanelTmpl(user));
 		$el.find('#profile').click(function(){
 			socket.emit('retrieveUserProfileAction');
 		});
@@ -45,8 +44,7 @@ module.lounge = {
 	},
 
 	renderProfile: function(data){
-		var profileTmpl = module.template.profileTmpl;
-		var $el = $(Mustache.to_html(profileTmpl, data.user).replace(/^\s*/mg, ''));
+		var $el = $(module.template.profileTmpl(data.user));
 		$('.site-wrapper').append($el);
         $('#profileModal').modal('toggle').on('hidden.bs.modal', function(e){
             $('#profileModal').remove();
@@ -57,8 +55,7 @@ module.lounge = {
 		module.data.pos = 'lounge';
 		module.data.room = 0;
 
-		var tmpl = module.template.loungeIndexTmpl;
-		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
+		var $el = $(module.template.loungeIndexTmpl());
 		$('.container-idle').html($el);
 		module.chat.renderChatPanel($('.container-idle'), data.messages);
 	},

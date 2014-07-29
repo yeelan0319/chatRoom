@@ -9,20 +9,20 @@ $(document).ready(function(){
 		pmList:{}
 	}
 	module.template = {
-		userItemTmpl: $.trim($('#user-item-tmpl').html()),
-		linkedUserItemTmpl: $.trim($('#linked-user-item-tmpl').html()),
-		roomUserItemTmpl: $.trim($('#room-user-item-tmpl').html()),
-		loginIndexTmpl: $.trim($('#login-index-tmpl').html()),
-		registerIndexTmpl: $.trim($('#register-index-tmpl').html()),
-		loungeIndexTmpl: $.trim($('#lounge-index-tmpl').html()),
-		roomIndexTmpl: $.trim($('#room-index-tmpl').html()),
-		systemAdminIndexTmpl: $.trim($('#systemAdmin-index-tmpl').html()),
-		roomAdminIndexTmpl: $.trim($('#roomAdmin-index-tmpl').html()),
-		chatPanelTmpl: $.trim($('#chat-panel-tmpl').html()),
-		userPanelTmpl: $.trim($('#user-panel-tmpl').html()),
-		profileTmpl: $.trim($('#profile-index-tmpl').html()),
-		pmItemTmpl: $.trim($('#pm-item-tmpl').html()),
-		pmContainerTmpl: $.trim($('#pm-container-tmpl').html())
+		userItemTmpl: Handlebars.compile($.trim($('#user-item-tmpl').html())),
+		linkedUserItemTmpl: Handlebars.compile($.trim($('#linked-user-item-tmpl').html())),
+		roomUserItemTmpl: Handlebars.compile($.trim($('#room-user-item-tmpl').html())),
+		loginIndexTmpl: Handlebars.compile($.trim($('#login-index-tmpl').html())),
+		registerIndexTmpl: Handlebars.compile($.trim($('#register-index-tmpl').html())),
+		loungeIndexTmpl: Handlebars.compile($.trim($('#lounge-index-tmpl').html())),
+		roomIndexTmpl: Handlebars.compile($.trim($('#room-index-tmpl').html())),
+		systemAdminIndexTmpl: Handlebars.compile($.trim($('#systemAdmin-index-tmpl').html())),
+		roomAdminIndexTmpl: Handlebars.compile($.trim($('#roomAdmin-index-tmpl').html())),
+		chatPanelTmpl: Handlebars.compile($.trim($('#chat-panel-tmpl').html())),
+		userPanelTmpl: Handlebars.compile($.trim($('#user-panel-tmpl').html())),
+		profileTmpl: Handlebars.compile($.trim($('#profile-index-tmpl').html())),
+		pmItemTmpl: Handlebars.compile($.trim($('#pm-item-tmpl').html())),
+		pmContainerTmpl: Handlebars.compile($.trim($('#pm-container-tmpl').html()))
 	}
 	$('.template').remove();
 

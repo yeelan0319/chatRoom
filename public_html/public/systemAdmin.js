@@ -2,8 +2,7 @@ module.systemAdmin = {
     linkedUserList:{},
 
     renderIndex: function(){
-        var tmpl = module.template.systemAdminIndexTmpl;
-        var $el = $(Mustache.to_html(tmpl, module.data).replace(/^\s*/mg, ''));
+        var $el = $(module.template.systemAdminIndexTmpl(module.data));
         $el.find('.input-group.date').datepicker({
             autoclose: true
         });

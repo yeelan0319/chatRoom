@@ -10,8 +10,7 @@ var LinkedUserItem = function(userdata){
 LinkedUserItem.prototype = {
 	render: function(){
 		var that = this;
-		var linkedUserItemTmpl = module.template.linkedUserItemTmpl;
-		that.$el = $(Mustache.to_html(linkedUserItemTmpl, that).replace(/^\s*/mg, ''));
+		that.$el = $(module.template.linkedUserItemTmpl(that));
 		that.$el.find('.boot').click(function(){that.boot.apply(that)});
 		$('#realtime-userlist').append(that.$el);
 	},

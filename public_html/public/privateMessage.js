@@ -30,8 +30,7 @@ var PmItem = function(data){
 PmItem.prototype = {
 	render: function(){
 		var that = this;
-		var pmItemTmpl = module.template.pmItemTmpl;
-		that.$el = $(Mustache.to_html(pmItemTmpl, that).replace(/^\s*/mg, ''));
+		that.$el = $(module.template.pmItemTmpl(that));
 		
 		that.renderMessage();
 
@@ -96,8 +95,7 @@ PmItem.prototype = {
 
 module.privateMessage = {
 	init: function(){
-		var tmpl = module.template.pmContainerTmpl;
-		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
+		var $el = $(module.template.pmContainerTmpl());
 
 		$el.find('.new-pm .fui-search').click(module.privateMessage.searchIconClicked);
 		$el.find('.new-pm .search-input').keydown(function(event){

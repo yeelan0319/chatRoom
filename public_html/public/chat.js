@@ -1,7 +1,6 @@
 module.chat = {
 	renderChatPanel: function(targetContainer, messages){
-		var tmpl = module.template.chatPanelTmpl;
-		var $el = $(Mustache.to_html(tmpl, {}).replace(/^\s*/mg, ''));
+		var $el = $(module.template.chatPanelTmpl());
 		$.each(messages, function(index, message){
 			$el.find('#messages').append(module.chat.renderChatMessage(message));
 		})

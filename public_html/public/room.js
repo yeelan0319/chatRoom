@@ -4,8 +4,7 @@ module.room = {
 		module.data.pos = 'room';
 		module.data.room = data.id;
 
-		var tmpl = module.template.roomIndexTmpl;
-		var $el = $(Mustache.to_html(tmpl, data).replace(/^\s*/mg, ''));
+		var $el = $(module.template.roomIndexTmpl(data));
 		$('.container-idle').html($el);
 		module.chat.renderChatPanel($('.container-idle'), data.messages);
 		
