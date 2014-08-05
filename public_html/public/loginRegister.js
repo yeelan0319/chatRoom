@@ -4,17 +4,16 @@ module.loginRegister = {
 		module.data.room = '';
 
 		var $el = $(module.template.loginIndexTmpl());
-		$('.container-idle').html($el);
-
-		$('form').submit(function(){
-	        var username = $("#username").val() || '';
-	        var password = $("#password").val() || '';
+		$el.find('form').submit(function(){
+	        var username = $el.find("#username").val() || '';
+	        var password = $el.find("#password").val() || '';
 	        socket.emit('loginAction', JSON.stringify({username: username, password: password}));
 				return false;
 	    });
-	    $('#register').click(function(){
+	    $el.find('#register').unbind('click').click(function(){
 	    	socket.emit('registerRender');
 	    })
+	    $('.container-idle').html($el);
 	},
 
 	renderRegister: function(){
@@ -22,18 +21,16 @@ module.loginRegister = {
 		module.data.room = '';
 
 		var $el = $(module.template.registerIndexTmpl());
-		$('.container-idle').html($el);
-
-		$('form').submit(function(){
-            var username = $("#username").val() || '';
-            var password = $("#password").val() || '';
-            var passwordConfirm = $("#passwordConfirm").val() || '';
-            var firstName = $("#firstName").val() || '';
-            var lastName = $("#lastName").val() || '';
-            var phoneNumber = $("#phoneNumber").val() || '';
-            var birthday = $("#birthday").val() || '';
-            var email = $("#email").val() || '';
-            var jobDescription = $("#job").val() || '';
+		$el.find('form').submit(function(){
+            var username = $el.find("#username").val() || '';
+            var password = $el.find("#password").val() || '';
+            var passwordConfirm = $el.find("#passwordConfirm").val() || '';
+            var firstName = $el.find("#firstName").val() || '';
+            var lastName = $el.find("#lastName").val() || '';
+            var phoneNumber = $el.find("#phoneNumber").val() || '';
+            var birthday = $el.find("#birthday").val() || '';
+            var email = $el.find("#email").val() || '';
+            var jobDescription = $el.find("#job").val() || '';
             var data = {
             	username: username,
             	password: password,
@@ -49,14 +46,15 @@ module.loginRegister = {
             }
 			return false;
         });
-        $('#login').click(function(){
+        $el.find('#login').unbind('click').click(function(){
         	socket.emit('loginRender');
         });
-        $('.input-group.date').datepicker({
+        $el.find('.input-group.date').datepicker({
 		    startDate: "01/01/1940",
 		    startView: 2,
 		    autoclose: true
 		});
+		$('.container-idle').html($el);
 	},
 
 	renderSessionFrame: function(){

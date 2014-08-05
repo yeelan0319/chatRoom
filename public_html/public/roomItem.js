@@ -8,7 +8,7 @@ RoomItem.prototype = {
 	render: function(){
 		var that = this;
 		that.$el = $('<li class="room">').text(that.name);
-		that.$el.click(function(){that.join.apply(that)});
+		that.$el.unbind('click').click(function(){that.join.apply(that)});
 		$('#room-list').append(that.$el);
 	},
 	//when receive destory information from others, it need to clear the list

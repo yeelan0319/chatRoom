@@ -7,8 +7,8 @@ UserItem.prototype = {
 	render:function(){
 		var that = this;
 		that.$el = $(module.template.userItemTmpl(that));
-		that.$el.find('.delete').click(function(){that.destroy.apply(that)});
-		that.$el.find('.permission :checkbox').checkbox().on('change', function(){that.edit.apply(that)});
+		that.$el.find('.delete').unbind('click').click(function(){that.destroy.apply(that)});
+		that.$el.find('.permission :checkbox').checkbox().unbind('change').on('change', function(){that.edit.apply(that)});
 		$('#alluser-userlist').append(that.$el);
 	},
 	edit: function(){

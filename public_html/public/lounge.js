@@ -3,51 +3,53 @@ module.lounge = {
 		$('body').addClass('symbolic');
 		$('.main-container').removeClass('session-container').addClass('chat-container');
 
-		var $el = $(module.template.userPanelTmpl(user));
-		$el.find('#profile').click(function(){
-			socket.emit('retrieveUserProfileAction');
-		});
-		$el.find('#signout').click(function(){
-			socket.emit('leaveRoomAction', JSON.stringify(module.data.room));
-	  		socket.emit('logoutAction');
-	  		$.removeCookie('PHPSESSID');
-	  	});
-	  	$el.find('#admin').click(function(){
-	  		socket.emit('adminRender', 0);
-	  	});
-	  	$('.site-wrapper').append($el);
+		var $userPanelEl = module.lounge.renderUserPanel(user);
+	  	$('.site-wrapper').append($userPanelEl);
 	  	
-	  	module.privateMessage.init();
-
+	  	var $pmPanelEl = module.privateMessage.init();
+	  	$('.site-wrapper').append($pmPanelEl);
+	  	
 	  	$('.left-container').animate({
 			left: 0
 		},600);
-		$('#lounge').unbind('click').click(function(){
+		$('.left-container').find('#lounge').unbind('click').click(function(){
 			var data = {
 				from: module.data.room,
 				to: 0
 			}
 			socket.emit('joinRoomAction', JSON.stringify(data));
 		});
-
-	  	$('#new-room').unbind('click').click(function(){
+	  	$('.left-container').find('#new-room').unbind('click').click(function(){
 	  		var name = prompt("please enter the name of your room");
 	  		if(name && !module.lounge.findRoomIDWithName(name)){
 	  			socket.emit('createRoomAction', JSON.stringify({name: name}));
 	  		}
 	  	});
+	},
 
-	  	$('#adminTab a').click(function (e) {
-		  e.preventDefault()
-		  $(this).tab('show')
+	renderUserPanel: function(user){
+		user.permission = user.permission == 1? true : false;
+		var $userPanelEl = $(module.template.userPanelTmpl(user));
+		$userPanelEl.find('#profile').unbind('click').click(function(){
+			socket.emit('retrieveUserProfileAction');
 		});
+		$userPanelEl.find('#signout').unbind('click').click(function(){
+			socket.emit('leaveRoomAction', JSON.stringify(module.data.room));
+	  		socket.emit('logoutAction');
+	  		$.removeCookie('PHPSESSID');
+	  	});
+	  	$userPanelEl.find('#admin').unbind('click').click(function(){
+	  		socket.emit('adminRender', 0);
+	  	});
+
+	  	return $userPanelEl;
 	},
 
 	renderProfile: function(data){
 		var $el = $(module.template.profileTmpl(data.user));
 		$('.site-wrapper').append($el);
-        $('#profileModal').modal('toggle').on('hidden.bs.modal', function(e){
-            $('#profileModal').remove();
+        $el.modal('toggle').on('hidden.bs.modal', function(e){
+            $el.remove();
         });
 	},
 
@@ -56,8 +58,8 @@ module.lounge = {
 		module.data.room = 0;
 
 		var $el = $(module.template.loungeIndexTmpl());
+		$el.append(module.chat.renderChatPanel(data.messages));		
 		$('.container-idle').html($el);
-		module.chat.renderChatPanel($('.container-idle'), data.messages);
 	},
 
 	renderRoom: function(data){

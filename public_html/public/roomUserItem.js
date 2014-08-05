@@ -12,8 +12,8 @@ RoomUserItem.prototype = {
 	render: function(){
 		var that = this;
 		that.$el = $(module.template.roomUserItemTmpl(that));
-		that.$el.find('.boot').click(function(){that.boot.apply(that)});
-		that.$el.find('.roomAdmin :checkbox').checkbox().on('change', function(){that.changePermission.apply(that)});
+		that.$el.find('.boot').unbind('click').click(function(){that.boot.apply(that)});
+		that.$el.find('.roomAdmin :checkbox').checkbox().unbind('change').on('change', function(){that.changePermission.apply(that)});
 		$('#realtime-userlist').append(that.$el);
 	},
 	addSession: function(session){

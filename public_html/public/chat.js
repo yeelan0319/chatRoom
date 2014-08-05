@@ -1,10 +1,9 @@
 module.chat = {
-	renderChatPanel: function(targetContainer, messages){
+	renderChatPanel: function(messages){
 		var $el = $(module.template.chatPanelTmpl());
 		$.each(messages, function(index, message){
 			$el.find('#messages').append(module.chat.renderChatMessage(message));
 		})
-		targetContainer.append($el);
 		$el.find('#m').unbind('keydown').keydown(function(event){
 			if(event.which == 13){
 				module.chat.sendMessage();
@@ -12,6 +11,8 @@ module.chat = {
 			}
 		});
 		$el.find('#m-send').unbind('click').click(module.chat.sendMessage);
+
+		return $el;
 	},
 
 	renderChatMessage: function(message){

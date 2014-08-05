@@ -13,6 +13,8 @@ mkdir -p /data/db
 
 apt-get -y -q install nodejs
 apt-get -y -q install npm
+
+npm install -g supervisor
 cd node-server && npm install
 npm dedupe
 

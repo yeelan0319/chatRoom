@@ -34,9 +34,9 @@ PmItem.prototype = {
 		
 		that.renderMessage();
 
-		that.$el.find('.pm-header').click(function(){that.toggle.apply(that); return false;});
-		that.$el.find('.pm-close').click(function(){that.close.apply(that); return false;});
-		that.$el.find('.pm-input').keydown(function(event){
+		that.$el.find('.pm-header').unbind('click').click(function(){that.toggle.apply(that); return false;});
+		that.$el.find('.pm-close').unbind('click').click(function(){that.close.apply(that); return false;});
+		that.$el.find('.pm-input').unbind('keydown').keydown(function(event){
 			if(event.which == 13){
 				that.sendpm.apply(that);
 				return false;
@@ -97,21 +97,21 @@ module.privateMessage = {
 	init: function(){
 		var $el = $(module.template.pmContainerTmpl());
 
-		$el.find('.new-pm .fui-search').click(module.privateMessage.searchIconClicked);
-		$el.find('.new-pm .search-input').keydown(function(event){
+		$el.find('.new-pm .fui-search').unbind('click').click(module.privateMessage.searchIconClicked);
+		$el.find('.new-pm .search-input').unbind('keydown').keydown(function(event){
 			if(event.which == 13){
 				module.privateMessage.searchIconClicked();
 				return false;
 			}
 		});
-		$(document).unbind('.symbolic.pm').on('click.symbolic.pm', function(e){
+		$(document).unbind('.click').click(function(e){
 			var clickWithinNewPm = $(e.target).closest('.new-pm').length == 0? false : true;
 			if(!clickWithinNewPm && $('.new-pm-outer').is('.active')){
 				module.privateMessage.searchClose();
 			}
 		});
 		$(window).resize(module.privateMessage.closeOverfitPm);
-		$('.site-wrapper').append($el);
+		return $el;
 	},
 
 	findUserWithUsername: function(username){

@@ -6,25 +6,25 @@ module.systemAdmin = {
         $el.find('.input-group.date').datepicker({
             autoclose: true
         });
-        $('.site-wrapper').append($el);
-        $('#adminModal').modal('toggle').on('hidden.bs.modal', function(e){
-            module.data.pos = module.data.room == 0 ? 'lounge' : 'room'; 
-            $('#adminModal').remove();
-        });
-        $('#realtime').click(function(){
+        $el.find('#realtime').unbind('click').click(function(){
             module.systemAdmin.linkedUserList = {};
             module.data.pos = 'admin-linkeduser';
             socket.emit('retrieveLinkedUserAction');
         }).click();
-        $('#alluser').click(function(){
+        $el.find('#alluser').unbind('click').click(function(){
             module.data.pos = 'admin-alluser';
             socket.emit('retrieveUserDataAction');
         });
-        $('#chatHistory').click(function(){
+        $el.find('#chatHistory').unbind('click').click(function(){
             module.data.pos = 'admin-chatlog';
-            $('#chatlog-container').html('');
+            $el.find('#chatlog-container').html('');
         });
-        $('#search-message').click(module.systemAdmin.searchForChatLog); 
+        $el.find('#search-message').unbind('click').click(module.systemAdmin.searchForChatLog); 
+        $('.site-wrapper').append($el);
+        $el.modal('toggle').on('hidden.bs.modal', function(e){
+            module.data.pos = module.data.room == 0 ? 'lounge' : 'room'; 
+            $el.remove();
+        });
     },
 
     renderRegisterUserData: function(data){

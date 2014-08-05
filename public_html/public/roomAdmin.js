@@ -3,17 +3,16 @@ module.roomAdmin = {
 
     renderIndex: function(){
         var $el = $(module.template.roomAdminIndexTmpl(module.data));
-        $('.site-wrapper').append($el);
-        $('#adminModal').modal('toggle').on('hidden.bs.modal', function(e){
-            module.data.pos = 'room'; 
-            $('#adminModal').remove();
-        });
-
-        $('#delete-room').click(module.roomAdmin.destoryRoom);
-        $('#realtime').click(function(){
+        $el.find('#delete-room').unbind('click').click(module.roomAdmin.destoryRoom);
+        $el.find('#realtime').unbind('click').click(function(){
             module.roomAdmin.linkedUserList = {};
             socket.emit('retrieveRoomLinkedUserAction', module.data.room);
         }).click();
+        $('.site-wrapper').append($el);
+        $el.modal('toggle').on('hidden.bs.modal', function(e){
+            module.data.pos = 'room'; 
+            $el.remove();
+        });
     },
 
     renderLinkedUserData:function(data){

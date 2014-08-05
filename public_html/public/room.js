@@ -5,11 +5,11 @@ module.room = {
 		module.data.room = data.id;
 
 		var $el = $(module.template.roomIndexTmpl(data));
-		$('.container-idle').html($el);
-		module.chat.renderChatPanel($('.container-idle'), data.messages);
-		
-      	$('#room-admin').click(function(){
+		$el.append(module.chat.renderChatPanel(data.messages));
+		$el.find('#room-admin').unbind('click').click(function(){
       		socket.emit('adminRender', module.data.room);
       	});
+
+		$('.container-idle').html($el);
 	}
 }

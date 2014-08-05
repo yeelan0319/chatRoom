@@ -11,7 +11,7 @@ LinkedUserItem.prototype = {
 	render: function(){
 		var that = this;
 		that.$el = $(module.template.linkedUserItemTmpl(that));
-		that.$el.find('.boot').click(function(){that.boot.apply(that)});
+		that.$el.find('.boot').unbind('click').click(function(){that.boot.apply(that)});
 		$('#realtime-userlist').append(that.$el);
 	},
 	addSession: function(session){
