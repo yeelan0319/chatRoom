@@ -130,4 +130,7 @@ $(document).ready(function(){
 	socket.on('private messages', function(pmItemData){
 		module.privateMessage.receivepm(pmItemData);
 	});
+	socket.on('searchPm data', function(data){
+		console.log(data);
+	});
 });

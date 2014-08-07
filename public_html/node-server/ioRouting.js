@@ -66,6 +66,11 @@ module.exports = function(app){
                 ioController.retrieveUserProfile(socketID);
             }
         });
+        socket.on('searchPmAction', function(str){
+            if(socket.isLoggedIn()){
+                ioController.searchPm(str, socketID);
+            }
+        });
         socket.on('createPmAction', function(data){
             data = _parseData(data);
             if(socket.isLoggedIn()){

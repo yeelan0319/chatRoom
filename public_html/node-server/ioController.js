@@ -327,6 +327,26 @@ function IoController(app){
         });
     };
 
+    this.searchPm = function(str, socketID){
+        var socket = app.io.socketList[socketID];
+        app.db.collection('users').find({'$or':[
+            {'username':{'$regex':str, '$options':'i'}},
+            {'firstName':{'$regex':str, '$options':'i'}},
+            {'lastName':{'$regex':str, '$options':'i'}},
+            {'email':{'$regex':str, '$options':'i'}},
+            {'jobDescription':{'$regex':str, '$options':'i'}},
+        ]},{username:1, avatar:1}).toArray(function(err, users){
+            if(err){
+                //this is socket-level info
+                //throw new DatabaseError();
+                //redo the work
+            }
+            else{
+                socket.emit('searchPm data', responseJson.success(users));
+            }
+        });
+    }
+
     function _retrievePm(pmid, callback){
         var duration = DAY * 10;
         app.db.collection('pms').find({pmid: pmid, ctime:{$gt: Date.now() - duration}}).toArray(function(err, pms){

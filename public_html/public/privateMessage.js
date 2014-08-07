@@ -1,3 +1,5 @@
+var DONETYPINGINTERVAL = 1000;
+
 var Message = function(data){
 	this.msg = data.msg;
 	this.ctime = data.ctime;
@@ -96,13 +98,14 @@ PmItem.prototype = {
 module.privateMessage = {
 	init: function(){
 		var $el = $(module.template.pmContainerTmpl());
+		var typingTimer;
 
 		$el.find('.new-pm .fui-search').unbind('click').click(module.privateMessage.searchIconClicked);
-		$el.find('.new-pm .search-input').unbind('keydown').keydown(function(event){
-			if(event.which == 13){
-				module.privateMessage.searchIconClicked();
-				return false;
-			}
+		$el.find('.new-pm .search-input').unbind('keyup').keyup(function(){
+			clearTimeout(typingTimer);
+			typingTimer = setTimeout(module.privateMessage.searchContact, DONETYPINGINTERVAL)
+		}).unbind('keydown').keydown(function(event){
+			clearTimeout(typingTimer);
 		});
 		$(document).unbind('.click').click(function(e){
 			var clickWithinNewPm = $(e.target).closest('.new-pm').length == 0? false : true;
@@ -152,23 +155,29 @@ module.privateMessage = {
 			}
 		}
 	},
+	searchContact: function(){
+		var str = $('.new-pm .search-input').val();
+		if(str){
+			socket.emit('searchPmAction', str);
+		}
+	},
 
 	searchIconClicked: function(){
-		if($('.new-pm-outer').is('.active')){
-			//search
-			var username = $('.new-pm .search-input').val();
-			var pmItem = module.data.pmList[username];
-			if(pmItem){
-				pmItem.open();
-			}
-			else{
-				module.privateMessage.findUserWithUsername(username);	
-			}
-			module.privateMessage.searchClose();
-		}
-		else{
+		// if($('.new-pm-outer').is('.active')){
+		// 	//search
+		// 	var username = $('.new-pm .search-input').val();
+		// 	var pmItem = module.data.pmList[username];
+		// 	if(pmItem){
+		// 		pmItem.open();
+		// 	}
+		// 	else{
+		// 		module.privateMessage.findUserWithUsername(username);	
+		// 	}
+		// 	module.privateMessage.searchClose();
+		// }
+		// else{
 			module.privateMessage.searchOpen();
-		}
+		//}
 	},
 
 	searchOpen: function(){
