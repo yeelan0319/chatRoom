@@ -14,6 +14,7 @@ $(document).ready(function(){
 		roomUserItemTmpl: Handlebars.compile($.trim($('#room-user-item-tmpl').html())),
 		loginIndexTmpl: Handlebars.compile($.trim($('#login-index-tmpl').html())),
 		registerIndexTmpl: Handlebars.compile($.trim($('#register-index-tmpl').html())),
+		fillInfoIndexTmpl: Handlebars.compile($.trim($('#fill-info-index-tmpl').html())),
 		loungeIndexTmpl: Handlebars.compile($.trim($('#lounge-index-tmpl').html())),
 		roomIndexTmpl: Handlebars.compile($.trim($('#room-index-tmpl').html())),
 		systemAdminIndexTmpl: Handlebars.compile($.trim($('#systemAdmin-index-tmpl').html())),
@@ -48,6 +49,10 @@ $(document).ready(function(){
 				case 'register':
 					module.loginRegister.renderSessionFrame();
 					module.loginRegister.renderRegister();
+					break;
+				case 'fillInfo':
+					module.loginRegister.renderSessionFrame();
+					module.loginRegister.renderFillInfo(res.data);
 					break;
 				case 'chatFrame':
 					module.data.user = res.data;

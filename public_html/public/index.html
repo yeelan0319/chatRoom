@@ -55,6 +55,7 @@
     <script src="/lib/flatui-radio.js"></script>
     <script src="/lib/jquery.tagsinput.js"></script>
     <script src="/lib/jquery.placeholder.js"></script>
+    <script src="/lib/fileuploader.js"></script>
 
     <script src="/main.js"></script>
     <script src="/userItem.js"></script>
@@ -151,7 +152,7 @@
         </tr>
     </script>
     <script id="login-index-tmpl" type="text/x-handlebars-template" class="template">
-        <div id="masthead">
+        <div class="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">Symbolic IO Socket</h3>
             </div>
@@ -172,7 +173,7 @@
         </div>
     </script>
     <script id="register-index-tmpl" type="text/x-handlebars-template" class="template">
-        <div id="masthead">
+        <div class="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">Welcome</h3>
             </div>
@@ -189,48 +190,66 @@
                     <input id="passwordConfirm" type="password" class="form-control" placeholder = "Confirm Password"/>
                 </div>
                 <div class="form-group">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <input id="firstName" type="text" name="firstName" class="form-control" placeholder="First Name">
-                        </div>
-                        <div class="col-md-6">
-                            <input id="lastName" type="text" name="lastName" class="form-control" placeholder="Last Name">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <input id="phoneNumber" type="text" name="phoneNumber" class="form-control" placeholder="phone">
-                        </div>
-                        <div class="col-md-6">
-                            <div class="input-group date">
-                              <input id="birthday" type="text" name="birthday" class="form-control" placeholder="Birthday">
-                              <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
                     <input id="email" autocomplete="on" type="text" class="form-control" placeholder = "Email"/>
-                </div>
-                <div class="form-group">
-                    <textarea id="job" name="job" class="form-control" rows="3" placeholder="Job Description: title, position..."></textarea>
                 </div>
                 <button class="btn btn-inverse btn-wide">Signup</button>
             </form>
             <u id="login">Already have account?</u>
         </div>
     </script>
+    <script id="fill-info-index-tmpl" type="text/x-handlebars-template" class="template">
+        <div class="masthead">
+            <div class="inner">
+                <h3 class="masthead-brand">Hi {{username}}, </h3>
+            </div>
+        </div>
+        <div class="inner">
+            <form role="form" id="fill-info-form">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <input id="firstName" type="text" name="firstName" class="form-control" placeholder="First Name">
+                        </div>
+                        <div class="form-group">
+                            <input id="lastName" type="text" name="lastName" class="form-control" placeholder="Last Name">
+                        </div>
+                        <div class="form-group">
+                            <input id="phoneNumber" type="text" name="phoneNumber" class="form-control" placeholder="phone">
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group date">
+                                <input id="birthday" type="text" name="birthday" class="form-control" placeholder="Birthday">
+                                <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6"> 
+                        <div class="avatar-container">
+                            <img class="avatar" src="{{avatar}}"/>
+                            <div class="avatar-upload">
+                                <div class="backdrop">
+                                    <span>Choose Your Image</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <textarea id="job" name="job" class="form-control" rows="3" placeholder="Job Description: title, position..."></textarea>
+                </div>
+                <button class="btn btn-inverse btn-wide" type="submit">Submit</button>
+            </form>
+        </div>
+    </script>
     <script id="lounge-index-tmpl" type="text/x-handlebars-template" class="template">
-        <div id="masthead">
+        <div class="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">Lounge</h3>
             </div>
         </div>
     </script>
     <script id="room-index-tmpl" type="text/x-handlebars-template" class="template">
-        <div id="masthead">
+        <div class="masthead">
             <div class="inner">
                 <h3 class="masthead-brand">{{name}}</h3>
                 {{#isAdminOfRoom}}<span id="room-admin" class="fui-gear" title="Room Administration"></span>{{/isAdminOfRoom}}

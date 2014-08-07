@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var responseJson = require('./responseJson');
 
 module.exports = function socketExtension(socket, next){
@@ -31,15 +32,14 @@ module.exports = function socketExtension(socket, next){
     socket.setSocketUser = function(user){
         this.username = user.username;
         this.permission = user.permission;
-        this.firstName = user.firstName;
-        this.lastName = user.lastName;
+        this.avatar = user.avatar;
         this.join('/private/user/'+this.username);
-        this.renderChatFrame();
     };
     socket.removeSocketUser = function(){
         this.leave('/private/user/'+this.username);
         delete this.username;
         delete this.permission;
+        delete this.avatar;
         //TODO:also remove from the chat room user is currently in!!!
     };
 
@@ -88,7 +88,8 @@ module.exports = function socketExtension(socket, next){
             target: 'chatFrame',
             data: {
                 username: this.username,
-                permission: this.permission
+                permission: this.permission,
+                avatar: this.avatar
             }
         }
         this.emit('render message', responseJson.success(res));
@@ -139,12 +140,21 @@ module.exports = function socketExtension(socket, next){
         var res = {
             target: 'profile',
             data: {
-                user: user
+                user: _.omit(user, 'password', 'prompts')
             }
         }
         this.emit('render message', responseJson.success(res));
     };
-
+    socket.renderFillInfo = function(user){
+        var res = {
+            target: 'fillInfo',
+            data: {
+                username: user.username,
+                avatar: user.avatar
+            }
+        }
+        this.emit('render message', responseJson.success(res));
+    };
     socket.renderErrorMsg = function(errorJSON){
         this.emit('system message', errorJSON);
         console.log(errorJSON);

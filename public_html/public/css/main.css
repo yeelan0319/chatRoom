@@ -476,6 +476,38 @@ body.symbolic{
   overflow-y: scroll;
 }
 
+#fill-info-form .avatar-container{
+  position: relative;
+  width:230px;
+  height:230px;
+}
+
+.avatar, .avatar-upload{
+  position: absolute;
+  width:100%;
+  height:100%;
+  cursor:pointer;
+}
+
+.avatar-upload .backdrop{
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: rgba(0,0,0,0.5);
+  opacity: 0;
+  -webkit-transition: opacity 0.5s ease;
+  -o-transition: opacity 0.5s ease;
+  transition: opacity 0.5s ease;
+  text-align: center;
+  line-height: 230px;
+}
+
+.avatar-upload:hover .backdrop{
+  opacity: 1;
+}
+
 @media (min-width: 768px) {
   /* Pull out the header and footer */
   .site-footer {

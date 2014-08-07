@@ -120,13 +120,8 @@ module.exports = function(app){
             if(!socket.isLoggedIn()){
                 var username = data.username;
                 var password = data.password;
-                var firstName = data.firstName;
-                var lastName = data.lastName;
-                var phoneNumber = data.phoneNumber;
-                var birthday = data.birthday;
                 var email = data.email;
-                var jobDescription = data.jobDescription;
-                ioController.createNewUser(username, password, firstName, lastName, phoneNumber, birthday, email, jobDescription, session);
+                ioController.createNewUser(username, password, email, session);
             }
         });
         socket.on('logoutAction', function(){
@@ -139,7 +134,7 @@ module.exports = function(app){
             if(socket.isAdmin()){
                 var username = data.username;
                 var permission = data.permission;
-                ioController.editUser(username, permission);
+                ioController.editUserPermission(username, permission);
             }
         });
         socket.on('deleteUserAction', function(data){
@@ -170,6 +165,13 @@ module.exports = function(app){
                 var fromUsername = data.fromUsername;
                 var toUsername = socket.username;
                 ioController.readPm(fromUsername, toUsername);
+            }
+        });
+        socket.on('editUserAction', function(data){
+            data = _parseData(data);
+            if(socket.isLoggedIn()){
+                var username = socket.username;
+                ioController.editUserInfo(username, data);
             }
         });
         socket.on('editRoomAdminAction', function(data){

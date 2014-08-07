@@ -1,8 +1,10 @@
 var util = require('util');
 var events = require('events');
 var crypto = require('crypto');
+var _ = require('underscore');
 var responseJson = require('./responseJson');
 var DAY = 1000*60*60*24;
+var DEFAULTAVATAR = 'https://10.100.11.111/avatar/defaultAvatar.png';
 
 function IoController(app){
     var roomController = require('./roomController')(app);
@@ -52,7 +54,7 @@ function IoController(app){
         }); 
     };
         
-    this.createNewUser = function(username, password, firstName, lastName, phoneNumber, birthday, email, jobDescription, session){
+    this.createNewUser = function(username, password, email, session){
         var that = this;
         _findUserWithUsername(username, function(user){
             if(user){
@@ -63,13 +65,12 @@ function IoController(app){
                 var user = {
                     'username': username, 
                     'password': crypto.createHash('sha1').update(password).digest('hex'), 
-                    'firstName': firstName, 
-                    'lastName':lastName, 
-                    'phoneNumber':phoneNumber, 
-                    'birthday': birthday,
                     'email': email,
-                    'jobDescription': jobDescription,
-                    'permission':0
+                    'avatar': DEFAULTAVATAR,
+                    'permission':0,
+                    'prompts':{
+                        'needUserInfo': true
+                    }
                 };
                 app.db.collection('users').insert(user, {w:1}, function(err, result) {
                     if(err){
@@ -132,8 +133,32 @@ function IoController(app){
             }
         });
     };
-
-    this.editUser = function(username, permission){
+    this.editUserInfo = function(username, data){
+        var that = this;
+        data = _.pick(data, 'firstName', 'lastName', 'phoneNumber', 'birthday', 'jobDescription');
+        data.prompts = {};
+        data.prompts.needUserInfo = false;
+        app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:data}, {}, function(err, user){
+            if(err){
+                //this is socket-level info
+                //throw new DatabaseError();
+                //redo the work
+            }
+            else{
+                if(user.prompts.needUserInfo){
+                    var result = {
+                        user: user,
+                        target: username
+                    };
+                    that.emit('successfullyCompleteUserInfo', result);
+                }
+                else{
+                    //revised in the profile page
+                }
+            }
+        });
+    };
+    this.editUserPermission = function(username, permission){
         var that = this;
         app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{permission: permission}}, {}, function(err, user){
             if(err){
@@ -379,6 +404,18 @@ function IoController(app){
             }
         }
     }
+    function welcomeUser(res){
+        var username = res.target;
+        var user = res.user;
+        console.log(user);
+        var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
+        for(var socketID in userRoom){
+            if(userRoom.hasOwnProperty(socketID)){
+                var socket = app.io.socketList[socketID];
+                _initiateLounge(socket, user);
+            }
+        }
+    }
 
     function renderLoginSession(res){
         var sessionRoom = app.io.sockets.adapter.rooms['/private/session/'+res.target];
@@ -435,10 +472,21 @@ function IoController(app){
 
     function _welcomeUser(socket, user){
         socket.setSocketUser(user);
-        socket.welcomeUser(); 
+        if(user.prompts.needUserInfo){
+            socket.renderFillInfo(user);
+        }
+        else{
+            _initiateLounge(socket, user);
+        }
+    }
+
+    function _initiateLounge(socket, user){
+        console.log("haha");
+        socket.renderChatFrame();
         _checkUnreadPm(socket);
         _retrieveRoomList(socket);
         roomController.joinRoom(0, socket.id);
+        socket.welcomeUser(); 
     }
 
     function _renderLogin(socket){
@@ -458,6 +506,7 @@ function IoController(app){
     this.on('userNotLoggedIn', renderLoginSocket);
     this.on('successfullyLoggedInUser', welcomeSession)
     this.on('successfullyRetrievedUserList', sendUserListSocket);
+    this.on('successfullyCompleteUserInfo', welcomeUser)
     this.on('successfullyChangedUserPermission', informChangedPermissionUser);
     this.on('successfullyDeletedUser', renderRegisterUser);
     this.on('successfullyRetrievedChatLog', sendChatLogSocket);
