@@ -11,6 +11,7 @@ var RoomUserItem = function(userdata){
 RoomUserItem.prototype = {
 	render: function(){
 		var that = this;
+		that.isSelf = that.username === module.data.user.username? true : false;
 		that.$el = $(module.template.roomUserItemTmpl(that));
 		that.$el.find('.boot').unbind('click').click(function(){that.boot.apply(that)});
 		that.$el.find('.roomAdmin :checkbox').checkbox().unbind('change').on('change', function(){that.changePermission.apply(that)});

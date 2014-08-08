@@ -6,6 +6,7 @@ var UserItem = function(userdata){
 UserItem.prototype = {
 	render:function(){
 		var that = this;
+		that.isSelf = that.username === module.data.user.username? true : false;
 		that.$el = $(module.template.userItemTmpl(that));
 		that.$el.find('.delete').unbind('click').click(function(){that.destroy.apply(that)});
 		that.$el.find('.permission :checkbox').checkbox().unbind('change').on('change', function(){that.edit.apply(that)});

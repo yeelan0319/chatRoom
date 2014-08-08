@@ -95,7 +95,7 @@
             </td>
             <td>
                 <label class="checkbox permission" for="permission-{{username}}">
-                  <input type="checkbox" {{#permission}}checked="checked"{{/permission}} id="permission-{{username}}" data-toggle="checkbox">
+                  <input type="checkbox" {{#isSelf}}disabled{{/isSelf}} {{#permission}}checked="checked"{{/permission}} id="permission-{{username}}" data-toggle="checkbox">
                   <span class="permission-label">
                     {{#permission}}Administrator{{/permission}}
                     {{^permission}}User{{/permission}}
@@ -103,7 +103,7 @@
                 </label>
             </td>
             <td>
-                <span class="delete">Delete</span>
+                {{^isSelf}}<span class="delete">Delete</span>{{/isSelf}}
             </td>
             <td>
                 <span class="status-box"></span>
@@ -122,7 +122,7 @@
                 <span class="socketNumber">{{socketNumber}}</span>
             </td>
             <td>
-                <span class="boot">Boot</span>
+                {{^isSelf}}<span class="boot">Boot</span>{{/isSelf}}
             </td>
         </tr>
     </script>
@@ -139,7 +139,7 @@
             </td>
             <td>
                 <label class="checkbox roomAdmin" for="roomAdmin-{{username}}">
-                  <input type="checkbox" {{#isAdminOfRoom}}checked="checked"{{/isAdminOfRoom}} id="roomAdmin-{{username}}" data-toggle="checkbox">
+                  <input type="checkbox" {{#isSelf}}disabled{{/isSelf}} {{#isAdminOfRoom}}checked="checked"{{/isAdminOfRoom}} id="roomAdmin-{{username}}" data-toggle="checkbox">
                   <span class="roomAdmin-label">
                     {{#isAdminOfRoom}}Administrator{{/isAdminOfRoom}}
                     {{^isAdminOfRoom}}User{{/isAdminOfRoom}}
@@ -147,7 +147,7 @@
                 </label>
             </td>
             <td>
-                <span class="boot">Boot</span>
+                {{^isSelf}}<span class="boot">Boot</span>{{/isSelf}}
             </td>
         </tr>
     </script>

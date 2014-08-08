@@ -10,6 +10,7 @@ var LinkedUserItem = function(userdata){
 LinkedUserItem.prototype = {
 	render: function(){
 		var that = this;
+		that.isSelf = that.username === module.data.user.username? true : false;
 		that.$el = $(module.template.linkedUserItemTmpl(that));
 		that.$el.find('.boot').unbind('click').click(function(){that.boot.apply(that)});
 		$('#realtime-userlist').append(that.$el);

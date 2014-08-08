@@ -274,6 +274,15 @@ body.symbolic{
   outline:none;
 }
 
+#adminModal .checkbox.checked, #adminModal .checkbox.checked .second-icon, #adminModal .delete{
+  cursor:pointer;
+}
+
+#adminModal .checkbox.disabled, #adminModal .checkbox.disabled .second-icon{
+  color: #555;
+  cursor: default;
+}
+
 #adminModal .modal-body, #profileModal .modal-body{
   border-top: 1px solid #222;
 }

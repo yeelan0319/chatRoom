@@ -139,21 +139,27 @@ module.exports = function(app){
             if(socket.isAdmin()){
                 var username = data.username;
                 var permission = data.permission;
-                ioController.editUserPermission(username, permission);
+                if(socket.username !== username){
+                    ioController.editUserPermission(username, permission);
+                }
             }
         });
         socket.on('deleteUserAction', function(data){
             data = _parseData(data);
             if(socket.isAdmin()){
                 var username = data.username;
-                ioController.deleteUser(username);  
+                if(socket.username!==username){
+                    ioController.deleteUser(username);
+                }
             }
         });
         socket.on('systemBootAction', function(data){
             data = _parseData(data);
             if(socket.isAdmin()){
                 var username = data.username;
-                ioController.bootUser(username);
+                if(socket.username!==username){
+                    ioController.bootUser(username);
+                }
             }
         });
         socket.on('sendPmAction', function(data){
@@ -185,7 +191,9 @@ module.exports = function(app){
             if(socket.isAdmin()|| roomController.isAdminOfRoom(id, socket.username)){
                 var username = data.username;
                 var permission = data.permission;
-                roomController.editRoomAdmin(id, username, permission);
+                if(socket.username!==username){
+                    roomController.editRoomAdmin(id, username, permission);
+                }
             }
         });
         socket.on('roomBootAction', function(data){
@@ -193,7 +201,9 @@ module.exports = function(app){
             var id = data.id;
             if(socket.isAdmin()|| roomController.isAdminOfRoom(id, socket.username)){
                 var username = data.username;
-                roomController.bootUser(id, username);
+                if(socket.username!==username){
+                    roomController.bootUser(id, username);
+                }
             }
         });
         socket.on('chatAction', function(data){
