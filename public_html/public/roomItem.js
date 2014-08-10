@@ -16,7 +16,7 @@ RoomItem.prototype = {
 		this.$el.remove();
 	},
 	join: function(){
-		data = {
+		var data = {
 			from: module.data.room,
 			to: this.id
 		}

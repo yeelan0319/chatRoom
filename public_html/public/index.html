@@ -32,10 +32,12 @@
         <!--<div class="main-container container-in-use"></div>-->
         <div class="left-container">
             <h6>Room list</h6>
+            <div id="new-room">
+                <span class='fui-plus'></span>
+            </div>
             <span id='lounge'>Lounge</span>
             <ul id="room-list" class="list-unstyled">
             </ul>
-            <span id="new-room"> + New room</span>
         </div>
     </div>
     <!-- Bootstrap core JavaScript
@@ -57,7 +59,7 @@
     <script src="/lib/jquery.placeholder.js"></script>
     <script src="/lib/fileuploader.js"></script>
 
-    <script src="/stateHandler.js"></script>
+    <script src="/chobiUtil.js"></script>
     <script src="/validator.js"></script>
     <script src="/main.js"></script>
     <script src="/userItem.js"></script>
@@ -407,6 +409,26 @@
                     <td>{{jobDescription}}</td>
                   </tr>
                 </table>
+              </div>
+            </div>
+          </div>
+        </div>
+    </script>
+    <script id="room-prompt-tmpl" type="text/x-handlebars-template" class="template">
+        <div class="modal fade" id="roomPrompt" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h6 class="modal-title">please enter the name of your room: </h6>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" placeholder="Room Name" class="form-control" />
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn btn-inverse">Create Room</button>
               </div>
             </div>
           </div>

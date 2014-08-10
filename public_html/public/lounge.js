@@ -20,10 +20,22 @@ module.lounge = {
 			socket.emit('joinRoomAction', JSON.stringify(data));
 		});
 	  	$('.left-container').find('#new-room').unbind('click').click(function(){
-	  		var name = prompt("please enter the name of your room");
-	  		if(name && !module.lounge.findRoomIDWithName(name)){
-	  			socket.emit('createRoomAction', JSON.stringify({name: name}));
-	  		}
+	  		var $el = $(module.template.roomPromptTmpl());
+	  		$el.modal('toggle').on('hidden.bs.modal', function(e){
+	  			$el.remove();
+	  		});
+	  		$el.find("button:last").click(function(){
+	  			chobiUtil.inputErrorClear($el);
+	  			var name = $el.find("input").val();
+	  			if(name && !module.lounge.findRoomIDWithName(name)){
+		  			socket.emit('createRoomAction', JSON.stringify({name: name}));
+		  			$el.modal('hide');
+		  		}
+		  		else{
+		  			chobiUtil.inputError($el.find('input').parent(), 'The name is already in use...');
+		  		}
+	  		});
+	  		$('.site-wrapper').append($el);
 	  	});
 	},
 

@@ -80,7 +80,7 @@ body.symbolic{
   background: rgba(33,33,33,0.75);
   -webkit-box-shadow: inset 0 0 100px rgba(0,0,0,.5);
   box-shadow: inset 0 0 100px rgba(0,0,0,.5);
-  overflow:scroll;
+  overflow:auto;
   min-width: 1024px;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -144,6 +144,12 @@ body.symbolic{
 
 #room-list{
   padding-left:15px;
+}
+
+#new-room{
+  position:absolute;
+  right: 30px;
+  top: 25px;
 }
 
 #new-room, #lounge, #room-list > li{
@@ -253,7 +259,7 @@ body.symbolic{
   width:62%;
 }
 
-#adminModal .modal-content, #profileModal .modal-content{
+#adminModal .modal-content, #profileModal .modal-content, #roomPrompt .modal-content{
   color: #999;
   border: 1px solid rgba(0,0,0,0.5);
   border-radius: 10px 10px 2px 2px;
@@ -263,11 +269,15 @@ body.symbolic{
   background: rgba(0, 0, 0, 0.75);
 }
 
-#adminModal .modal-header, #profileModal .modal-header{
+#adminModal .modal-header, #profileModal .modal-header, #roomPrompt .modal-header{
   border-bottom: 1px solid #222;
 }
 
-#adminModal .modal-title, #adminModal .modal-header .close, #adminModal .checkbox.checked, #adminModal .checkbox.checked .second-icon, #profileModal .modal-title, #profileModal .modal-header .close{
+#roomPrompt .modal-footer{
+  border-top: 1px solid #222;
+}
+
+#adminModal .modal-title, #adminModal .modal-header .close, #adminModal .checkbox.checked, #adminModal .checkbox.checked .second-icon, #profileModal .modal-title, #profileModal .modal-header .close, #roomPrompt .modal-header .close{
   color:#862828;
   text-shadow: 0px 1px 2px #333;
   opacity: 1;
@@ -283,7 +293,7 @@ body.symbolic{
   cursor: default;
 }
 
-#adminModal .modal-body, #profileModal .modal-body{
+#adminModal .modal-body, #profileModal .modal-body, #roomPrompt .modal-body{
   border-top: 1px solid #222;
 }
 
@@ -354,7 +364,7 @@ body.symbolic{
   border: 1px solid #353636;
 }
 
-#adminModal input, .pm-content textarea, .pm-content textarea:focus{
+#adminModal input, .pm-content textarea, .pm-content textarea:focus, #roomPrompt input{
   background:transparent;
   border-color:#353636;
   color:#eee;
@@ -365,7 +375,7 @@ body.symbolic{
   padding-top:15px;
 }
 
-#adminModal #search-message{
+#adminModal #search-message, #roomPrompt .modal-footer button{
   margin: 0px;
   padding: 7px 10px;
   font-size: 14px;
@@ -482,7 +492,7 @@ body.symbolic{
 
 #adminModal .modal-content .tab-pane, .pm-message-container{
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 #fill-info-form .avatar-container{
@@ -515,6 +525,14 @@ body.symbolic{
 
 .avatar-upload:hover .backdrop{
   opacity: 1;
+}
+
+.offline-alert .msg{
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  margin: -10px 0 0 -125px;
+  z-index: 1030;
 }
 
 @media (min-width: 768px) {

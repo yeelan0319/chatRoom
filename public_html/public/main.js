@@ -6,7 +6,8 @@ $(document).ready(function(){
 		pos: '',
 		room: '',
 		roomList: {},
-		pmList:{}
+		pmList:{},
+		offlineFlag: false
 	}
 	module.template = {
 		userItemTmpl: Handlebars.compile($.trim($('#user-item-tmpl').html())),
@@ -23,7 +24,8 @@ $(document).ready(function(){
 		userPanelTmpl: Handlebars.compile($.trim($('#user-panel-tmpl').html())),
 		profileTmpl: Handlebars.compile($.trim($('#profile-index-tmpl').html())),
 		pmItemTmpl: Handlebars.compile($.trim($('#pm-item-tmpl').html())),
-		pmContainerTmpl: Handlebars.compile($.trim($('#pm-container-tmpl').html()))
+		pmContainerTmpl: Handlebars.compile($.trim($('#pm-container-tmpl').html())),
+		roomPromptTmpl: Handlebars.compile($.trim($('#room-prompt-tmpl').html()))
 	}
 	$('.template').remove();
 
@@ -31,48 +33,60 @@ $(document).ready(function(){
 		$.get('/sessionExtension');
 	});
 
+	socket.on('disconnect', function(){
+		chobiUtil.offlineBlock('disconnected');
+	});
+	socket.on('reconnect', function(){
+		chobiUtil.offlineBlock('reconnected');
+	});
+	socket.on('reconnecting', function(){
+		chobiUtil.offlineBlock('reconnecting');
+	});
 	socket.on('render message', function(res){
 		res = JSON.parse(res);
 		if(res.meta.status == 200){
-			res = res.data;
-			if(res.target == 'bootedPage'){
-				$('body').html('');
-				alert("You've been booted out of the system by administrator");
-				//TODO: change it to Modal
+			if(module.data.offlineFlag === true){
+				chobiUtil.offlineBlock('renderMessageReceived');
 			}
+			else{
+				res = res.data;
+				if(res.target == 'bootedPage'){
+					chobiUtil.offlineBlock('booted');
+				}
 
-			switch(res.target){
-				case 'login':
-					module.loginRegister.renderSessionFrame();
-					module.loginRegister.renderLogin();
-					break;
-				case 'register':
-					module.loginRegister.renderSessionFrame();
-					module.loginRegister.renderRegister();
-					break;
-				case 'fillInfo':
-					module.loginRegister.renderSessionFrame();
-					module.loginRegister.renderFillInfo(res.data);
-					break;
-				case 'chatFrame':
-					module.data.user = res.data;
-					module.lounge.renderFrame(res.data);
-					break;
-				case 'profile':
-					module.lounge.renderProfile(res.data);
-					break;
-				case 'lounge':
-					module.lounge.renderIndex(res.data);
-					break;
-				case 'room':
-					module.room.renderIndex(res.data);
-					break;
-				case 'systemAdmin':
-					module.systemAdmin.renderIndex();
-					break;
-				case 'roomAdmin':
-					module.roomAdmin.renderIndex();
-					break;
+				switch(res.target){
+					case 'login':
+						module.loginRegister.renderSessionFrame();
+						module.loginRegister.renderLogin();
+						break;
+					case 'register':
+						module.loginRegister.renderSessionFrame();
+						module.loginRegister.renderRegister();
+						break;
+					case 'fillInfo':
+						module.loginRegister.renderSessionFrame();
+						module.loginRegister.renderFillInfo(res.data);
+						break;
+					case 'chatFrame':
+						module.data.user = res.data;
+						module.lounge.renderFrame(res.data);
+						break;
+					case 'profile':
+						module.lounge.renderProfile(res.data);
+						break;
+					case 'lounge':
+						module.lounge.renderIndex(res.data);
+						break;
+					case 'room':
+						module.room.renderIndex(res.data);
+						break;
+					case 'systemAdmin':
+						module.systemAdmin.renderIndex();
+						break;
+					case 'roomAdmin':
+						module.roomAdmin.renderIndex();
+						break;
+				}
 			}
 		}
 	});

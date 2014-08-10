@@ -16,7 +16,7 @@ module.roomAdmin = {
     },
 
     renderLinkedUserData:function(data){
-        module.data.pos = 'admin-linkeduser';
+        module.data.pos = 'admin-roomuser';
         data = JSON.parse(data);
         if(data.meta.status == 200){
             var admins = data.data.admins;

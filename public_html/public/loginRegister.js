@@ -5,17 +5,17 @@ module.loginRegister = {
 
 		var $el = $(module.template.loginIndexTmpl());
 		$el.find('form').submit(function(){
-			stateHandler.inputErrorClear($(this));
+			chobiUtil.inputErrorClear($(this));
 
 			var $usernameEl = $(this).find("#username");
 			var $passwordEl = $(this).find("#password");
 	        var username = $usernameEl.val() || '';
 	        var password = $passwordEl.val() || '';
 	        if(!username){
-	        	stateHandler.inputError($usernameEl.parent(), 'Please enter your username');
+	        	chobiUtil.inputError($usernameEl.parent(), 'Please enter your username');
 	        }
 	        else if(!password){
-	        	stateHandler.inputError($passwordEl.parent(), 'Please enter your password');
+	        	chobiUtil.inputError($passwordEl.parent(), 'Please enter your password');
 	        }
 	        else{
 	        	socket.emit('loginAction', JSON.stringify({username: username, password: password}));
@@ -35,7 +35,7 @@ module.loginRegister = {
 
 		var $el = $(module.template.registerIndexTmpl());
 		$el.find('form').submit(function(){
-			stateHandler.inputErrorClear($(this));
+			chobiUtil.inputErrorClear($(this));
 
 			var $usernameEl = $(this).find("#username");
 			var $passwordEl = $(this).find("#password");
@@ -47,17 +47,17 @@ module.loginRegister = {
             var email = $emailEl.val() || '';
 
             if(!validator.nickName(username)){
-	        	stateHandler.inputError($usernameEl.parent(), 'Username can only be consist of 6-20 alphabets, numbers and underscores');
+	        	chobiUtil.inputError($usernameEl.parent(), 'Username can only be consist of 6-20 alphabets, numbers and underscores');
 	        }
 	        else if(password !== passwordConfirm){
-	        	stateHandler.inputError($passwordEl.parent(), '');
-	        	stateHandler.inputError($passwordConfirmEl.parent(), 'The confirmation is not matching the password');
+	        	chobiUtil.inputError($passwordEl.parent(), '');
+	        	chobiUtil.inputError($passwordConfirmEl.parent(), 'The confirmation is not matching the password');
 	        }
 	        else if(!validator.password(password)){
-	        	stateHandler.inputError($passwordEl.parent(), 'Password need to be a combination of 6-20 digits numbers and alphabets');
+	        	chobiUtil.inputError($passwordEl.parent(), 'Password need to be a combination of 6-20 digits numbers and alphabets');
 	        }
 	        else if(!validator.email(email)){
-	        	stateHandler.inputError($emailEl.parent(), 'Please enter a valid email address');
+	        	chobiUtil.inputError($emailEl.parent(), 'Please enter a valid email address');
 	        }
 	        else{
 	        	var data = {
@@ -94,7 +94,7 @@ module.loginRegister = {
 		var $el = $(module.template.fillInfoIndexTmpl(data));
 
 		$el.find('form').submit(function(){
-			stateHandler.inputErrorClear($(this));
+			chobiUtil.inputErrorClear($(this));
 
 			var $firstNameEl = $(this).find("#firstName");
 			var $lastNameEl = $(this).find("#lastName");
@@ -108,19 +108,19 @@ module.loginRegister = {
             var jobDescription = $jobDescriptionEl.val() || '';
 
             if(!validator.personName(firstName)){
-            	stateHandler.inputError($firstNameEl.parent(), 'Please enter a valid name');
+            	chobiUtil.inputError($firstNameEl.parent(), 'Please enter a valid name');
             }
             else if(!validator.personName(lastName)){
-            	stateHandler.inputError($lastNameEl.parent(), 'Please enter a valid name');
+            	chobiUtil.inputError($lastNameEl.parent(), 'Please enter a valid name');
             }
             else if(!validator.phoneNumber(phoneNumber)){
-            	stateHandler.inputError($phoneNumberEl.parent(), 'Please enter a valid phone number');
+            	chobiUtil.inputError($phoneNumberEl.parent(), 'Please enter a valid phone number');
             }
             else if(!validator.date(birthday)){
-            	stateHandler.inputError($birthdayEl.parent(), 'Please enter a valid birthday');
+            	chobiUtil.inputError($birthdayEl.parent(), 'Please enter a valid birthday');
             }
             else if(!validator.textMaxLength(jobDescription)){
-            	stateHandler.inputError($jobDescriptionEl.parent(), 'The job description should be less than 63354 characters');
+            	chobiUtil.inputError($jobDescriptionEl.parent(), 'The job description should be less than 63354 characters');
             }
             else{
             	var data = {
