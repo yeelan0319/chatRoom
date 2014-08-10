@@ -95,33 +95,32 @@ PmItem.prototype = {
 	}
 }
 
+ContactItem = function(data){
+	this.username = data.username;
+	this.avatar = data.avatar;
+	return this;
+}
+
+ContactItem.prototype = {
+	render: function(){
+		var that = this;
+		that.$el = $(module.template.contactItemTmpl(that));
+		that.$el.unbind('click').click(function(){module.privateMessage.openPm(that.username)});
+		return that.$el;
+	}
+}
+
 module.privateMessage = {
 	init: function(){
-		var $el = $(module.template.pmContainerTmpl());
 		var typingTimer;
-
-		$el.find('.new-pm .fui-search').unbind('click').click(module.privateMessage.searchIconClicked);
-		$el.find('.new-pm .search-input').unbind('keyup').keyup(function(){
+		
+		$('.left-container .search-input').unbind('keyup').keyup(function(){
 			clearTimeout(typingTimer);
 			typingTimer = setTimeout(module.privateMessage.searchContact, DONETYPINGINTERVAL)
 		}).unbind('keydown').keydown(function(event){
 			clearTimeout(typingTimer);
 		});
-		$(document).unbind('.click').click(function(e){
-			var clickWithinNewPm = $(e.target).closest('.new-pm').length == 0? false : true;
-			if(!clickWithinNewPm && $('.new-pm-outer').is('.active')){
-				module.privateMessage.searchClose();
-			}
-		});
 		$(window).resize(module.privateMessage.closeOverfitPm);
-		return $el;
-	},
-
-	findUserWithUsername: function(username){
-		var data = {
-			username: username
-		}
-		socket.emit('createPmAction', JSON.stringify(data));
 	},
 
 	closeOverfitPm: function(){
@@ -138,7 +137,7 @@ module.privateMessage = {
 		return pmItem;
 	},
 
-	receivepm: function(data){
+	receivePm: function(data){
 		data = JSON.parse(data);
 		if(data.meta.status == 200){
 			data = data.data;
@@ -156,43 +155,31 @@ module.privateMessage = {
 		}
 	},
 	searchContact: function(){
-		var str = $('.new-pm .search-input').val();
+		var str = $('.left-container .search-input').val();
 		if(str){
 			socket.emit('searchPmAction', str);
 		}
 	},
-
-	searchIconClicked: function(){
-		// if($('.new-pm-outer').is('.active')){
-		// 	//search
-		// 	var username = $('.new-pm .search-input').val();
-		// 	var pmItem = module.data.pmList[username];
-		// 	if(pmItem){
-		// 		pmItem.open();
-		// 	}
-		// 	else{
-		// 		module.privateMessage.findUserWithUsername(username);	
-		// 	}
-		// 	module.privateMessage.searchClose();
-		// }
-		// else{
-			module.privateMessage.searchOpen();
-		//}
+	renderSearchResult: function(data){
+		data = JSON.parse(data);
+		if(data.meta.status === 200){
+			$('#contact-list').html('');
+			$.each(data.data, function(index, contactData){
+				var contactItem = new ContactItem(contactData);
+				$('#contact-list').append(contactItem.render());
+			});
+		}
 	},
-
-	searchOpen: function(){
-		$('.new-pm-outer').addClass('active').animate({
-			width: 195
-		},500, function(){
-			$('.new-pm .search-input').show().focus();
-		});
-	},
-
-	searchClose: function(){
-		$('.new-pm-outer').removeClass('active').animate({
-			width: 35
-		},0, function(){
-			$('.new-pm .search-input').val('').hide();
-		});
+	openPm: function(username){
+		var pmItem = module.data.pmList[username];
+		if(pmItem){
+			pmItem.open();
+		}
+		else{
+			var data = {
+				username: username
+			}
+			socket.emit('createPmAction', JSON.stringify(data));
+		}
 	}
 }

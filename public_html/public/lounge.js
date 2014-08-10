@@ -6,8 +6,7 @@ module.lounge = {
 		var $userPanelEl = module.lounge.renderUserPanel(user);
 	  	$('.site-wrapper').append($userPanelEl);
 	  	
-	  	var $pmPanelEl = module.privateMessage.init();
-	  	$('.site-wrapper').append($pmPanelEl);
+	  	module.privateMessage.init();
 	  	
 	  	$('.left-container').animate({
 			left: 0

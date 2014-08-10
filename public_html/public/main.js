@@ -24,8 +24,8 @@ $(document).ready(function(){
 		userPanelTmpl: Handlebars.compile($.trim($('#user-panel-tmpl').html())),
 		profileTmpl: Handlebars.compile($.trim($('#profile-index-tmpl').html())),
 		pmItemTmpl: Handlebars.compile($.trim($('#pm-item-tmpl').html())),
-		pmContainerTmpl: Handlebars.compile($.trim($('#pm-container-tmpl').html())),
-		roomPromptTmpl: Handlebars.compile($.trim($('#room-prompt-tmpl').html()))
+		roomPromptTmpl: Handlebars.compile($.trim($('#room-prompt-tmpl').html())),
+		contactItemTmpl: Handlebars.compile($.trim($('#contact-item-tmpl').html()))
 	}
 	$('.template').remove();
 
@@ -142,9 +142,9 @@ $(document).ready(function(){
 	});
 
 	socket.on('private messages', function(pmItemData){
-		module.privateMessage.receivepm(pmItemData);
+		module.privateMessage.receivePm(pmItemData);
 	});
 	socket.on('searchPm data', function(data){
-		console.log(data);
+		module.privateMessage.renderSearchResult(data);
 	});
 });

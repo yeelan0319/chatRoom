@@ -31,13 +31,25 @@
         <div class="main-container container-idle"></div>
         <!--<div class="main-container container-in-use"></div>-->
         <div class="left-container">
-            <h6>Room list</h6>
-            <div id="new-room">
-                <span class='fui-plus'></span>
+            <div id="room-list-container">
+                <h6>Room list</h6>
+                <div id="new-room">
+                    <span class='fui-plus'></span>
+                </div>
+                <span id='lounge'>Lounge</span>
+                <ul id="room-list" class="list-unstyled">
+                </ul>
             </div>
-            <span id='lounge'>Lounge</span>
-            <ul id="room-list" class="list-unstyled">
-            </ul>
+            <div id="pm-contact-container">
+                <div class="form-group">
+                    <input type="text" class="form-control input-sm search-input" placeholder="Search Contact">
+                    <span class="input-icon fui-search"></span>
+                </div>
+                <ul id="contact-list" class="list-unstyled">
+                </ul>
+            </div>
+        </div>
+        <div id="pm-container">
         </div>
     </div>
     <!-- Bootstrap core JavaScript
@@ -75,6 +87,12 @@
     <script src="/roomAdmin.js"></script>
 
     <!-- Templates of chat room -->
+    <script id="contact-item-tmpl" type="text/x-handlebars-template" class="template">
+        <li class="contact-item">
+            <img src="{{avatar}}" />
+            <span>{{username}}</span>
+        </li>
+    </script>
     <script id="pm-item-tmpl" type="text/x-handlebars-template" class="template">
         <div class="pm-box-outer pm-item">
             <div class="pm-box-inner">
@@ -424,7 +442,7 @@
               </div>
               <div class="modal-body">
                 <div class="form-group">
-                    <input type="text" placeholder="Room Name" class="form-control" />
+                    <input type="text" placeholder="Room Name" class="form-control input-sm" />
                 </div>
               </div>
               <div class="modal-footer">
@@ -451,16 +469,6 @@
                 {{#permission}}<li><a id="admin">System Manage</a></li>{{/permission}}
                 <li><a id="signout">Logout</a></li>
             </ul>
-        </div>
-    </script>
-    <script id="pm-container-tmpl" type="text/x-handlebars-template" class="template">
-        <div id="pm-container">
-            <div class="new-pm-outer pm-item">
-                <div class="new-pm pm-box-inner">
-                    <span class="fui-search"></span>
-                    <input class="search-input" type="text" placeholder="Search by email address" style="display:none"/>   
-                </div>
-            </div>
         </div>
     </script>
   </body>

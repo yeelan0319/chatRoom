@@ -142,14 +142,19 @@ body.symbolic{
   box-shadow: 1px 0px 5px rgba(0,0,0,.75);
 }
 
+#room-list-container{
+  position:relative;
+  height: 50%;
+}
+
 #room-list{
   padding-left:15px;
 }
 
 #new-room{
   position:absolute;
-  right: 30px;
-  top: 25px;
+  right: 20px;
+  top: 0px;
 }
 
 #new-room, #lounge, #room-list > li{
@@ -364,7 +369,7 @@ body.symbolic{
   border: 1px solid #353636;
 }
 
-#adminModal input, .pm-content textarea, .pm-content textarea:focus, #roomPrompt input{
+#adminModal input, .pm-content textarea, .pm-content textarea:focus, #roomPrompt input, #pm-contact-container input, #pm-contact-container .form-control + .input-icon{
   background:transparent;
   border-color:#353636;
   color:#eee;
@@ -384,9 +389,30 @@ body.symbolic{
 #adminModal #chatlog-container{
   margin-top:15px;
 }
-/*
- * Affix and center
- */
+
+#pm-contact-container .form-group{
+  margin-bottom: 5px;
+}
+
+.contact-item{
+  position: relative;
+  margin-bottom: 5px;
+  cursor:pointer;
+}
+
+.contact-item img{
+  position: relative;
+  left:5px;
+  height:35px;
+  width:35px;
+}
+
+.contact-item span{
+  position: relative;
+  padding-left: 10px;
+  line-height:35px;
+  font-size:13px;
+}
 
 #pm-container{
   position: fixed;
@@ -409,10 +435,6 @@ body.symbolic{
   width: 220px;
 }
 
-.new-pm-outer{
-  width:35px;
-}
-
 .pm-box-inner{
   position: absolute;
   bottom: 0px;
@@ -420,7 +442,7 @@ body.symbolic{
   visibility: visible;
 }
 
-.pm-header, .new-pm{
+.pm-header{
   height:30px;
   line-height: 30px;
   padding: 0px 10px;
@@ -436,7 +458,7 @@ body.symbolic{
   display:none;
 }
 
-.pm-item.active .pm-header, .pm-item.active .new-pm{
+.pm-item.active .pm-header{
   background: rgb(255,163,0);
 }
 
@@ -455,36 +477,6 @@ body.symbolic{
   padding:3px;
 }
 
-.new-pm .fui-search{
-  float: right;
-}
-
-.new-pm .search-input{
-  float: right;
-  margin-right: 10px;
-  width: 150px;
-  height:30px;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  color: #eee;
-}
-
-.new-pm .search-input::-webkit-input-placeholder {
-   color: #eee;
-}
-
-.new-pm .search-input:-moz-placeholder { /* Firefox 18- */
-   color: #eee;  
-}
-
-.new-pm .search-input::-moz-placeholder {  /* Firefox 19+ */
-   color: #eee; 
-}
-
-.new-pm .search-input:-ms-input-placeholder {  
-   color: #eee;   
-}
 
 .oldMessage{
   color:#888;
