@@ -42,7 +42,7 @@
             </div>
             <div id="pm-contact-container">
                 <div class="form-group">
-                    <input type="text" class="form-control input-sm search-input" placeholder="Search Contact">
+                    <input type="text" class="form-control input-sm search-input" placeholder="Search Contacts">
                     <span class="input-icon fui-search"></span>
                 </div>
                 <ul id="contact-list" class="list-unstyled">
@@ -138,10 +138,10 @@
                 <span class="username">{{username}}</span>
             </td>
             <td>
-                <span class="sessionNumber">{{sessionNumber}}</span>
+                <span class="loginCount">{{loginCount}}</span>
             </td>
             <td>
-                <span class="socketNumber">{{socketNumber}}</span>
+                <span class="socketCount">{{socketCount}}</span>
             </td>
             <td>
                 {{^isSelf}}<span class="boot">Boot</span>{{/isSelf}}
@@ -154,10 +154,10 @@
                 <span class="username">{{username}}</span>
             </td>
             <td>
-                <span class="sessionNumber">{{sessionNumber}}</span>
+                <span class="loginCount">{{loginCount}}</span>
             </td>
             <td>
-                <span class="socketNumber">{{socketNumber}}</span>
+                <span class="socketCount">{{socketCount}}</span>
             </td>
             <td>
                 <label class="checkbox roomAdmin" for="roomAdmin-{{username}}">
@@ -300,8 +300,8 @@
                         <thead>
                             <tr>
                               <th>Username</th>
-                              <th>Session Number</th>
-                              <th>Socket Number</th>
+                              <th>Login Count</th>
+                              <th>Socket Count</th>
                               <th></th>
                             </tr>
                         </thead>
@@ -381,8 +381,8 @@
                         <thead>
                             <tr>
                               <th class="col-md-3">Username</th>
-                              <th class="col-md-2">Session Number</th>
-                              <th class="col-md-2">Socket Number</th>
+                              <th class="col-md-2">Login Count</th>
+                              <th class="col-md-2">Socket Count</th>
                               <th class="col-md-3">Permission</th>
                               <th class="col-md-2"></th>
                             </tr>

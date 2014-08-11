@@ -1,7 +1,7 @@
 var RoomUserItem = function(userdata){
 	this.username = userdata.username;
-	this.sessionNumber = 0;
-	this.socketNumber = 0;
+	this.loginCount = 0;
+	this.socketCount = 0;
 	this.sessions = [];
 	this.socketIDs = [];
 	this.isAdminOfRoom = 0;
@@ -20,13 +20,13 @@ RoomUserItem.prototype = {
 	addSession: function(session){
 		if(this.sessions.indexOf(session) == -1){
 			this.sessions.push(session);
-			this.sessionNumber++;
+			this.loginCount++;
 		}
 	},
 	addSocketID: function(socketID){
 		if(this.socketIDs.indexOf(socketID) == -1){
 			this.socketIDs.push(socketID);
-			this.socketNumber++;
+			this.socketCount++;
 		}
 	},
 	boot: function(){
