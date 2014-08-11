@@ -58,6 +58,62 @@ module.lounge = {
 
 	renderProfile: function(data){
 		var $el = $(module.template.profileTmpl(data.user));
+		$el.find('.input-group.date').datepicker({
+		    startDate: "01/01/1940",
+		    startView: 2,
+		    autoclose: true
+		});
+		$el.find('.read-only button').unbind('click').click(function(){
+			$el.find('.read-only').hide();
+			$el.find('.edit-mode').show();
+		});
+		$el.find('.edit-mode button').unbind('click').click(function(){
+			chobiUtil.inputErrorClear($el);
+
+			var $firstNameEl = $el.find("input[name=firstName]");
+			var $lastNameEl = $el.find("input[name=lastName]");
+			var $phoneNumberEl = $el.find("input[name=phoneNumber]");
+			var $birthdayEl = $el.find("input[name=birthday]");
+			var $jobDescriptionEl = $el.find("textarea[name=job]");
+            var firstName = $firstNameEl.val();
+            var lastName = $lastNameEl.val();
+            var phoneNumber = $phoneNumberEl.val();
+            var birthday = $birthdayEl.val();
+            var jobDescription = $jobDescriptionEl.val();
+
+            if(!validator.personName(firstName)){
+            	chobiUtil.inputError($firstNameEl.parent(), 'Please enter a valid name');
+            }
+            else if(!validator.personName(lastName)){
+            	chobiUtil.inputError($lastNameEl.parent(), 'Please enter a valid name');
+            }
+            else if(!validator.phoneNumber(phoneNumber)){
+            	chobiUtil.inputError($phoneNumberEl.parent(), 'Please enter a valid phone number');
+            }
+            else if(!validator.date(birthday)){
+            	chobiUtil.inputError($birthdayEl.parent(), 'Please enter a valid birthday');
+            }
+            else if(!validator.textMaxLength(jobDescription)){
+            	chobiUtil.inputError($jobDescriptionEl.parent(), 'The job description should be less than 63354 characters');
+            }
+            else{
+            	var data = {
+	            	firstName: firstName,
+	            	lastName: lastName,
+	            	phoneNumber: phoneNumber,
+	            	birthday: birthday,
+	            	jobDescription: jobDescription
+	            }
+	            socket.emit('editUserAction', JSON.stringify(data));
+	            $el.find("#firstName").text(firstName);
+	            $el.find('#lastName').text(lastName);
+	            $el.find('#phoneNumber').text(phoneNumber);
+	            $el.find('#birthday').text(birthday);
+	            $el.find('#job').text(jobDescription);
+	            $el.find('.read-only').show();
+				$el.find('.edit-mode').hide();
+            }
+		});
 		$('.site-wrapper').append($el);
         $el.modal('toggle').on('hidden.bs.modal', function(e){
             $el.remove();

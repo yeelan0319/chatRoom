@@ -363,13 +363,13 @@ body.symbolic{
   color:#eee;
 }
 
-#adminModal .input-group-addon{
+#adminModal .input-group-addon, #profileModal .input-group-addon{
   padding:8px 10px;
   background-color: transparent;
   border: 1px solid #353636;
 }
 
-#adminModal input, .pm-content textarea, .pm-content textarea:focus, #roomPrompt input, #pm-contact-container input, #pm-contact-container .form-control + .input-icon{
+#adminModal input, #profileModal input, #profileModal textarea, .pm-content textarea, .pm-content textarea:focus, #roomPrompt input, #pm-contact-container input, #pm-contact-container .form-control + .input-icon{
   background:transparent;
   border-color:#353636;
   color:#eee;
@@ -380,7 +380,7 @@ body.symbolic{
   padding-top:15px;
 }
 
-#adminModal #search-message, #roomPrompt .modal-footer button{
+#adminModal #search-message, #roomPrompt .modal-footer button, #profileModal .modal-body button{
   margin: 0px;
   padding: 7px 10px;
   font-size: 14px;
@@ -388,6 +388,10 @@ body.symbolic{
 
 #adminModal #chatlog-container{
   margin-top:15px;
+}
+
+#profileModal .edit-mode{
+  display: none;
 }
 
 #pm-contact-container .form-group{

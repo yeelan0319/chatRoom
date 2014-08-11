@@ -408,23 +408,46 @@
                 <table class="table">
                   <tr>
                     <td>Name:</td>
-                    <td>{{firstName}} {{lastName}}</td>
+                    <td class="read-only"><span id="firstName">{{firstName}}</span> <span id="lastName">{{lastName}}</span></td>
+                    <td class="edit-mode"><div class="form-group">
+                        <input type="text" name="firstName" class="form-control input-sm" placeholder="First Name" value="{{firstName}}">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="lastName" class="form-control input-sm" placeholder="Last Name" value="{{lastName}}">
+                    </div></td>
                   </tr>
                   <tr>
                     <td>Email:</td>
-                    <td>{{email}}</td>
+                    <td class="read-only" id="email">{{email}}</td>
+                    <td class="edit-mode"><div class="form-group">
+                        <input type="text" name="email" class="form-control input-sm" placeholder="Email" value="{{email}}">
+                    </div></td>
                   </tr>
                   <tr>
                     <td>Phone:</td>
-                    <td>{{phoneNumber}}</td>
+                    <td class="read-only" id="phoneNumber">{{phoneNumber}}</td>
+                    <td class="edit-mode"><div class="form-group">
+                        <input type="text" name="phoneNumber" class="form-control input-sm" placeholder="phone" value="{{phoneNumber}}">
+                    </div></td>
                   </tr>
                   <tr>
                     <td>Birthday:</td>
-                    <td>{{birthday}}</td>
+                    <td class="read-only" id="birthday">{{birthday}}</td>
+                    <td class="edit-mode"><div class="input-group date">
+                        <input type="text" name="birthday" class="form-control input-sm" placeholder="Birthday" value="{{birthday}}">
+                        <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
+                    </div></td>
                   </tr>
                   <tr>
                     <td>Job description:</td>
-                    <td>{{jobDescription}}</td>
+                    <td class="read-only" id="job">{{jobDescription}}</td>
+                    <td class="edit-mode"><div class="form-group">
+                        <textarea name="job" class="form-control" rows="3" placeholder="Job Description: title, position...">{{jobDescription}}</textarea>
+                    </div></td>
+                  </tr>
+                  <tr>
+                    <td class="read-only"><button class="btn btn-inverse btn-wide">Edit</button></td>
+                    <td class="edit-mode"><button class="btn btn-inverse btn-wide">Submit</button></td>
                   </tr>
                 </table>
               </div>

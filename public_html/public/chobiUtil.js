@@ -12,12 +12,14 @@ chobiUtil.inputErrorClear = function($targetContainer){
 chobiUtil.offlineBlock = function(status){
 	switch(status){
 		case 'disconnected':
-			module.data.offlineFlag = true;
-			if(['admin-roomuser', 'admin-linkeduser', 'admin-alluser', 'admin-chatlog'].indexOf(module.data.pos) !== -1){
-				$("#adminModal").modal('hide');
+			if(!module.data.offlineFlag){
+				module.data.offlineFlag = true;
+				if(['admin-roomuser', 'admin-linkeduser', 'admin-alluser', 'admin-chatlog'].indexOf(module.data.pos) !== -1){
+					$("#adminModal").modal('hide');
+				}
+				$('body').append('<div class="offline-alert"><div class="modal-backdrop fade in"></div><div class="msg">Temporarily lost connect to the server</div></div>');
+				//hint that the application is offline right now
 			}
-			$('body').append('<div class="offline-alert"><div class="modal-backdrop fade in"></div><div class="msg">Temporarily lost connect to the server</div></div>');
-			//hint that the application is offline right now
 			break;
 		case 'reconnecting':
 			$('.offline-alert .msg').text('Reconnecting to server...');
@@ -37,6 +39,7 @@ chobiUtil.offlineBlock = function(status){
 			$('.offline-alert').remove();
 			break;
 		case 'booted':
+			module.data.offlineFlag = true;
 			$('body').html('<div class="offline-alert"><div class="modal-backdrop fade in"></div><div class="msg">You have been booted out of the system by administrator</div></div>');
 			break;
 	}
