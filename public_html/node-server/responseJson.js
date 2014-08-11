@@ -1,5 +1,10 @@
-function success(data){
+responseJson = {};
+responseJson.success = function(data){
 	return JSON.stringify({meta: {status: 200, msg: "OK"}, data: data});
 }
 
-exports.success = success;
+responseJson.badData = function(){
+	return JSON.stringify({meta: {status: 400, msg: "Bad Request"}, data: {}});
+}
+
+exports = module.exports = responseJson;

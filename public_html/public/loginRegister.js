@@ -11,11 +11,11 @@ module.loginRegister = {
 			var $passwordEl = $(this).find("#password");
 	        var username = $usernameEl.val() || '';
 	        var password = $passwordEl.val() || '';
-	        if(!username){
-	        	chobiUtil.inputError($usernameEl.parent(), 'Please enter your username');
+	        if(!validator.nickName(username)){
+	        	chobiUtil.inputError($usernameEl.parent(), 'The username is not valid');
 	        }
-	        else if(!password){
-	        	chobiUtil.inputError($passwordEl.parent(), 'Please enter your password');
+	        else if(!validator.password(password)){
+	        	chobiUtil.inputError($passwordEl.parent(), 'The password does not matching');
 	        }
 	        else{
 	        	socket.emit('loginAction', JSON.stringify({username: username, password: password}));

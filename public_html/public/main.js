@@ -147,4 +147,8 @@ $(document).ready(function(){
 	socket.on('pm contact data', function(data){
 		module.privateMessage.renderContactList(data);
 	});
+	socket.on('system warning', function(data){
+		data = JSON.parse(data);
+		console.log(data.meta.msg);
+	});
 });

@@ -46,8 +46,17 @@ validator.textMaxLength = function(input){
 	return input.length < 63354? PASS : FAIL;
 }
 
+validator.permission = function(input){
+	if(input!==1&&input!==0){
+		return FAIL;
+	}
+	else{
+		return PASS;
+	}
+}
+
 if(typeof exports !== 'undefined'){
 	if(typeof module !== 'undefined' && module.exports){
 		exports = module.exports = validator;
-	}f
+	}
 }

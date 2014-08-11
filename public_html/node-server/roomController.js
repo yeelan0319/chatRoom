@@ -7,6 +7,25 @@ var MINUTE = 1000*60;
 function RoomController(app){
     events.EventEmitter.call(this);
 
+    this._getRoom = function(id){
+        try{
+            var room = app.roomList[id];
+            if(!room){
+                throw "roomNotDefined";
+            }
+            else{
+                return room;
+            }
+        }
+        catch(e){
+            console.log("trying to access room that is not defined");
+        }
+    }
+
+    function _setRoom(id, room){
+        app.roomList[id] = room;
+    }
+
     app.db.collection('rooms').find({'destoryTime': 0}).toArray(function(err, documents){
         if(err){
             //redo the work
@@ -14,13 +33,16 @@ function RoomController(app){
         else{
             for(var i in documents){
                 var room = documents[i];
-                app.roomList[room._id] = room;
+                _setRoom(room._id, room)
             }
         }
     });
 
     this.isAdminOfRoom = function(id, username){
-        return app.roomList[id].adminOfRoom.indexOf(username) != -1 ? true : false;
+        var room = this._getRoom(id);
+        if(room){
+            return room.adminOfRoom.indexOf(username) != -1 ? true : false;
+        }
     };
 
     this.joinRoom = function(to, socketID){
@@ -31,7 +53,7 @@ function RoomController(app){
                 socket.joinLounge(messages);
             }
             else{
-                var targetRoom = app.roomList[to];
+                var targetRoom = that._getRoom(to);
                 if(targetRoom){
                     var name = targetRoom.name;
                     var isAdminOfRoom = socket.isAdmin()||that.isAdminOfRoom(to, socket.username);
@@ -74,12 +96,15 @@ function RoomController(app){
                 data.sockets.push(simpleSocket);
             }
         }
-        data.admins = app.roomList[id].adminOfRoom;
+        var room = this._getRoom(id);
+        if(room){
+            data.admins = room.adminOfRoom;
+        }
         socket.emit('room linked users data', responseJson.success(data));
     };
 
     this.editRoomAdmin = function(id, username, permission){
-        var room = app.roomList[id];
+        var room = this._getRoom(id);
         if(permission === 0){
             var index = room.adminOfRoom.indexOf(username);
             if(index != -1){
@@ -117,7 +142,7 @@ function RoomController(app){
         var hasActiveRoomWithSameName = false;
         for(var id in app.roomList){
             if(app.roomList.hasOwnProperty(id)){
-                if(app.roomList[id].name === name){
+                if(this._getRoom(id).name === name){
                     hasActiveRoomWithSameName = true;
                 }
             }
@@ -132,7 +157,7 @@ function RoomController(app){
                     //redo the work
                 }
                 else{
-                    app.roomList[room._id] = room;
+                    _setRoom(room._id, room);
                     that.emit('successfullyCreatedRoom', room);
                 }
             });
