@@ -79,7 +79,7 @@ module.loginRegister = {
 		module.data.user = {};
 		module.data.roomList = {};
 		module.data.pmList = {};
-		$('#user-panel, #pm-container').remove();
+		$('#user-panel, .pm-item').remove();
 		$('body').removeClass('symbolic');
 		$('.main-container').removeClass('chat-container').addClass('session-container');
 		$('.left-container').animate({
