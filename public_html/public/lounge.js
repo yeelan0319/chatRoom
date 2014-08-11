@@ -23,19 +23,13 @@ module.lounge = {
 	  		$el.modal('toggle').on('hidden.bs.modal', function(e){
 	  			$el.remove();
 	  		});
-	  		$el.find("button:last").click(function(){
-	  			chobiUtil.inputErrorClear($el);
-	  			var name = $el.find("input").val();
-	  			if(!validator.nickName(name)){
-	  				chobiUtil.inputError($el.find('input').parent(), 'Room name can only be consist of 6-20 alphabets, numbers and underscores');
+	  		$el.find("button:last").unbind('click').click(function(){
+	  			module.lounge.createRoom();
+	  		});
+	  		$el.unbind('keydown').keydown(function(event){
+	  			if(event.which == 13){
+	  				module.lounge.createRoom();
 	  			}
-	  			else if(module.lounge.findRoomIDWithName(name)){
-		  			chobiUtil.inputError($el.find('input').parent(), 'The name is already in use...');
-		  		}
-		  		else{
-		  			socket.emit('createRoomAction', JSON.stringify({name: name}));
-		  			$el.modal('hide');
-		  		}
 	  		});
 	  		$('.site-wrapper').append($el);
 	  		$el.find('input').focus();
@@ -139,6 +133,22 @@ module.lounge = {
 			module.data.roomList[room.id] = room;
 			room.render();
 		});
+	},
+
+	createRoom: function(){
+		var $el = $("#roomPrompt");
+		chobiUtil.inputErrorClear($el);
+		var name = $el.find("input").val();
+		if(!validator.looseNickName(name)){
+			chobiUtil.inputError($el.find('input').parent(), 'Room name must between 3-20 characters');
+		}
+		else if(module.lounge.findRoomIDWithName(name)){
+			chobiUtil.inputError($el.find('input').parent(), 'The name is already in use...');
+  		}
+  		else{
+  			socket.emit('createRoomAction', JSON.stringify({name: name}));
+  			$el.modal('hide');
+  		}
 	},
 
 	deleteRoom: function(data){

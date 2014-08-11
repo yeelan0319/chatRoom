@@ -366,7 +366,7 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isLoggedIn()){
                 var name = data.name;
-                if(!validator.nickName(name)){
+                if(!validator.looseNickName(name)){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{

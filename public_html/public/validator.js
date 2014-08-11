@@ -8,6 +8,11 @@ validator.nickName = function(input){
 	return nickNameRegex.test(input)? PASS : FAIL;
 }
 
+validator.looseNickName = function(input){
+	var nickNameRegex = /^.{3,20}$/
+	return nickNameRegex.test(input)? PASS : FAIL;
+}
+
 validator.password = function(input){
 	//password must have a length between 6-20 characters
 	if(input.length < 6 || input.length > 20){
