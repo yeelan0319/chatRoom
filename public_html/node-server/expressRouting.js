@@ -4,7 +4,6 @@ var easyimage = require('easyimage');
 var fs = require('fs');
 var _ = require('underscore');
 var responseJson = require('./responseJson');
-var AVATARPATH = "https://10.100.11.111/avatar/";
 
 module.exports = function(app){
     app.express.use(app.middleware.cookieParserFunction);
@@ -21,7 +20,6 @@ module.exports = function(app){
     app.express.post('/upload/avatar', function(req, res){
     	var username = req.session.username;
     	if(username){
-    		console.log('receive upload req');
     		var form = new formidable.IncomingForm();
 	    	form.parse(req, function(err, fields, files){
 	    		var old_path = files.file.path,
@@ -45,7 +43,7 @@ module.exports = function(app){
 	    							width: 230
 	    						}).then(
 	    							function(file){
-	    								app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{avatar:AVATARPATH+file_name}}, {new:true}, function(err, user){
+	    								app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{avatar:'/avatar/'+file_name}}, {new:true}, function(err, user){
 								            if(err){
 								                //this is socket-level info
 								                //throw new DatabaseError();

@@ -43,12 +43,14 @@ module.systemAdmin = {
         if(data.meta.status == 200 &&  module.data.pos === 'admin-linkeduser'){
             $('#realtime-userlist').html('');
             $.each(data.data, function(index, userdata){
-                var linkedUserItem = module.systemAdmin.linkedUserList[userdata.username];
-                if(!linkedUserItem){
-                    linkedUserItem = new LinkedUserItem(userdata);
+                if(userdata.username){
+                    var linkedUserItem = module.systemAdmin.linkedUserList[userdata.username];
+                    if(!linkedUserItem){
+                        linkedUserItem = new LinkedUserItem(userdata);
+                    }
+                    linkedUserItem.addSession(userdata.token);
+                    linkedUserItem.addSocketID(userdata.id);
                 }
-                linkedUserItem.addSession(userdata.token);
-                linkedUserItem.addSocketID(userdata.id);
             });
             for(var username in module.systemAdmin.linkedUserList){
                 if(module.systemAdmin.linkedUserList.hasOwnProperty(username)){

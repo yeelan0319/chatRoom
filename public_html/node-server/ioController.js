@@ -4,7 +4,7 @@ var crypto = require('crypto');
 var _ = require('underscore');
 var responseJson = require('./responseJson');
 var DAY = 1000*60*60*24;
-var DEFAULTAVATAR = 'https://10.100.11.111/avatar/defaultAvatar.png';
+var DEFAULTAVATAR = '/avatar/defaultAvatar.png';
 
 function IoController(app){
     var roomController = require('./roomController')(app);
@@ -427,7 +427,6 @@ function IoController(app){
     function welcomeUser(res){
         var username = res.target;
         var user = res.user;
-        console.log(user);
         var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
         for(var socketID in userRoom){
             if(userRoom.hasOwnProperty(socketID)){

@@ -99,7 +99,7 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isLoggedIn()){
                 var username = data.username;
-                if(!validator.nickname(username)){
+                if(!validator.nickName(username)){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -176,7 +176,7 @@ module.exports = function(app){
             if(!socket.isLoggedIn()){
                 var username = data.username;
                 var password = data.password;
-                if(!validator.nickname(username)||!validator.password(password)){
+                if(!validator.nickName(username)||!validator.password(password)){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -191,7 +191,7 @@ module.exports = function(app){
                 var username = data.username;
                 var password = data.password;
                 var email = data.email;
-                if(!validator.nickname(username)||!validator.password(password)||!validator.email(email)){
+                if(!validator.nickName(username)||!validator.password(password)||!validator.email(email)){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -212,7 +212,7 @@ module.exports = function(app){
             if(socket.isAdmin()){
                 var username = data.username;
                 var permission = data.permission;
-                if(!validator.nickname(username)||!validator.permission(permission)||socket.username === username){
+                if(!validator.nickName(username)||!validator.permission(permission)||socket.username === username){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -227,7 +227,7 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isAdmin()){
                 var username = data.username;
-                if(!validator.nickname(username) || socket.username===username){
+                if(!validator.nickName(username) || socket.username===username){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -242,7 +242,7 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isAdmin()){
                 var username = data.username;
-                if(!validator.nickname(username) || socket.username===username){
+                if(!validator.nickName(username) || socket.username===username){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -258,7 +258,7 @@ module.exports = function(app){
             if(socket.isLoggedIn()){
                 var toUsername = data.toUsername;
                 var msg = data.msg;
-                if(!validator.nickname(toUsername)){
+                if(!validator.nickName(toUsername)){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -274,7 +274,7 @@ module.exports = function(app){
             if(socket.isLoggedIn()){
                 var fromUsername = data.fromUsername;
                 var toUsername = socket.username;
-                if(!validator.nickname(fromUsername) || !validator.nickname(toUsername)){
+                if(!validator.nickName(fromUsername) || !validator.nickName(toUsername)){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -289,7 +289,13 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isLoggedIn()){
                 var username = socket.username;
-                if(!validator.nickname(username)){
+                
+                var firstNameFlag = typeof data.firstName === 'undefined'? true : validator.personName(data.firstName);
+                var lastNameFlag = typeof data.lastName === 'undefined'? true : validator.personName(data.lastName);
+                var phoneNumberFlag = typeof data.phoneNumber === 'undefined'? true : validator.phoneNumber(data.phoneNumber);
+                var birthdayFlag = typeof data.birthday === 'undefined'? true : validator.date(data.birthday);
+                var jobDescriptionFlag = typeof data.jobDescription === 'undefined'? true : validator.textMaxLength(data.jobDescription);
+                if(!firstNameFlag||!lastNameFlag||!phoneNumberFlag||!birthdayFlag||!jobDescriptionFlag){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -307,7 +313,7 @@ module.exports = function(app){
                 if(socket.isAdmin()|| roomController.isAdminOfRoom(id, socket.username)){
                     var username = data.username;
                     var permission = data.permission;
-                    if(!validator.nickname(username) || !validator.permission(permission) || socket.username===username){
+                    if(!validator.nickName(username) || !validator.permission(permission) || socket.username===username){
                         socket.emit('system warning', responseJson.badData());
                     }
                     else{
@@ -328,7 +334,7 @@ module.exports = function(app){
             if(roomController._getRoom(id)){
                 if(socket.isAdmin()|| roomController.isAdminOfRoom(id, socket.username)){
                     var username = data.username;
-                    if(!validator.nickname(username) || socket.username===username){
+                    if(!validator.nickName(username) || socket.username===username){
                         socket.emit('system warning', responseJson.badData());
                     }
                     else{
@@ -360,7 +366,7 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isLoggedIn()){
                 var name = data.name;
-                if(!validator.nickname(name)){
+                if(!validator.nickName(name)){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{

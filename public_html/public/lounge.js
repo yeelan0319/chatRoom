@@ -26,15 +26,19 @@ module.lounge = {
 	  		$el.find("button:last").click(function(){
 	  			chobiUtil.inputErrorClear($el);
 	  			var name = $el.find("input").val();
-	  			if(name && !module.lounge.findRoomIDWithName(name)){
+	  			if(!validator.nickName(name)){
+	  				chobiUtil.inputError($el.find('input').parent(), 'Room name can only be consist of 6-20 alphabets, numbers and underscores');
+	  			}
+	  			else if(module.lounge.findRoomIDWithName(name)){
+		  			chobiUtil.inputError($el.find('input').parent(), 'The name is already in use...');
+		  		}
+		  		else{
 		  			socket.emit('createRoomAction', JSON.stringify({name: name}));
 		  			$el.modal('hide');
 		  		}
-		  		else{
-		  			chobiUtil.inputError($el.find('input').parent(), 'The name is already in use...');
-		  		}
 	  		});
 	  		$('.site-wrapper').append($el);
+	  		$el.find('input').focus();
 	  	});
 	},
 

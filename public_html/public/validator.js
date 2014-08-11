@@ -4,7 +4,7 @@ var FAIL = false;
 
 validator.nickName = function(input){
 	//username must be consist of a-z, A-Z, 0-9 and underscore, length between 6-20
-	var nickNameRegex = /\w{6,20}/;
+	var nickNameRegex = /^[\w]{6,20}$/;
 	return nickNameRegex.test(input)? PASS : FAIL;
 }
 
@@ -14,7 +14,7 @@ validator.password = function(input){
 		return FAIL;
 	}
 	//password must be a combination of letter and number and special characters
-	var passwordRegex = /[\da-zA-Z]*\d+[a-zA-Z]+[\da-zA-Z]*/;
+	var passwordRegex = /[\da-zA-Z]*\d+[a-zA-Z]+[\da-zA-Z]*|[\da-zA-Z]*[a-zA-Z]+\d+[\da-zA-Z]*/;
 	return passwordRegex.test(input)? PASS : FAIL;
 }
 
@@ -26,7 +26,7 @@ validator.email = function(input){
 
 validator.personName = function(input){
 	//name must be A-Z and a-z without number or other letters
-	var personNameRegex = /[a-zA-Z]+/;
+	var personNameRegex = /^[a-zA-Z]+$/;
 	return personNameRegex.test(input)? PASS : FAIL;
 }
 
