@@ -491,7 +491,7 @@ function IoController(app){
     }
 
     function _retrieveRecentContact(socket){
-        app.db.collection('pms').distinct('toUsername', {}, function(err, usernameArr){
+        app.db.collection('pms').distinct('toUsername', {fromUsername: socket.username}, function(err, usernameArr){
             if(err){
                //this is socket-level info
                 //throw new DatabaseError();
