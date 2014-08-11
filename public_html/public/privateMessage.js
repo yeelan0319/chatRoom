@@ -160,7 +160,7 @@ module.privateMessage = {
 			socket.emit('searchPmAction', str);
 		}
 	},
-	renderSearchResult: function(data){
+	renderContactList: function(data){
 		data = JSON.parse(data);
 		if(data.meta.status === 200){
 			$('#contact-list').html('');

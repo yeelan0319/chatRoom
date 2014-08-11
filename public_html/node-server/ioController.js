@@ -342,10 +342,10 @@ function IoController(app){
                 //redo the work
             }
             else{
-                socket.emit('searchPm data', responseJson.success(users));
+                socket.emit('pm contact data', responseJson.success(users));
             }
         });
-    }
+    };
 
     function _retrievePm(pmid, callback){
         var duration = DAY * 10;
@@ -403,7 +403,7 @@ function IoController(app){
                 }
             }
         });
-    };
+    }
 
     function welcomeSocket(res){
         var socket = app.io.socketList[res.target];
@@ -490,6 +490,29 @@ function IoController(app){
         socket.emit('room data', responseJson.success(result));     
     }
 
+    function _retrieveRecentContact(socket){
+        app.db.collection('pms').distinct('toUsername', {}, function(err, usernameArr){
+            if(err){
+               //this is socket-level info
+                //throw new DatabaseError();
+                //redo the work 
+            }
+            else{
+                var length = usernameArr.length;
+                var result = [];
+                for(var i = length-1; i>=Math.max(length-5,0); i--){
+                    _findUserWithUsername(usernameArr[i], function(user){
+                        user = _.pick(user, 'username', 'avatar');
+                        result.push(user);
+                        if(result.length == Math.min(5, length)){
+                            socket.emit('pm contact data', responseJson.success(result));
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     function _welcomeUser(socket, user){
         socket.setSocketUser(user);
         if(user.prompts.needUserInfo){
@@ -501,10 +524,10 @@ function IoController(app){
     }
 
     function _initiateLounge(socket, user){
-        console.log("haha");
         socket.renderChatFrame();
         _checkUnreadPm(socket);
         _retrieveRoomList(socket);
+        _retrieveRecentContact(socket);
         roomController.joinRoom(0, socket.id);
         socket.welcomeUser(); 
     }

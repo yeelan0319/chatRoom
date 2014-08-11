@@ -144,7 +144,7 @@ $(document).ready(function(){
 	socket.on('private messages', function(pmItemData){
 		module.privateMessage.receivePm(pmItemData);
 	});
-	socket.on('searchPm data', function(data){
-		module.privateMessage.renderSearchResult(data);
+	socket.on('pm contact data', function(data){
+		module.privateMessage.renderContactList(data);
 	});
 });
