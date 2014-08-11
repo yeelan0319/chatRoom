@@ -1,4 +1,4 @@
-var DONETYPINGINTERVAL = 1000;
+var DONETYPINGINTERVAL = 500;
 
 var Message = function(data){
 	this.msg = data.msg;
@@ -119,6 +119,10 @@ module.privateMessage = {
 			typingTimer = setTimeout(module.privateMessage.searchContact, DONETYPINGINTERVAL)
 		}).unbind('keydown').keydown(function(event){
 			clearTimeout(typingTimer);
+			if(event.which == 13){
+				module.privateMessage.searchContact();
+			}
+			
 		});
 		$(window).resize(module.privateMessage.closeOverfitPm);
 	},
@@ -159,14 +163,19 @@ module.privateMessage = {
 		if(str){
 			socket.emit('searchPmAction', str);
 		}
+		else{
+			$('#contact-list .contact-item').remove();
+		}
 	},
 	renderContactList: function(data){
 		data = JSON.parse(data);
 		if(data.meta.status === 200){
 			$('#contact-list').html('');
 			$.each(data.data, function(index, contactData){
-				var contactItem = new ContactItem(contactData);
-				$('#contact-list').append(contactItem.render());
+				if(contactData.username!==module.data.user.username){
+					var contactItem = new ContactItem(contactData);
+					$('#contact-list').append(contactItem.render());
+				}
 			});
 		}
 	},
