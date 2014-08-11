@@ -9,6 +9,7 @@
     "events": "^1.0.1",
     "express": "^4.4.1",
     "express-session": "^1.2.1",
+    "formidable": "^1.0.15",
     "mongodb": "^1.4.7",
     "socket.io": "^1.0.4",
     "underscore": "^1.6.0",
