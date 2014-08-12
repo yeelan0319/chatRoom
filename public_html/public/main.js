@@ -29,11 +29,7 @@ $(document).ready(function(){
 	}
 	$('.template').remove();
 
-	$(window).resize(function(){
-		var width = $(window).width();
-		var height = $(window).height();
-		$('#chat-panel').height(height - 79 - 60 - 42);
-	})
+	$(window).bind('resize', setChatPanelSize);
 
 	socket.on('session extension', function(){
 		$.get('/sessionExtension');
@@ -158,3 +154,9 @@ $(document).ready(function(){
 		console.log(data.meta.msg);
 	});
 });
+
+function setChatPanelSize(){
+	var width = $(window).width();
+	var height = $(window).height();
+	$('#chat-panel').height(height - 79 - 60 - 42);
+}

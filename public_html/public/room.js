@@ -11,5 +11,6 @@ module.room = {
       	});
 
 		$('.container-idle').html($el);
+		setChatPanelSize();
 	}
 }
