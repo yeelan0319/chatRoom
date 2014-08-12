@@ -29,6 +29,12 @@ $(document).ready(function(){
 	}
 	$('.template').remove();
 
+	$(window).resize(function(){
+		var width = $(window).width();
+		var height = $(window).height();
+		$('#chat-panel').height(height - 60 - 42);
+	})
+
 	socket.on('session extension', function(){
 		$.get('/sessionExtension');
 	});
