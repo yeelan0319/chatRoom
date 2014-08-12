@@ -11,8 +11,11 @@ apt-get -y -q --purge remove mongodb
 apt-get -y -q install mongodb-org
 mkdir -p /data/db
 
+add-apt-repository -y ppa:chris-lea/node.js
+apt-update
 apt-get -y -q install nodejs
 apt-get -y -q install npm
+apt-get -y -q install imagemagick --fix-missing
 
 npm install -g supervisor
 cd node-server && npm install
