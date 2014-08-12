@@ -8,7 +8,7 @@ apt-get update
 apt-get -y -q --purge remove nodejs
 apt-get -y -q --purge remove mongodb
 
-apt-get -y -q install mongodb-org
+apt-get -y -q install mongodb  #It seems like the source have been rename to mongdb
 mkdir -p /data/db
 
 add-apt-repository -y ppa:chris-lea/node.js

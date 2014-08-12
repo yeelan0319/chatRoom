@@ -37,8 +37,8 @@ validator.personName = function(input){
 
 validator.phoneNumber = function(input){
 	//only support US phone number
-	//XXX-XXX-XXXX, (XXX)XXX-XXXX, XXXXXXXXXX, (XXX)XXX-XXXX
-	var phoneNumberRegex = /^(\+?1[\s-])?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}$/;
+	//XXX-XXX-XXXX, (XXX)XXX-XXXX, XXXXXXXXXX
+	var phoneNumberRegex = /^\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}$/;
 	return phoneNumberRegex.test(input)? PASS : FAIL;
 }
 

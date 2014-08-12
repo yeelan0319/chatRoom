@@ -136,6 +136,9 @@ function IoController(app){
     this.editUserInfo = function(username, data){
         var that = this;
         data = _.pick(data, 'firstName', 'lastName', 'phoneNumber', 'birthday', 'jobDescription');
+        if(data.phoneNumber){
+            data.phoneNumber.replace(/[/(/)-\s]/g,'');
+        }
         data.prompts = {};
         data.prompts.needUserInfo = false;
         app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:data}, {}, function(err, user){
