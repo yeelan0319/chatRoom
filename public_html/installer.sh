@@ -21,6 +21,7 @@ npm install -g supervisor
 cd node-server && npm install
 npm dedupe
 
+mkdir -p /path/to
 cd /path/to/ && openssl genrsa -des3 -out server.key 1024
 cd /path/to/ && openssl req -new -key server.key -out server.csr
 cd /path/to/ && openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
