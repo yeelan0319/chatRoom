@@ -159,4 +159,5 @@ function setChatPanelSize(){
 	var width = $(window).width();
 	var height = $(window).height();
 	$('#chat-panel').height(height - 79 - 60 - 42);
+	$('#messages').height($('#chat-panel').height() - 115);
 }
