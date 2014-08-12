@@ -52,14 +52,14 @@ module.exports = function socketExtension(socket, next){
         //this.broadcast.emit('status message', this.username + ' has quitted the conversation');
     };
 
-    socket.joinLounge = function(messages){
+    socket.joinLounge = function(messages, linkedusers){
         this.join('/chatRoom/0');
-        this.renderLounge(messages);
+        this.renderLounge(messages, linkedusers);
     };
 
-    socket.joinRoom = function(id, name, isAdminOfRoom, messages){
+    socket.joinRoom = function(id, name, isAdminOfRoom, messages, linkedusers){
         this.join('/chatRoom/' + id);
-        this.renderRoom(id, name, isAdminOfRoom, messages);
+        this.renderRoom(id, name, isAdminOfRoom, messages, linkedusers);
     };
     socket.leaveRoom = function(id){
         this.leave('/chatRoom/' + id);
@@ -94,7 +94,7 @@ module.exports = function socketExtension(socket, next){
         }
         this.emit('render message', responseJson.success(res));
     }
-    socket.renderLounge = function(messages){
+    socket.renderLounge = function(messages, linkedusers){
         var res = {
             target: 'lounge',
             data: {
@@ -102,8 +102,9 @@ module.exports = function socketExtension(socket, next){
             }
         }
         this.emit('render message', responseJson.success(res));
+        this.emit('room linked users data', responseJson.success(linkedusers));
     };
-    socket.renderRoom = function(id, name, isAdminOfRoom, messages){
+    socket.renderRoom = function(id, name, isAdminOfRoom, messages, linkedusers){
         var res = {
             target: 'room',
             data: {
@@ -114,6 +115,7 @@ module.exports = function socketExtension(socket, next){
             }
         }
         this.emit('render message', responseJson.success(res));
+        this.emit('room linked users data', responseJson.success(linkedusers));
     };
     socket.renderSystemAdmin = function(){
         var res = {

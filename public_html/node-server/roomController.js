@@ -48,16 +48,22 @@ function RoomController(app){
     this.joinRoom = function(to, socketID){
         var socket = app.io.socketList[socketID];
         var that = this;
+
         _retrievePastMessage(to, function(messages){
-            if(to === 0){
-                socket.joinLounge(messages);
+            _informJoinOfRoom(to, socketID);
+            var linkedusers = {
+                type: 'reset',
+                users: _getRoomLinkedSockets(to)
+            };
+            if(to === 0){    
+                socket.joinLounge(messages, linkedusers);
             }
             else{
                 var targetRoom = that._getRoom(to);
                 if(targetRoom){
                     var name = targetRoom.name;
                     var isAdminOfRoom = socket.isAdmin()||that.isAdminOfRoom(to, socket.username);
-                    socket.joinRoom(to, name, isAdminOfRoom, messages);
+                    socket.joinRoom(to, name, isAdminOfRoom, messages, linkedusers);
                 }
             }
         });
@@ -78,29 +84,54 @@ function RoomController(app){
         });
     };
 
-    this.retrieveLinkedUser = function(id, socketID){
-        var socket = app.io.socketList[socketID];
-        var chatroom = app.io.sockets.adapter.rooms['/chatRoom/' + id];
+    function _informJoinOfRoom(id, socketID){
+        var socketJoined = app.io.socketList[socketID];
         var data = {
-            sockets:[],
-            admins:[]
-        };
-        for(var socketID in chatroom){
-            if(chatroom.hasOwnProperty(socketID)){
-                var simpleSocket = {};
-                var targetSocket = app.io.socketList[socketID];
-                simpleSocket.id = targetSocket.id;
-                simpleSocket.username = targetSocket.username;
-                simpleSocket.permission = targetSocket.permission;
-                simpleSocket.token = targetSocket.token;
-                data.sockets.push(simpleSocket);
+            type: 'add',
+            users:[
+                {
+                    username: socketJoined.username,
+                    avatar: socketJoined.avatar
+                }
+            ]
+        }
+        var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + id];
+        for(var targetSocketID in chatRoom){
+            if(chatRoom.hasOwnProperty(targetSocketID)&&targetSocketID !== socketID){
+                var targetSocket = app.io.socketList[targetSocketID];
+                targetSocket.emit('room linked users data', responseJson.success(data));
             }
         }
+    }
+
+    function _getRoomLinkedSockets(id){
+        var sockets = [];
+        var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + id];
+        for(var socketID in chatRoom){
+            if(chatRoom.hasOwnProperty(socketID)){
+                var targetSocket = app.io.socketList[socketID];
+                var simpleSocket = {
+                    id: targetSocket.id,
+                    username: targetSocket.username,
+                    permission: targetSocket.permission,
+                    avatar: targetSocket.avatar
+                };
+                sockets.push(simpleSocket);
+            }
+        }
+        return sockets;
+    }
+
+    this.retrieveLinkedUser = function(id, socketID){
+        var socket = app.io.socketList[socketID];
         var room = this._getRoom(id);
         if(room){
-            data.admins = room.adminOfRoom;
+            var data = {
+                sockets: _getRoomLinkedSockets(id),
+                admins: room.adminOfRoom
+            };
+            socket.emit('room related users data', responseJson.success(data));
         }
-        socket.emit('room linked users data', responseJson.success(data));
     };
 
     this.editRoomAdmin = function(id, username, permission){
@@ -125,9 +156,9 @@ function RoomController(app){
     };
 
     this.bootUser = function(id, username){
-        var chatroom = app.io.sockets.adapter.rooms['/chatRoom/' + id];
-        for(var socketID in chatroom){
-            if(chatroom.hasOwnProperty(socketID)){
+        var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + id];
+        for(var socketID in chatRoom){
+            if(chatRoom.hasOwnProperty(socketID)){
                 var targetSocket = app.io.socketList[socketID];
                 if(targetSocket.username === username){
                     targetSocket.leaveRoom(id);
@@ -194,9 +225,9 @@ function RoomController(app){
         }
         app.io.sockets.emit('room data', responseJson.success(result));
 
-        var chatroom = app.io.sockets.adapter.rooms['/chatRoom/' + room._id];
-        for(var socketID in chatroom){
-            if(chatroom.hasOwnProperty(socketID)){
+        var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + room._id];
+        for(var socketID in chatRoom){
+            if(chatRoom.hasOwnProperty(socketID)){
                 var targetSocket = app.io.socketList[socketID];
                 targetSocket.leaveRoom(room._id);
                 targetSocket.joinLounge();

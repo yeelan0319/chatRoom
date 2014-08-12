@@ -129,6 +129,10 @@ $(document).ready(function(){
 	});
 
 	socket.on('room linked users data', function(data){
+		module.room.renderOnlineList(data);
+	});
+
+	socket.on('room related users data', function(data){
 	    module.roomAdmin.renderLinkedUserData(data);
 	});
 
@@ -158,6 +162,8 @@ $(document).ready(function(){
 function setChatPanelSize(){
 	var width = $(window).width();
 	var height = $(window).height();
-	$('#chat-panel').height(height - 79 - 60 - 42);
-	$('#messages').height($('#chat-panel').height() - 115);
+	var chatPanelHeight = height - 79 - 60 - 42;
+	$('#chat-panel').height(chatPanelHeight);
+	$('#messages').height(chatPanelHeight - 115);
+	$('#online-list').height(chatPanelHeight/2);
 }
