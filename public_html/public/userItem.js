@@ -6,9 +6,10 @@ var UserItem = function(userdata){
 UserItem.prototype = {
 	render:function(){
 		var that = this;
-		that.isSelf = that.username === module.data.user.username? true : false;
-		that.permission = that.permission === 1? true : false;
-		that.$el = $(module.template.userItemTmpl(that));
+		var userdata = JSON.parse(JSON.stringify(that));
+		userdata.isSelf = that.username === module.data.user.username? true : false;
+		userdata.permission = that.permission === 1? true : false;
+		that.$el = $(module.template.userItemTmpl(userdata));
 		that.$el.find('.delete').unbind('click').click(function(){that.destroy.apply(that)});
 		that.$el.find('.permission :checkbox').checkbox().unbind('change').on('change', function(){that.edit.apply(that)});
 		$('#alluser-userlist').append(that.$el);

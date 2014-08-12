@@ -11,8 +11,10 @@ var RoomUserItem = function(userdata){
 RoomUserItem.prototype = {
 	render: function(){
 		var that = this;
-		that.isSelf = that.username === module.data.user.username? true : false;
-		that.$el = $(module.template.roomUserItemTmpl(that));
+		var userdata = JSON.parse(JSON.stringify(that));
+		userdata.isSelf = that.username === module.data.user.username? true : false;
+		userdata.isAdminOfRoom = that.isAdminOfRoom === 1? true : false;
+		that.$el = $(module.template.roomUserItemTmpl(userdata));
 		that.$el.find('.boot').unbind('click').click(function(){that.boot.apply(that)});
 		that.$el.find('.roomAdmin :checkbox').checkbox().unbind('change').on('change', function(){that.changePermission.apply(that)});
 		$('#realtime-userlist').append(that.$el);

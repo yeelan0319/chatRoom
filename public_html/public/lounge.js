@@ -37,8 +37,9 @@ module.lounge = {
 	},
 
 	renderUserPanel: function(user){
-		user.permission = user.permission == 1? true : false;
-		var $userPanelEl = $(module.template.userPanelTmpl(user));
+		var userdata = JSON.parse(JSON.stringify(user));
+		userdata.permission = userdata.permission === 1? true : false;
+		var $userPanelEl = $(module.template.userPanelTmpl(userdata));
 		$userPanelEl.find('#profile').unbind('click').click(function(){
 			socket.emit('retrieveUserProfileAction');
 		});
