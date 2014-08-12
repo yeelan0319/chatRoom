@@ -32,7 +32,7 @@ $(document).ready(function(){
 	$(window).resize(function(){
 		var width = $(window).width();
 		var height = $(window).height();
-		$('#chat-panel').height(height - 60 - 42);
+		$('#chat-panel').height(height - 79 - 60 - 42);
 	})
 
 	socket.on('session extension', function(){
