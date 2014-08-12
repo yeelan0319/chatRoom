@@ -116,8 +116,8 @@ module.loginRegister = {
             else if(!validator.phoneNumber(phoneNumber)){
             	chobiUtil.inputError($phoneNumberEl.parent(), 'Please enter a valid phone number');
             }
-            else if(!validator.date(birthday)){
-            	chobiUtil.inputError($birthdayEl.parent(), 'Please enter a valid birthday');
+            else if(!validator.date(birthday)&&new Date(birthday)<Date.now()){
+            	chobiUtil.inputError($birthdayEl.parent(), 'Please enter a valid date in mm/dd/yyyy format');
             }
             else if(!validator.textMaxLength(jobDescription)){
             	chobiUtil.inputError($jobDescriptionEl.parent(), 'The job description should be less than 63354 characters');
@@ -153,7 +153,7 @@ module.loginRegister = {
 					$el.find('.avatar').attr('src', res.data.avatar);
 				}
 			}
-		})
+		});
 		$('.container-idle').html($el);
 	}
 }

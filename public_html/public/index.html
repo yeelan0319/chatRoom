@@ -407,47 +407,67 @@
               <div class="modal-body">
                 <table class="table">
                   <tr>
-                    <td>Name:</td>
-                    <td class="read-only"><span id="firstName">{{firstName}}</span> <span id="lastName">{{lastName}}</span></td>
-                    <td class="edit-mode"><div class="form-group">
-                        <input type="text" name="firstName" class="form-control input-sm" placeholder="First Name" value="{{firstName}}">
-                    </div>
-                    <div class="form-group">
-                        <input type="text" name="lastName" class="form-control input-sm" placeholder="Last Name" value="{{lastName}}">
-                    </div></td>
+                    <td class="read-only">Name: <span id="firstName">{{firstName}}</span> <span id="lastName">{{lastName}}</span></td>
+                    <td class="edit-mode">
+                        <div class="form-group">
+                            <input type="text" name="firstName" class="form-control input-sm" placeholder="First Name" value="{{firstName}}">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="lastName" class="form-control input-sm" placeholder="Last Name" value="{{lastName}}">
+                        </div>
+                    </td>
+                    <td rowspan=5>
+                        <div class="avatar-container">
+                            <img class="avatar" src="{{avatar}}"/>
+                            <div class="avatar-upload edit-mode">
+                                <div class="backdrop">
+                                    <span>Choose Your Image</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
                   </tr>
                   <tr>
-                    <td>Email:</td>
-                    <td class="read-only" id="email">{{email}}</td>
-                    <td class="edit-mode"><div class="form-group">
-                        <input type="text" name="email" class="form-control input-sm" placeholder="Email" value="{{email}}">
-                    </div></td>
+                    <td class="read-only">Email: <span id="email">{{email}}</span></td>
+                    <td class="edit-mode">
+                        <div class="form-group">
+                            <input type="text" name="email" class="form-control input-sm" placeholder="Email" value="{{email}}">
+                        </div>
+                    </td>
+                  </tr>
+                  <tr>                    
+                    <td class="read-only">Phone: <span id="phoneNumber">{{phoneNumber}}</span></td>
+                    <td class="edit-mode">
+                        <div class="form-group">
+                            <input type="text" name="phoneNumber" class="form-control input-sm" placeholder="phone" value="{{phoneNumber}}">
+                        </div>
+                    </td>
                   </tr>
                   <tr>
-                    <td>Phone:</td>
-                    <td class="read-only" id="phoneNumber">{{phoneNumber}}</td>
-                    <td class="edit-mode"><div class="form-group">
-                        <input type="text" name="phoneNumber" class="form-control input-sm" placeholder="phone" value="{{phoneNumber}}">
-                    </div></td>
+                    
+                    <td class="read-only">Birthday: <span id="birthday">{{birthday}}</span></td>
+                    <td class="edit-mode">
+                        <div class="input-group date">
+                            <input type="text" name="birthday" class="form-control input-sm" placeholder="Birthday" value="{{birthday}}">
+                            <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
+                        </div>
+                    </td>
                   </tr>
                   <tr>
-                    <td>Birthday:</td>
-                    <td class="read-only" id="birthday">{{birthday}}</td>
-                    <td class="edit-mode"><div class="input-group date">
-                        <input type="text" name="birthday" class="form-control input-sm" placeholder="Birthday" value="{{birthday}}">
-                        <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
-                    </div></td>
-                  </tr>
-                  <tr>
-                    <td>Job description:</td>
+                    
                     <td class="read-only" id="job">{{jobDescription}}</td>
-                    <td class="edit-mode"><div class="form-group">
-                        <textarea name="job" class="form-control" rows="3" placeholder="Job Description: title, position...">{{jobDescription}}</textarea>
-                    </div></td>
+                    <td class="edit-mode">
+                        <div class="form-group">
+                            <textarea name="job" class="form-control" rows="3" placeholder="Job Description: title, position...">{{jobDescription}}</textarea>
+                        </div>
+                    </td>
                   </tr>
                   <tr>
                     <td class="read-only"><button class="btn btn-inverse btn-wide">Edit</button></td>
-                    <td class="edit-mode"><button class="btn btn-inverse btn-wide">Submit</button></td>
+                    <td class="edit-mode">
+                        <button class="btn btn-inverse btn-wide">Submit</button>
+                        <button class="btn btn-default btn-wide">Cancel</button>
+                    </td>
                   </tr>
                 </table>
               </div>

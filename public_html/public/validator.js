@@ -19,13 +19,13 @@ validator.password = function(input){
 		return FAIL;
 	}
 	//password must be a combination of letter and number and special characters
-	var passwordRegex = /[\da-zA-Z]*\d+[a-zA-Z]+[\da-zA-Z]*|[\da-zA-Z]*[a-zA-Z]+\d+[\da-zA-Z]*/;
+	var passwordRegex = /^[\da-zA-Z]*\d+[a-zA-Z]+[\da-zA-Z]*|[\da-zA-Z]*[a-zA-Z]+\d+[\da-zA-Z]*$/;
 	return passwordRegex.test(input)? PASS : FAIL;
 }
 
 validator.email = function(input){
 	//email format will be fine
-	var emailRegex = /[\w.]+(\+[\w.]+)?@\w+(.\w+){1,2}/;
+	var emailRegex = /^[\w.]+(\+[\w.]+)?@\w+(.\w+){1,2}$/;
 	return emailRegex.test(input)? PASS : FAIL;
 }
 
@@ -38,12 +38,18 @@ validator.personName = function(input){
 validator.phoneNumber = function(input){
 	//only support US phone number
 	//XXX-XXX-XXXX, (XXX)XXX-XXXX, XXXXXXXXXX, (XXX)XXX-XXXX
-	var phoneNumberRegex = /(\+?1[\s-])?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}/;
+	var phoneNumberRegex = /^(\+?1[\s-])?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}$/;
 	return phoneNumberRegex.test(input)? PASS : FAIL;
 }
 
 validator.date = function(input){
-	return new Date(input) == 'Invalid Date'? FAIL : PASS;
+	var dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+	if(!dateRegex.test(input)){
+		return FAIL;
+	}
+	else{
+		return new Date(input) === 'Invalid Date'? FAIL : PASS;
+	}
 }
 
 validator.textMaxLength = function(input){

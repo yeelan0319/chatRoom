@@ -56,6 +56,21 @@ module.lounge = {
 
 	renderProfile: function(data){
 		var $el = $(module.template.profileTmpl(data.user));
+		var uploader = new qq.FileUploaderBasic({
+			button: $el.find('.avatar-upload')[0],
+			action: '/upload/avatar',
+			allowedExtension:['jpg', 'jpeg', 'png'],
+			onProgress: function(id, fileName, loaded, total){
+				console.log(id, fileName, loaded, total);
+			},
+			onComplete: function(id, fileName, responseJSON){
+				var res = JSON.parse(responseJSON);
+				console.log(res);
+				if(res.meta.status == 200){
+					$el.find('.avatar').attr('src', res.data.avatar);
+				}
+			}
+		});
 		$el.find('.input-group.date').datepicker({
 		    startDate: "01/01/1940",
 		    startView: 2,
@@ -65,17 +80,30 @@ module.lounge = {
 			$el.find('.read-only').hide();
 			$el.find('.edit-mode').show();
 		});
-		$el.find('.edit-mode button').unbind('click').click(function(){
+		$el.find('.edit-mode button:last').unbind('click').click(function(){
+			$el.find("input[name=firstName]").val($el.find("#firstName").text());
+			$el.find("input[name=lastName]").val($el.find("#lastName").text());
+			$el.find("input[name=phoneNumber]").val($el.find("#phoneNumber").text());
+			$el.find('input[name=email]').val($el.find("#email").text());
+			$el.find("input[name=birthday]").val($el.find("#birthday").text());
+			$el.find("textarea[name=job]").val($el.find("#job").text());
+            
+			$el.find('.read-only').show();
+			$el.find('.edit-mode').hide();
+		});
+		$el.find('.edit-mode button:first').unbind('click').click(function(){
 			chobiUtil.inputErrorClear($el);
 
 			var $firstNameEl = $el.find("input[name=firstName]");
 			var $lastNameEl = $el.find("input[name=lastName]");
 			var $phoneNumberEl = $el.find("input[name=phoneNumber]");
+			var $emailEl = $el.find('input[name=email]');
 			var $birthdayEl = $el.find("input[name=birthday]");
 			var $jobDescriptionEl = $el.find("textarea[name=job]");
             var firstName = $firstNameEl.val();
             var lastName = $lastNameEl.val();
             var phoneNumber = $phoneNumberEl.val();
+            var email = $emailEl.val();
             var birthday = $birthdayEl.val();
             var jobDescription = $jobDescriptionEl.val();
 
@@ -88,8 +116,11 @@ module.lounge = {
             else if(!validator.phoneNumber(phoneNumber)){
             	chobiUtil.inputError($phoneNumberEl.parent(), 'Please enter a valid phone number');
             }
-            else if(!validator.date(birthday)){
-            	chobiUtil.inputError($birthdayEl.parent(), 'Please enter a valid birthday');
+            else if(!validator.email(email)){
+            	chobiUtil.inputError($emailEl.parent(), 'Please enter a valid email address');
+            }
+            else if(!validator.date(birthday)||new Date(birthday)>Date.now()){
+            	chobiUtil.inputError($birthdayEl.parent(), 'Please enter a valid date in mm/dd/yyyy format');
             }
             else if(!validator.textMaxLength(jobDescription)){
             	chobiUtil.inputError($jobDescriptionEl.parent(), 'The job description should be less than 63354 characters');
@@ -99,6 +130,7 @@ module.lounge = {
 	            	firstName: firstName,
 	            	lastName: lastName,
 	            	phoneNumber: phoneNumber,
+	            	email: email,
 	            	birthday: birthday,
 	            	jobDescription: jobDescription
 	            }
@@ -106,6 +138,7 @@ module.lounge = {
 	            $el.find("#firstName").text(firstName);
 	            $el.find('#lastName').text(lastName);
 	            $el.find('#phoneNumber').text(phoneNumber);
+	            $el.find('#email').text(email);
 	            $el.find('#birthday').text(birthday);
 	            $el.find('#job').text(jobDescription);
 	            $el.find('.read-only').show();
