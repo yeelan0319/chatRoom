@@ -77,7 +77,7 @@
     <script src="/main.js"></script>
     <script src="/userItem.js"></script>
     <script src="/linkedUserItem.js"></script>
-    <script src="/roomUserItem.js"></script>
+    <script src="/roomUserManageItem.js"></script>
     <script src="/roomItem.js"></script>
     <script src="/privateMessage.js"></script>
     <script src="/loginRegister.js"></script>
@@ -139,7 +139,7 @@
                 <span class="username">{{username}}</span>
             </td>
             <td>
-                <span class="loginCount">{{loginCount}}</span>
+                <span class="activeSessions">{{activeSessions}}</span>
             </td>
             <td>
                 <span class="socketCount">{{socketCount}}</span>
@@ -155,7 +155,7 @@
                 <span class="username">{{username}}</span>
             </td>
             <td>
-                <span class="loginCount">{{loginCount}}</span>
+                <span class="activeSessions">{{activeSessions}}</span>
             </td>
             <td>
                 <span class="socketCount">{{socketCount}}</span>
@@ -301,7 +301,7 @@
                         <thead>
                             <tr>
                               <th>Username</th>
-                              <th>Login Count</th>
+                              <th>Active Sessions</th>
                               <th>Socket Count</th>
                               <th></th>
                             </tr>
@@ -382,7 +382,7 @@
                         <thead>
                             <tr>
                               <th class="col-md-3">Username</th>
-                              <th class="col-md-2">Login Count</th>
+                              <th class="col-md-2">Active Sessions</th>
                               <th class="col-md-2">Socket Count</th>
                               <th class="col-md-3">Permission</th>
                               <th class="col-md-2"></th>

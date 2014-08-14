@@ -11,7 +11,7 @@ module.chat = {
 			}
 		});
 		$el.find('#m-send').unbind('click').click(module.chat.sendMessage);
-
+		setChatPanelSize($el);
 		return $el;
 	},
 

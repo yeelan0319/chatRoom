@@ -50,24 +50,37 @@ function RoomController(app){
         var that = this;
 
         _retrievePastMessage(to, function(messages){
-            _informJoinOfRoom(to, socketID);
-            var linkedusers = {
-                type: 'reset',
-                users: _getRoomLinkedSockets(to)
-            };
+            _informJoinLeftOfRoom(to, socketID, 'add');
             if(to === 0){    
-                socket.joinLounge(messages, linkedusers);
+                socket.joinLounge(messages, function(){
+                    return {
+                        type: 'reset',
+                        users: _getRoomLinkedSockets(to)
+                    };
+                });
             }
             else{
                 var targetRoom = that._getRoom(to);
                 if(targetRoom){
                     var name = targetRoom.name;
                     var isAdminOfRoom = socket.isAdmin()||that.isAdminOfRoom(to, socket.username);
-                    socket.joinRoom(to, name, isAdminOfRoom, messages, linkedusers);
+                    socket.joinRoom(to, name, isAdminOfRoom, messages, function(){
+                        return {
+                            type: 'reset',
+                            users: _getRoomLinkedSockets(to)
+                        };
+                    });
                 }
             }
         });
     };
+
+    this.leaveRoom = function(from, socketID){
+        var socket = app.io.socketList[socketID];
+        var that = this;
+        _informJoinLeftOfRoom(from, socketID, 'delete');
+        socket.leaveRoom(from);
+    }
 
     function _retrievePastMessage(id, callback){
         var that = this;
@@ -84,10 +97,10 @@ function RoomController(app){
         });
     };
 
-    function _informJoinOfRoom(id, socketID){
+    function _informJoinLeftOfRoom(id, socketID, action){
         var socketJoined = app.io.socketList[socketID];
         var data = {
-            type: 'add',
+            type: action,
             users:[
                 {
                     username: socketJoined.username,
@@ -112,6 +125,7 @@ function RoomController(app){
                 var targetSocket = app.io.socketList[socketID];
                 var simpleSocket = {
                     id: targetSocket.id,
+                    token: targetSocket.token,
                     username: targetSocket.username,
                     permission: targetSocket.permission,
                     avatar: targetSocket.avatar
@@ -122,15 +136,11 @@ function RoomController(app){
         return sockets;
     }
 
-    this.retrieveLinkedUser = function(id, socketID){
+    this.renderRoomAdmin = function(id, socketID){
         var socket = app.io.socketList[socketID];
         var room = this._getRoom(id);
         if(room){
-            var data = {
-                sockets: _getRoomLinkedSockets(id),
-                admins: room.adminOfRoom
-            };
-            socket.emit('room related users data', responseJson.success(data));
+            socket.renderRoomAdmin(room.adminOfRoom);
         }
     };
 
@@ -161,7 +171,7 @@ function RoomController(app){
             if(chatRoom.hasOwnProperty(socketID)){
                 var targetSocket = app.io.socketList[socketID];
                 if(targetSocket.username === username){
-                    targetSocket.leaveRoom(id);
+                    this.leaveRoom(id, socketID);
                     this.joinRoom(0, socketID);
                 }
             }
@@ -229,8 +239,8 @@ function RoomController(app){
         for(var socketID in chatRoom){
             if(chatRoom.hasOwnProperty(socketID)){
                 var targetSocket = app.io.socketList[socketID];
-                targetSocket.leaveRoom(room._id);
-                targetSocket.joinLounge();
+                this.leaveRoom(room._id, socketID);
+                this.joinRoom(0, socketID);
             }
         }
     }

@@ -52,14 +52,14 @@ module.exports = function socketExtension(socket, next){
         //this.broadcast.emit('status message', this.username + ' has quitted the conversation');
     };
 
-    socket.joinLounge = function(messages, linkedusers){
+    socket.joinLounge = function(messages, getLinkedusers){
         this.join('/chatRoom/0');
-        this.renderLounge(messages, linkedusers);
+        this.renderLounge(messages, getLinkedusers());
     };
 
-    socket.joinRoom = function(id, name, isAdminOfRoom, messages, linkedusers){
+    socket.joinRoom = function(id, name, isAdminOfRoom, messages, getLinkedusers){
         this.join('/chatRoom/' + id);
-        this.renderRoom(id, name, isAdminOfRoom, messages, linkedusers);
+        this.renderRoom(id, name, isAdminOfRoom, messages, getLinkedusers());
     };
     socket.leaveRoom = function(id){
         this.leave('/chatRoom/' + id);
@@ -123,13 +123,14 @@ module.exports = function socketExtension(socket, next){
         }
         this.emit('render message', responseJson.success(res));
     };
-    socket.renderRoomAdmin = function(id){
+    socket.renderRoomAdmin = function(admins){
         var res = {
             target: 'roomAdmin',
             data: {
-                id: id
+                admins: admins
             }
         }
+        console.log(res);
         this.emit('render message', responseJson.success(res));
     };
     socket.renderBoot = function(){

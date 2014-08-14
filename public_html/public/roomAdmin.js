@@ -1,13 +1,12 @@
 module.roomAdmin = {
-    linkedUserList:{},
 
-    renderIndex: function(){
-        var $el = $(module.template.roomAdminIndexTmpl(module.data));
+    renderIndex: function(data){
+        module.data.pos = 'admin-roomuser';
+        
+        var $el = $(module.template.roomAdminIndexTmpl());
+        module.roomAdmin.renderUserManageList(data, $el.find('#realtime-userlist'));
         $el.find('#delete-room').unbind('click').click(module.roomAdmin.destoryRoom);
-        $el.find('#realtime').unbind('click').click(function(){
-            module.roomAdmin.linkedUserList = {};
-            socket.emit('retrieveRoomLinkedUserAction', module.data.room);
-        }).click();
+
         $('.site-wrapper').append($el);
         $el.modal('toggle').on('hidden.bs.modal', function(e){
             module.data.pos = 'room'; 
@@ -15,36 +14,28 @@ module.roomAdmin = {
         });
     },
 
-    renderLinkedUserData:function(data){
-        module.data.pos = 'admin-roomuser';
-        data = JSON.parse(data);
-        if(data.meta.status == 200){
-            var admins = data.data.admins;
-            var sockets = data.data.sockets;
-            $('#realtime-userlist').html('');
+    renderUserManageList: function(data, $container){
+        var userManageList = [];
+        $.each(module.room.onlineList, function(index, roomUserItem){
+            userManageList.push(new RoomUserManageItem(roomUserItem));
+        });
 
-            $.each(sockets, function(index, userdata){
-                var roomUserItem = module.roomAdmin.linkedUserList[userdata.username];
-                if(!roomUserItem){
-                    roomUserItem = new RoomUserItem(userdata);
-                }
-                roomUserItem.addSession(userdata.token);
-                roomUserItem.addSocketID(userdata.id);
-            });
-            $.each(admins, function(index, username){
-                var roomUserItem = module.roomAdmin.linkedUserList[username];
-                if(!roomUserItem){
-                    var userdata = {username: username};
-                    roomUserItem = new RoomUserItem(userdata);
-                }
-                roomUserItem.isAdminOfRoom = 1;
-            });
-            for(var username in module.roomAdmin.linkedUserList){
-                if(module.roomAdmin.linkedUserList.hasOwnProperty(username)){
-                    module.roomAdmin.linkedUserList[username].render();
-                }
+        var admins = data.admins;
+        $.each(admins, function(index, username){
+            var roomUserManageItem = _.find(userManageList, function(obj){return obj.username === username});
+            if(!roomUserManageItem){
+                roomUserManageItem = new RoomUserManageItem({username: username});
+                userManageList.push(roomUserManageItem);
             }
-        }
+            roomUserManageItem.isAdminOfRoom = 1;
+        });
+        
+        userManageList = _.chain(userManageList).sortBy('username').sortBy(function(roomUserManageItem){
+            return roomUserManageItem.isAdminOfRoom * -1;
+        }).value();
+        $.each(userManageList, function(index, roomUserManageItem){
+            $container.append(roomUserManageItem.render());
+        });
     },
 
     destoryRoom: function(){
@@ -57,5 +48,4 @@ module.roomAdmin = {
             $('#adminModal').modal('hide');
         }
     }
-
 };

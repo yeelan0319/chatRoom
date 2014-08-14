@@ -1,6 +1,6 @@
 var LinkedUserItem = function(userdata){
 	this.username = userdata.username;
-	this.loginCount = 0;
+	this.activeSessions = 0;
 	this.socketCount = 0;
 	this.sessions = [];
 	this.socketIDs = [];
@@ -18,7 +18,7 @@ LinkedUserItem.prototype = {
 	addSession: function(session){
 		if(this.sessions.indexOf(session) == -1){
 			this.sessions.push(session);
-			this.loginCount++;
+			this.activeSessions++;
 		}
 	},
 	addSocketID: function(socketID){

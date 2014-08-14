@@ -29,7 +29,7 @@ $(document).ready(function(){
 	}
 	$('.template').remove();
 
-	$(window).bind('resize', setChatPanelSize);
+	$(window).bind('resize', function(){setChatPanelSize($('#chat-panel'))});
 
 	socket.on('session extension', function(){
 		$.get('/sessionExtension');
@@ -86,7 +86,7 @@ $(document).ready(function(){
 						module.systemAdmin.renderIndex();
 						break;
 					case 'roomAdmin':
-						module.roomAdmin.renderIndex();
+						module.roomAdmin.renderIndex(res.data);
 						break;
 				}
 			}
@@ -129,12 +129,12 @@ $(document).ready(function(){
 	});
 
 	socket.on('room linked users data', function(data){
-		module.room.renderOnlineList(data);
+		module.room.updateOnlineList(data);
 	});
 
-	socket.on('room related users data', function(data){
-	    module.roomAdmin.renderLinkedUserData(data);
-	});
+	// socket.on('room related users data', function(data){
+	//     module.roomAdmin.renderLinkedUserData(data);
+	// });
 
 	socket.on('users data', function(data){
 	    module.systemAdmin.renderRegisterUserData(data);
@@ -159,11 +159,11 @@ $(document).ready(function(){
 	});
 });
 
-function setChatPanelSize(){
+function setChatPanelSize($chatPanel){
 	var width = $(window).width();
 	var height = $(window).height();
 	var chatPanelHeight = height - 79 - 60 - 42;
-	$('#chat-panel').height(chatPanelHeight);
-	$('#messages').height(chatPanelHeight - 115);
-	$('#online-list').height(chatPanelHeight/2);
+	$chatPanel.height(chatPanelHeight);
+	$chatPanel.find('#messages').height(chatPanelHeight - 115);
+	$chatPanel.find('#online-list').height(chatPanelHeight/2);
 }

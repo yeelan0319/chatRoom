@@ -1,3 +1,32 @@
+var RoomUserItem = function(userdata){
+	this.username = userdata.username;
+	this.avatar = userdata.avatar;
+	this.sessions = {};
+	this.activeSessions = 0;
+	this.socketCount = 0;
+};
+
+RoomUserItem.prototype = {
+	addNewConnection: function(session){
+		this.socketCount++;
+		if(!this.sessions[session]){
+			this.sessions[session] = 1;
+			this.activeSessions++;
+		}
+		else{
+			this.sessions[session]++;
+		}
+	},
+	deleteConnection: function(session){
+		this.socketCount--;
+		this.sessions[session]--;
+		if(this.sessions[session]==0){
+			delete this.sessions[session];
+			this.activeSessions--;
+		}
+	}
+};
+
 module.room = {
 
 	onlineList:[],
@@ -13,17 +42,17 @@ module.room = {
       	});
 
 		$('.container-idle').html($el);
-		setChatPanelSize();
 	},
 
-	renderOnlineList: function(data){
+	updateOnlineList: function(data){
 		data = JSON.parse(data);
 		if(data.meta.status == 200){
-			console.log(data.data);
 			if(data.data.type === 'delete'){
 				$.each(data.data.users, function(index, userdata){
-					if(!_.find(module.room.onlineList, function(obj){return obj.username === userdata.username})){
-						module.room.onlineList.push(new ContactItem(userdata));
+					roomUserItem = _.find(module.room.onlineList, function(obj){return obj.username === userdata.username});
+					roomUserItem.deleteConnection(userdata.token);
+					if(roomUserItem.socketCount == 0){
+						module.room.onlineList = _.filter(module.room.onlineList, function(roomUserItem){return roomUserItem.username !== userdata.username});
 					}
 				});
 			}
@@ -32,17 +61,24 @@ module.room = {
 					module.room.onlineList = [];
 				}
 				$.each(data.data.users, function(index, userdata){
-					if(!_.find(module.room.onlineList, function(obj){return obj.username === userdata.username})){
-						module.room.onlineList.push(new ContactItem(userdata));
+					var roomUserItem = _.find(module.room.onlineList, function(obj){return obj.username === userdata.username});
+					if(!roomUserItem){
+						roomUserItem = new RoomUserItem(userdata);
+						module.room.onlineList.push(roomUserItem);
 					}
+					roomUserItem.addNewConnection(userdata.token);
 				});
 			}
-			_.sortBy(module.room.onlineList, 'username');
-			$("#online-list ul").html('');
-			$.each(module.room.onlineList, function(index, contactItem){
-				$("#online-list ul").append(contactItem.render());
-			})
-
+			module.room.onlineList = _.sortBy(module.room.onlineList, 'username');
+			//here to trigger event and update online list/admin page information
+			module.room.renderOnlineList();
 		}
+	},
+
+	renderOnlineList: function(){
+		$("#online-list ul").html('');
+		$.each(module.room.onlineList, function(index, roomUserItem){
+			$("#online-list ul").append(new ContactItem(roomUserItem).render());
+		});
 	}
 }

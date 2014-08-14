@@ -2,7 +2,7 @@ module.systemAdmin = {
     linkedUserList:{},
 
     renderIndex: function(){
-        var $el = $(module.template.systemAdminIndexTmpl(module.data));
+        var $el = $(module.template.systemAdminIndexTmpl());
         $el.find('.input-group.date').datepicker({
             autoclose: true
         });

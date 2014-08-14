@@ -54,7 +54,7 @@ module.exports = function(app){
 
                 if((to===0||roomController._getRoom(to))&&(from===0||roomController._getRoom(from))){
                     roomController.joinRoom(to, socketID);
-                    socket.leaveRoom(from);
+                    roomController.leaveRoom(from, socketID);
                 }
                 else{
                    socket.emit('system warning', responseJson.badData()); 
@@ -69,7 +69,7 @@ module.exports = function(app){
             if(socket.isLoggedIn()){
                 var id = data.id;
                 if(id===0 || roomController._getRoom(id)){
-                    socket.leaveRoom(id);
+                    roomController.leaveRoom(id, socketID);
                 }
                 else{
                    socket.emit('system warning', responseJson.badData()); 
@@ -122,7 +122,7 @@ module.exports = function(app){
             else{
                 if(roomController._getRoom(id)){
                     if(socket.isAdmin() || roomController.isAdminOfRoom(id, socket.username)){
-                        socket.renderRoomAdmin(id);
+                        roomController.renderRoomAdmin(id, socketID);
                     }
                     else{
                         //user donnot have the privilage for this operation
@@ -147,19 +147,6 @@ module.exports = function(app){
             }
             else{
                 //user donnot have the privilage
-            }
-        });
-        socket.on('retrieveRoomLinkedUserAction', function(id){
-            if(roomController._getRoom(id)){
-                if(socket.isAdmin()|| roomController.isAdminOfRoom(id, socket.username)){
-                    roomController.retrieveLinkedUser(id, socketID);
-                }
-                else{
-                    //user donnot have the privilage
-                }
-            }
-            else{
-                socket.emit('system warning', responseJson.badData());
             }
         });
         socket.on('retrieveChatLogAction', function(constraints){

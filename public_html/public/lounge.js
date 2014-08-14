@@ -159,7 +159,6 @@ module.lounge = {
 		var $el = $(module.template.loungeIndexTmpl());
 		$el.append(module.chat.renderChatPanel(data.messages));		
 		$('.container-idle').html($el);
-		setChatPanelSize();
 	},
 
 	renderRoom: function(data){

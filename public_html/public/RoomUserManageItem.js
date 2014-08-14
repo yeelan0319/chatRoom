@@ -1,14 +1,11 @@
-var RoomUserItem = function(userdata){
+var RoomUserManageItem = function(userdata){
 	this.username = userdata.username;
-	this.loginCount = 0;
-	this.socketCount = 0;
-	this.sessions = [];
-	this.socketIDs = [];
+	this.activeSessions = userdata.activeSessions || 0;
+	this.socketCount = userdata.socketCount || 0;
 	this.isAdminOfRoom = 0;
-	module.roomAdmin.linkedUserList[this.username] = this;
 };
 
-RoomUserItem.prototype = {
+RoomUserManageItem.prototype = {
 	render: function(){
 		var that = this;
 		var userdata = JSON.parse(JSON.stringify(that));
@@ -17,19 +14,7 @@ RoomUserItem.prototype = {
 		that.$el = $(module.template.roomUserItemTmpl(userdata));
 		that.$el.find('.boot').unbind('click').click(function(){that.boot.apply(that)});
 		that.$el.find('.roomAdmin :checkbox').checkbox().unbind('change').on('change', function(){that.changePermission.apply(that)});
-		$('#realtime-userlist').append(that.$el);
-	},
-	addSession: function(session){
-		if(this.sessions.indexOf(session) == -1){
-			this.sessions.push(session);
-			this.loginCount++;
-		}
-	},
-	addSocketID: function(socketID){
-		if(this.socketIDs.indexOf(socketID) == -1){
-			this.socketIDs.push(socketID);
-			this.socketCount++;
-		}
+		return that.$el;
 	},
 	boot: function(){
 		var confirmed = confirm("Are you sure to boot this user?");
