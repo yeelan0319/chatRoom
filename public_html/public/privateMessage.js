@@ -10,7 +10,7 @@ var Message = function(data){
 
 Message.prototype = {
 	render: function(){
-		this.$el = $('<li>' + this.username + ': ' + this.msg + '</li>');
+		this.$el = $('<li>').text(this.username + ': ' + this.msg);
 		// if(this.hasRead){
 		// 	this.$el.addClass('oldMessage');
 		// }
@@ -54,6 +54,7 @@ PmItem.prototype = {
 		$.each(that.messageArr, function(index, message){
 			pmContainer.append(message.render());
 		});
+		return that;
 	},
 
 	toggle: function(){
@@ -154,7 +155,7 @@ module.privateMessage = {
 					var message = new Message(messageData);
 					pmItem.messageArr.push(message);
 				});
-				pmItem.open().renderMessage();
+				pmItem.renderMessage().open();
 			}
 		}
 	},

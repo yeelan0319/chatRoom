@@ -104,7 +104,8 @@ $(document).ready(function(){
 		if(data.meta.status == 200){
 			$.each(data.data, function(index, message){
 				if(message.room == module.data.room){
-					$("#messages").append(module.chat.renderChatMessage(message));
+					var $messageContainer = $('#messages');
+					$messageContainer.append(module.chat.renderChatMessage(message)).scrollTop($messageContainer[0].scrollHeight);
 				}
 			});
 		}

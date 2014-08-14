@@ -2,7 +2,8 @@ module.chat = {
 	renderChatPanel: function(messages){
 		var $el = $(module.template.chatPanelTmpl());
 		$.each(messages, function(index, message){
-			$el.find('#messages').append(module.chat.renderChatMessage(message));
+			var $messageContainer = $el.find('#messages');
+			$messageContainer.append(module.chat.renderChatMessage(message)).scrollTop($messageContainer[0].scrollHeight);
 		})
 		$el.find('#m').unbind('keydown').keydown(function(event){
 			if(event.which == 13){
