@@ -50,10 +50,6 @@ textarea{
 /*
  * Base structure
  */
-html{
-  overflow:scroll;
-}
-
 html,
 body {
   height: 100%;
@@ -201,7 +197,6 @@ body.symbolic{
   position:relative;
   height:400px;
   margin:30px;
-  padding:20px 0px;
   border:1px solid rgba(0,0,0,0.5);
   border-radius: 10px 10px 2px 2px;
   -webkit-box-shadow:
