@@ -25,7 +25,7 @@ validator.password = function(input){
 
 validator.email = function(input){
 	//email format will be fine
-	var emailRegex = /^[\w.]+(\+[\w.]+)?@\w+(.\w+){1,2}$/;
+	var emailRegex = /^[\w.]+(\+[\w.]+)?@\w+(\.\w+){1,2}$/;
 	return emailRegex.test(input)? PASS : FAIL;
 }
 
