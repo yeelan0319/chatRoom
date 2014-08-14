@@ -12,10 +12,10 @@ module.loginRegister = {
 	        var username = $usernameEl.val() || '';
 	        var password = $passwordEl.val() || '';
 	        if(!validator.nickName(username)){
-	        	chobiUtil.inputError($usernameEl.parent(), 'The username is not valid');
+	        	chobiUtil.inputError($usernameEl.parent(), 'The username and password you entered did not match our records');
 	        }
 	        else if(!validator.password(password)){
-	        	chobiUtil.inputError($passwordEl.parent(), 'The password does not matching');
+	        	chobiUtil.inputError($passwordEl.parent(), 'The username and password you entered did not match our records');
 	        }
 	        else{
 	        	socket.emit('loginAction', JSON.stringify({username: username, password: password}));
@@ -47,17 +47,17 @@ module.loginRegister = {
             var email = $emailEl.val() || '';
 
             if(!validator.nickName(username)){
-	        	chobiUtil.inputError($usernameEl.parent(), 'Username can only be consist of 6-20 alphabets, numbers and underscores');
+	        	chobiUtil.inputError($usernameEl.parent(), 'Username must between 6-20 characters, consist of letters, numbers and underscores only');
 	        }
 	        else if(password !== passwordConfirm){
 	        	chobiUtil.inputError($passwordEl.parent(), '');
-	        	chobiUtil.inputError($passwordConfirmEl.parent(), 'The confirmation is not matching the password');
+	        	chobiUtil.inputError($passwordConfirmEl.parent(), "The two password fields didn't match");
 	        }
 	        else if(!validator.password(password)){
-	        	chobiUtil.inputError($passwordEl.parent(), 'Password need to be a combination of 6-20 digits numbers and alphabets');
+	        	chobiUtil.inputError($passwordEl.parent(), 'Password must have at least 6 characters, including both number and letter');
 	        }
 	        else if(!validator.email(email)){
-	        	chobiUtil.inputError($emailEl.parent(), 'Please enter a valid email address');
+	        	chobiUtil.inputError($emailEl.parent(), 'Please enter a valid email');
 	        }
 	        else{
 	        	var data = {

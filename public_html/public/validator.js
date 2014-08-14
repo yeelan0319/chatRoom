@@ -15,7 +15,7 @@ validator.looseNickName = function(input){
 
 validator.password = function(input){
 	//password must have a length between 6-20 characters
-	if(input.length < 6 || input.length > 20){
+	if(input.length < 6){
 		return FAIL;
 	}
 	//password must be a combination of letter and number and special characters
