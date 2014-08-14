@@ -44,7 +44,7 @@ module.lounge = {
 			socket.emit('retrieveUserProfileAction');
 		});
 		$userPanelEl.find('#signout').unbind('click').click(function(){
-			socket.emit('leaveRoomAction', JSON.stringify(module.data.room));
+			socket.emit('leaveRoomAction', JSON.stringify({id:module.data.room}));
 	  		socket.emit('logoutAction');
 	  		$.removeCookie('PHPSESSID');
 	  	});
