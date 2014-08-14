@@ -76,9 +76,9 @@ module.room = {
 	},
 
 	renderOnlineList: function(){
-		$("#online-list ul").html('');
+		$("#online-list").html('');
 		$.each(module.room.onlineList, function(index, roomUserItem){
-			$("#online-list ul").append(new ContactItem(roomUserItem).render());
+			$("#online-list").append(new ContactItem(roomUserItem).render());
 		});
 	}
 }

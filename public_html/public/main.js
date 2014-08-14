@@ -164,5 +164,6 @@ function setChatPanelSize($chatPanel){
 	var height = $(window).height();
 	var chatPanelHeight = height - 79 - 62;
 	$chatPanel.height(chatPanelHeight);
-	$chatPanel.find('#messages, #online-list').height(chatPanelHeight - 79);
+	$chatPanel.find('#online-list-container').height(chatPanelHeight - 79);
+	$chatPanel.find('#messages, #online-list').height(chatPanelHeight - 79 - 40);
 }
