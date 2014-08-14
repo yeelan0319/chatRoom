@@ -130,7 +130,6 @@ module.exports = function socketExtension(socket, next){
                 admins: admins
             }
         }
-        console.log(res);
         this.emit('render message', responseJson.success(res));
     };
     socket.renderBoot = function(){

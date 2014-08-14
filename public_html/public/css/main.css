@@ -539,6 +539,11 @@ body.symbolic{
   height:100%;
 }
 
+.avatar-container span, .avatar-upload-hint{
+  font-size:12px;
+  color:#eee;
+}
+
 .avatar-upload .backdrop{
   position: absolute;
   top: 0;
