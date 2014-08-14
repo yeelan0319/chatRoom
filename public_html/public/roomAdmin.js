@@ -32,6 +32,8 @@ module.roomAdmin = {
         
         userManageList = _.chain(userManageList).sortBy('username').sortBy(function(roomUserManageItem){
             return roomUserManageItem.isAdminOfRoom * -1;
+        }).sortBy(function(roomUserManageItem){
+            return (roomUserManageItem.username === module.data.user.username ? 1 : 0) * -1;
         }).value();
         $.each(userManageList, function(index, roomUserManageItem){
             $container.append(roomUserManageItem.render());

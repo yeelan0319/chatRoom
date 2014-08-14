@@ -24,10 +24,6 @@ textarea{
   resize:none;
 }
 
-.btn{
-  margin-top:10px;
-}
-
 .datepicker-dropdown{
   opacity: 1;
   visibility: visible;
@@ -110,10 +106,6 @@ body.symbolic{
   top: 25px;
   cursor:pointer;
 }
-
-.roomAdmin, .boot{
-  cursor: pointer;
-}
 /*
  * Footer
  */
@@ -164,7 +156,7 @@ body.symbolic{
 
 #user-panel{
   position:absolute;
-  top: 10px;
+  top: 20px;
   right: 40px;
 }
 
@@ -296,6 +288,16 @@ body.symbolic{
   width:62%;
 }
 
+#adminModal .checkbox{
+  cursor:pointer;
+}
+
+#adminModal .boot, #adminModal .delete{
+  padding:0px 10px;
+  cursor: pointer;
+  font-size:13px;
+}
+
 #adminModal .modal-content, #profileModal .modal-content, #roomPrompt .modal-content{
   color: #999;
   border: 1px solid rgba(0,0,0,0.5);
@@ -321,11 +323,7 @@ body.symbolic{
   outline:none;
 }
 
-#adminModal .checkbox.checked, #adminModal .checkbox.checked .second-icon, #adminModal .delete{
-  cursor:pointer;
-}
-
-#adminModal .checkbox.disabled, #adminModal .checkbox.disabled .second-icon{
+#adminModal .checkbox.disabled, #adminModal .checkbox.disabled .second-icon, #adminModal .checkbox.disabled .first-icon{
   color: #555;
   cursor: default;
 }
@@ -381,13 +379,16 @@ body.symbolic{
   margin-bottom: 0px;
 }
 
-#adminModal .btn-danger{
+#adminModal #delete-room{
   position: absolute;
   right: 15px;
-  top: 8px;
+  top: 13px;
   padding: 7px 10px;
+}
+
+#adminModal .btn-danger{
   background-color: #862828;
-  color: #999;
+  color: #aaa;
 }
 
 #adminModal .btn-danger:hover{

@@ -84,7 +84,7 @@ module.loginRegister = {
 		$('.main-container').removeClass('chat-container').addClass('session-container');
 		$('.left-container').animate({
 			left: -200
-		},600).find('#room-list').html('');
+		},600).find('#room-list, #contact-list').html('');
 	},
 
 	renderFillInfo: function(data){
