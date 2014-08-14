@@ -24,12 +24,11 @@ UserItem.prototype = {
 		this.$el.find('.permission .permission-label').text(this.permission?'Administrator':'User');
 	},
 	destroy: function(){
-		var confirmed = confirm("Are you sure to delete this user?");
 		var that = this;
-		if(confirmed){
-			data = {username: that.username};
+		chobiUtil.confirmBox("Are you sure to delete this user?", function(){
+			var data = {username: that.username};
 			socket.emit("deleteUserAction", JSON.stringify(data));
 			that.$el.remove();
-		}
+		});
 	}
 };

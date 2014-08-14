@@ -25,7 +25,8 @@ $(document).ready(function(){
 		profileTmpl: Handlebars.compile($.trim($('#profile-index-tmpl').html())),
 		pmItemTmpl: Handlebars.compile($.trim($('#pm-item-tmpl').html())),
 		roomPromptTmpl: Handlebars.compile($.trim($('#room-prompt-tmpl').html())),
-		contactItemTmpl: Handlebars.compile($.trim($('#contact-item-tmpl').html()))
+		contactItemTmpl: Handlebars.compile($.trim($('#contact-item-tmpl').html())),
+		confirmBoxTmpl: Handlebars.compile($.trim($('#confirm-box-tmpl').html())),
 	}
 	$('.template').remove();
 

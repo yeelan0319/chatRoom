@@ -41,13 +41,12 @@ module.roomAdmin = {
     },
 
     destoryRoom: function(){
-        var confirmed = confirm("Are you sure to delete this room?");
-        if(confirmed){
-            data = {
+        chobiUtil.confirmBox("Are you sure to delete this room?", function(){
+            var data = {
                 id: module.data.room
             }
             socket.emit('destoryRoomAction', JSON.stringify(data));
             $('#adminModal').modal('hide');
-        }
+        });
     }
 };

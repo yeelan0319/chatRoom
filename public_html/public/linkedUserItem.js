@@ -28,12 +28,11 @@ LinkedUserItem.prototype = {
 		}
 	},
 	boot: function(){
-		var confirmed = confirm("Are you sure to boot this user?");
 		var that = this;
-		if(confirmed){
-			data = {username: that.username};
+		chobiUtil.confirmBox("Are you sure to boot this user?", function(){
+			var data = {username: that.username};
 			socket.emit("systemBootAction", JSON.stringify(data));
 			that.$el.remove();
-		}
+		});
 	}
 };

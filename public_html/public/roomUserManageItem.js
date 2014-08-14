@@ -17,16 +17,15 @@ RoomUserManageItem.prototype = {
 		return that.$el;
 	},
 	boot: function(){
-		var confirmed = confirm("Are you sure to boot this user?");
 		var that = this;
-		if(confirmed){
-			data = {
+		chobiUtil.confirmBox("Are you sure to boot this user?", function(){
+			var data = {
 				id: module.data.room, 
 				username: that.username
 			};
 			socket.emit("roomBootAction", JSON.stringify(data));
 			that.$el.remove();
-		}
+		});
 	},
 	changePermission: function(){
 		this.isAdminOfRoom = this.isAdminOfRoom^1;
