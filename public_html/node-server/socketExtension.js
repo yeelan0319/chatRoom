@@ -43,15 +43,6 @@ module.exports = function socketExtension(socket, next){
         //TODO:also remove from the chat room user is currently in!!!
     };
 
-    socket.welcomeUser = function(){
-        //console.log(this.username + ' is connected');
-        //this.broadcast.emit('status message', this.username + ' has joined the conversation');
-    };
-    socket.seeyouUser = function(){
-        //console.log(this.username + ' has quitted the conversation');
-        //this.broadcast.emit('status message', this.username + ' has quitted the conversation');
-    };
-
     socket.joinLounge = function(messages, getLinkedusers){
         this.join('/chatRoom/0');
         this.renderLounge(messages, getLinkedusers());

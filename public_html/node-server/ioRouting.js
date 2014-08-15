@@ -1,5 +1,6 @@
 var validator = require('../public/validator');
 var responseJson = require('./responseJson');
+var _ = require('underscore');
 var _parseData = function(data){
     try{
         data = JSON.parse(data);
@@ -53,8 +54,8 @@ module.exports = function(app){
                 var to = data.to;
 
                 if((to===0||roomController._getRoom(to))&&(from===0||roomController._getRoom(from))){
-                    roomController.joinRoom(to, socketID);
-                    roomController.leaveRoom(from, socketID);
+                    roomController.joinRoom(to, socket);
+                    roomController.leaveRoom(from, socket);
                 }
                 else{
                    socket.emit('system warning', responseJson.badData()); 
@@ -69,7 +70,7 @@ module.exports = function(app){
             if(socket.isLoggedIn()){
                 var id = data.id;
                 if(id===0 || roomController._getRoom(id)){
-                    roomController.leaveRoom(id, socketID);
+                    roomController.leaveRoom(id, socket);
                 }
                 else{
                    socket.emit('system warning', responseJson.badData()); 
@@ -219,6 +220,10 @@ module.exports = function(app){
                 }
                 else{
                     ioController.deleteUser(username);
+                    var id = _.find(socket.rooms, function(roompath){return /\/chatRoom\//.test(roompath)}).replace(/\/chatRoom\//, '');
+                    if(id){
+                        roomController.leaveRoom(id, socket);
+                    }
                 }
             }
             else{
@@ -381,7 +386,10 @@ module.exports = function(app){
         });
         socket.on('disconnect', function(){
             if(socket.isLoggedIn()){
-                socket.seeyouUser();
+                var id = _.find(socket.rooms, function(roompath){return /\/chatRoom\//.test(roompath)}).replace(/\/chatRoom\//, '');
+                if(id){
+                    roomController.leaveRoom(id, socket);
+                }
             }
             else{
                 //user not logged in

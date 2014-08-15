@@ -530,8 +530,7 @@ function IoController(app){
         _checkUnreadPm(socket);
         _retrieveRoomList(socket);
         _retrieveRecentContact(socket);
-        roomController.joinRoom(0, socket.id);
-        socket.welcomeUser(); 
+        roomController.joinRoom(0, socket);
     }
 
     function _renderLogin(socket){
@@ -539,7 +538,6 @@ function IoController(app){
     }
 
     function _seeyouUser(socket){
-        socket.seeyouUser();
         socket.removeSocketUser();
     }
 
