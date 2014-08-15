@@ -4,10 +4,8 @@ var crypto = require('crypto');
 var _ = require('underscore');
 var responseJson = require('./responseJson');
 var DAY = 1000*60*60*24;
-var DEFAULTAVATAR = '/avatar/defaultAvatar.png';
 
 function IoController(app){
-    var roomController = require('./roomController')(app);
 
     events.EventEmitter.call(this);
 
@@ -52,58 +50,6 @@ function IoController(app){
                 callback(user);
             }
         }); 
-    };
-        
-    this.createNewUser = function(username, password, email, session){
-        var that = this;
-        _findUserWithUsername(username, function(user){
-            if(user){
-                //this is socket-level info
-                //that.emit('excepetion', new ExistingUserError());
-            }
-            else{
-                var user = {
-                    'username': username, 
-                    'password': crypto.createHash('sha1').update(password).digest('hex'), 
-                    'email': email,
-                    'avatar': DEFAULTAVATAR,
-                    'permission':0,
-                    'prompts':{
-                        'needUserInfo': true
-                    }
-                };
-                app.db.collection('users').insert(user, {w:1}, function(err, result) {
-                    if(err){
-                        //this is socket-level info
-                        //that.emit('excepetion', new ExistingUserError());
-                        //redo the work
-                    }
-                    else{
-                        that.loginUser(username, password, session);
-                    }
-                });
-            }
-        });
-    };
-        
-    this.loginUser = function(username, password, session){
-        var that = this;
-        _findUserWithUsername(username, function(user){
-            if(user && user.password === crypto.createHash('sha1').update(password).digest('hex')){
-                session.username = user.username;
-                session.save();
-
-                var result = {
-                    user: user,
-                    target: session.id
-                };
-                that.emit('successfullyLoggedInUser', result);
-            }
-            else{
-                //this is socket-level info
-                //that.emit('excepetion', new WrongPasswordError());
-            }
-        });
     };
 
     this.logoutUser = function(session){
@@ -530,7 +476,7 @@ function IoController(app){
         _checkUnreadPm(socket);
         _retrieveRoomList(socket);
         _retrieveRecentContact(socket);
-        roomController.joinRoom(0, socket);
+        app.roomController.joinRoom(0, socket);
     }
 
     function _renderLogin(socket){
@@ -538,6 +484,7 @@ function IoController(app){
     }
 
     function _seeyouUser(socket){
+        app.roomController.passiveLeaveRoom(socket);
         socket.removeSocketUser();
     }
 

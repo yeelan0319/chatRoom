@@ -1,5 +1,6 @@
 var util = require('util');
 var events = require('events');
+var _ = require('underscore');
 var responseJson = require('./responseJson');
 var ObjectID = require('mongodb').ObjectID;
 var MINUTE = 1000*60;
@@ -78,6 +79,14 @@ function RoomController(app){
         var that = this;
         _informJoinLeftOfRoom(from, socket, 'delete');
         socket.leaveRoom(from);
+    };
+
+    this.passiveLeaveRoom = function(socket){
+        var roompath = _.find(socket.rooms, function(roompath){return /\/chatRoom\//.test(roompath)});
+        if(roompath){
+            var id = roompath.replace(/\/chatRoom\//, '');
+            this.leaveRoom(id, socket);
+        }
     }
 
     function _retrievePastMessage(id, callback){

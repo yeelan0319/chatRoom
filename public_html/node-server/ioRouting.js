@@ -1,6 +1,6 @@
 var validator = require('../public/validator');
 var responseJson = require('./responseJson');
-var _ = require('underscore');
+
 var _parseData = function(data){
     try{
         data = JSON.parse(data);
@@ -12,9 +12,9 @@ var _parseData = function(data){
 }
 
 module.exports = function(app){
-	var socketExtension = require('./socketExtension');
-	var ioController = require('./ioController')(app);
-    var roomController = require('./roomController')(app);
+	app.socketExtension = require('./socketExtension');
+	app.ioController = require('./ioController')(app);
+    app.roomController = require('./roomController')(app);
 
 	//socket io middlewares
     app.io.use(function(socket, next){
@@ -31,14 +31,14 @@ module.exports = function(app){
         socket.request.originalUrl = "/";
         app.middleware.sessionParserFunction(socket.request, {}, next);
     });
-    app.io.use(socketExtension);
+    app.io.use(app.socketExtension);
 
     //event listening
     app.io.on('connection', function(socket){
         var session = socket.request.session;
         var socketID = socket.id;
 
-        ioController.checkLoginStatus(session, socketID);
+        app.ioController.checkLoginStatus(session, socketID);
 
         //register listeners needed
         socket.on('loginRender', function(){
@@ -53,9 +53,9 @@ module.exports = function(app){
                 var from = data.from;
                 var to = data.to;
 
-                if((to===0||roomController._getRoom(to))&&(from===0||roomController._getRoom(from))){
-                    roomController.joinRoom(to, socket);
-                    roomController.leaveRoom(from, socket);
+                if((to===0||app.roomController._getRoom(to))&&(from===0||app.roomController._getRoom(from))){
+                    app.roomController.joinRoom(to, socket);
+                    app.roomController.leaveRoom(from, socket);
                 }
                 else{
                    socket.emit('system warning', responseJson.badData()); 
@@ -69,8 +69,8 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isLoggedIn()){
                 var id = data.id;
-                if(id===0 || roomController._getRoom(id)){
-                    roomController.leaveRoom(id, socket);
+                if(id===0 || app.roomController._getRoom(id)){
+                    app.roomController.leaveRoom(id, socket);
                 }
                 else{
                    socket.emit('system warning', responseJson.badData()); 
@@ -82,7 +82,7 @@ module.exports = function(app){
         });
         socket.on('retrieveUserProfileAction', function(){
             if(socket.isLoggedIn()){
-                ioController.retrieveUserProfile(socketID);
+                app.ioController.retrieveUserProfile(socketID);
             }
             else{
                 //user not logged in
@@ -90,7 +90,7 @@ module.exports = function(app){
         });
         socket.on('searchPmAction', function(str){
             if(socket.isLoggedIn()){
-                ioController.searchPm(str, socketID);
+                app.ioController.searchPm(str, socketID);
             }
             else{
                 //user not logged in
@@ -104,7 +104,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    ioController.createPm(username, socketID);
+                    app.ioController.createPm(username, socketID);
                 }
             }
             else{
@@ -121,9 +121,9 @@ module.exports = function(app){
                 }
             }
             else{
-                if(roomController._getRoom(id)){
-                    if(socket.isAdmin() || roomController.isAdminOfRoom(id, socket.username)){
-                        roomController.renderRoomAdmin(id, socketID);
+                if(app.roomController._getRoom(id)){
+                    if(socket.isAdmin() || app.roomController.isAdminOfRoom(id, socket.username)){
+                        app.roomController.renderRoomAdmin(id, socketID);
                     }
                     else{
                         //user donnot have the privilage for this operation
@@ -136,7 +136,7 @@ module.exports = function(app){
         });
         socket.on('retrieveLinkedUserAction', function(){
             if(socket.isAdmin()){
-                ioController.retrieveLinkedUser(socketID);
+                app.ioController.retrieveLinkedUser(socketID);
             }
             else{
                 //user donnot have the privilage
@@ -144,7 +144,7 @@ module.exports = function(app){
         });
         socket.on('retrieveUserDataAction', function(){
             if(socket.isAdmin()){
-                ioController.retrieveUserList(socketID);
+                app.ioController.retrieveUserList(socketID);
             }
             else{
                 //user donnot have the privilage
@@ -153,43 +153,15 @@ module.exports = function(app){
         socket.on('retrieveChatLogAction', function(constraints){
             constraints = _parseData(constraints);
             if(socket.isAdmin()){
-                ioController.retrieveChatLog(constraints, socketID);
+                app.ioController.retrieveChatLog(constraints, socketID);
             }
             else{
                 //user donnot have the privilage
             }
         });
-        socket.on('loginAction', function(data){
-            data = _parseData(data);
-            if(!socket.isLoggedIn()){
-                var username = data.username;
-                var password = data.password;
-                if(!validator.nickName(username)||!validator.password(password)){
-                    socket.emit('system warning', responseJson.badData());
-                }
-                else{
-                    ioController.loginUser(username, password, session);
-                }
-            }
-        });
-        
-        socket.on('registerAction', function(data){
-            data = _parseData(data);
-            if(!socket.isLoggedIn()){
-                var username = data.username;
-                var password = data.password;
-                var email = data.email;
-                if(!validator.nickName(username)||!validator.password(password)||!validator.email(email)){
-                    socket.emit('system warning', responseJson.badData());
-                }
-                else{
-                    ioController.createNewUser(username, password, email, session);
-                }  
-            }
-        });
         socket.on('logoutAction', function(){
             if(socket.isLoggedIn()){
-                ioController.logoutUser(session);
+                app.ioController.logoutUser(session);
             }
             else{
                 //user is not logged
@@ -204,7 +176,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    ioController.editUserPermission(username, permission);
+                    app.ioController.editUserPermission(username, permission);
                 }
             }
             else{
@@ -219,11 +191,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    ioController.deleteUser(username);
-                    var id = _.find(socket.rooms, function(roompath){return /\/chatRoom\//.test(roompath)}).replace(/\/chatRoom\//, '');
-                    if(id){
-                        roomController.leaveRoom(id, socket);
-                    }
+                    app.ioController.deleteUser(username);
                 }
             }
             else{
@@ -238,7 +206,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    ioController.bootUser(username);
+                    app.ioController.bootUser(username);
                 }
             }
             else{
@@ -254,7 +222,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    ioController.sendPm(toUsername, msg, socketID);
+                    app.ioController.sendPm(toUsername, msg, socketID);
                 }    
             }
             else{
@@ -270,7 +238,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    ioController.readPm(fromUsername, toUsername);
+                    app.ioController.readPm(fromUsername, toUsername);
                 }
             }
             else{
@@ -291,7 +259,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    ioController.editUserInfo(username, data);
+                    app.ioController.editUserInfo(username, data);
                 }
             }
             else{
@@ -301,15 +269,15 @@ module.exports = function(app){
         socket.on('editRoomAdminAction', function(data){
             data = _parseData(data);
             var id = data.id;
-            if(roomController._getRoom(id)){
-                if(socket.isAdmin()|| roomController.isAdminOfRoom(id, socket.username)){
+            if(app.roomController._getRoom(id)){
+                if(socket.isAdmin()|| app.roomController.isAdminOfRoom(id, socket.username)){
                     var username = data.username;
                     var permission = data.permission;
                     if(!validator.nickName(username) || !validator.permission(permission) || socket.username===username){
                         socket.emit('system warning', responseJson.badData());
                     }
                     else{
-                        roomController.editRoomAdmin(id, username, permission);
+                        app.roomController.editRoomAdmin(id, username, permission);
                     }
                 }
                 else{
@@ -323,14 +291,14 @@ module.exports = function(app){
         socket.on('roomBootAction', function(data){
             data = _parseData(data);
             var id = data.id;
-            if(roomController._getRoom(id)){
-                if(socket.isAdmin()|| roomController.isAdminOfRoom(id, socket.username)){
+            if(app.roomController._getRoom(id)){
+                if(socket.isAdmin()|| app.roomController.isAdminOfRoom(id, socket.username)){
                     var username = data.username;
                     if(!validator.nickName(username) || socket.username===username){
                         socket.emit('system warning', responseJson.badData());
                     }
                     else{
-                        roomController.bootUser(id, username);
+                        app.roomController.bootUser(id, username);
                     }
                 }
             }
@@ -341,10 +309,10 @@ module.exports = function(app){
         socket.on('chatAction', function(data){
             data = _parseData(data);
             var id = data.id;
-            if(id===0||roomController._getRoom(id)){
+            if(id===0||app.roomController._getRoom(id)){
                 if(socket.isLoggedIn() && socket.isInRoom(id)){
                     var msg = data.msg;
-                    ioController.sendChatMessage(socket.username, id, msg);
+                    app.ioController.sendChatMessage(socket.username, id, msg);
                 }
                 else{
                     //user not logged in
@@ -362,7 +330,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    roomController.createRoom(name, socket.username);
+                    app.roomController.createRoom(name, socket.username);
                 }
             }
             else{
@@ -372,9 +340,9 @@ module.exports = function(app){
         socket.on('destoryRoomAction', function(data){
             data = _parseData(data);
             var id = data.id;
-            if(roomController._getRoom(id)){
-                if(socket.isAdmin()|| roomController.isAdminOfRoom(id, socket.username)){
-                    roomController.destoryRoom(id);
+            if(app.roomController._getRoom(id)){
+                if(socket.isAdmin()|| app.roomController.isAdminOfRoom(id, socket.username)){
+                    app.roomController.destoryRoom(id);
                 }
                 else{
                     //user donnot have the privilage
@@ -386,10 +354,7 @@ module.exports = function(app){
         });
         socket.on('disconnect', function(){
             if(socket.isLoggedIn()){
-                var id = _.find(socket.rooms, function(roompath){return /\/chatRoom\//.test(roompath)}).replace(/\/chatRoom\//, '');
-                if(id){
-                    roomController.leaveRoom(id, socket);
-                }
+                app.roomController.passiveLeaveRoom(socket);
             }
             else{
                 //user not logged in

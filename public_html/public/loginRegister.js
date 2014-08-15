@@ -18,7 +18,25 @@ module.loginRegister = {
 	        	chobiUtil.inputError($passwordEl.parent(), 'The username and password you entered did not match our records');
 	        }
 	        else{
-	        	socket.emit('loginAction', JSON.stringify({username: username, password: password}));
+	        	var data = {
+	        		username: username, 
+	        		password: password
+	        	};
+	        	var btn = $(this).find('button').button('loading');
+	        	$.ajax({
+	        		type: "POST",
+	        		url: "/login",
+	        		data: data,
+	        		success: function(response){
+	        			btn.button('reset');
+	        		},
+	        		error: function(jqxhr, textStatus, thrownError){
+	        			if(jqxhr.status === 401){
+	        				chobiUtil.inputError($usernameEl.parent(), 'The username and password you entered did not match our records');
+	        			}
+	        			btn.button('reset');
+	        		}
+	        	});
 	        }
 	        return false;
 	        
@@ -64,8 +82,22 @@ module.loginRegister = {
 	            	username: username,
 	            	password: password,
 	            	email: email
-	            }
-	        	socket.emit('registerAction', JSON.stringify(data));
+	            };
+	            var btn = $(this).find('button').button('loading');
+	        	$.ajax({
+	        		type: "POST",
+	        		url: "/register",
+	        		data: data,
+	        		success: function(){
+	        			btn.button('reset');
+	        		},
+	        		error: function(jqxhr, textStatus, thrownError){
+	        			if(jqxhr.status === 409){
+	        				chobiUtil.inputError($usernameEl.parent(), 'The username has already been used');
+	        			}
+	        			btn.button('reset');
+	        		}
+	        	});
 	        }
 			return false;
         });
