@@ -53,6 +53,7 @@ module.room = {
 					roomUserItem.deleteConnection(userdata.token);
 					if(roomUserItem.socketCount == 0){
 						module.room.onlineList = _.filter(module.room.onlineList, function(roomUserItem){return roomUserItem.username !== userdata.username});
+						$('#messages').append(module.chat.renderSystemMessage(roomUserItem.username + ' has left the room'));
 					}
 				});
 			}
@@ -65,6 +66,9 @@ module.room = {
 					if(!roomUserItem){
 						roomUserItem = new RoomUserItem(userdata);
 						module.room.onlineList.push(roomUserItem);
+						if(data.data.type == 'add'){
+							$('#messages').append(module.chat.renderSystemMessage(roomUserItem.username + ' has joined the room'));
+						}
 					}
 					roomUserItem.addNewConnection(userdata.token);
 				});

@@ -21,7 +21,7 @@ module.chat = {
 	},
 
 	renderSystemMessage: function(message){
-		return $('<li class="system-message">').text(message.username + ": " + message.msg);
+		return $('<li class="system-message">').text(message);
 	},
 
 	sendMessage: function(){
