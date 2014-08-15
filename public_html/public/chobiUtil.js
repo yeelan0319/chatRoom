@@ -46,7 +46,7 @@ chobiUtil.offlineBlock = function(status){
 }
 
 chobiUtil.confirmBox = function(msg, callback){
-	if($('.confirm-container').length==0&&module.data.pos === 'admin-roomuser'){
+	if($('.confirm-container').length==0){
 		var $el = $(module.template.confirmBoxTmpl({msg:msg}));
 		$el.find('button:first').unbind('click').click(function(){
 			callback();
@@ -55,15 +55,17 @@ chobiUtil.confirmBox = function(msg, callback){
 		$el.find('button:last').unbind('click').click(function(){
 			$('.confirm-container').remove();
 		});
-		$(document).unbind('keydown.confirmbox').bind('keydown.confirmbox',function(event){
-			if(event.which === 13){
-				callback();
-				$('.confirm-container').remove();
-			}
-			else if(event.which === 27){
-				$('.confirm-container').remove();
-			}
-		})
+		// $(document).unbind('keydown.confirmbox').bind('keydown.confirmbox',function(event){
+		// 	if(event.which === 13){
+		// 		callback();
+		// 		$('.confirm-container').remove();
+		// 		$(document).unbind('keydown.confirmbox');
+		// 	}
+		// 	else if(event.which === 27){
+		// 		$('.confirm-container').remove();
+		// 		$(document).unbind('keydown.confirmbox');
+		// 	}
+		// });
 		$('body').append('<div class="confirm-container"><div class="modal-backdrop fade"></div></div>').find('.confirm-container').append($el);
 	}
 }
