@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "a chat room with basic user management system",
   "dependencies": {
+    "body-parser": "^1.6.4",
     "connect-mongo": "^0.4.1",
     "cookie-parser": "^1.1.0",
     "easyimage": "^1.0.1",
