@@ -107,11 +107,8 @@ function IoController(app){
                 //redo the work
             }
             else{
-                var result = {
-                    target: socketID,
-                    data: documents
-                };
-                that.emit('successfullyRetrievedUserList', result);
+                socket = app.io.socketList[socketID];
+                socket.emit('users data', responseJson.success(documents));
             }
         });
     };
@@ -152,11 +149,9 @@ function IoController(app){
                 //redo the work
             }
             else{
-                var result = {
-                    target: username,
-                    permission: permission
-                };
-                that.emit('successfullyChangedUserPermission', result);
+                that._iterateOverUser(username, function(socket){
+                    socket.changePermission(permission);
+                });
             }
         });
     };
@@ -170,10 +165,10 @@ function IoController(app){
                 //redo the work
             }
             else{
-                var result = {
-                    target: username
-                };
-                that.emit('successfullyDeletedUser', result);
+                that._iterateOverUser(username, function(socket){
+                    _seeyouUser(socket);
+                    _renderRegister(socket);
+                });
             }
         });
     };
@@ -196,11 +191,8 @@ function IoController(app){
                 //redo the work
             }
             else{
-                var result = {
-                    target: socketID,
-                    data: documents
-                };
-                that.emit('successfullyRetrievedChatLog', result);
+                var socket = app.io.socketList[socketID];
+                socket.emit('chat log', responseJson.success(documents));
             }
         });
     };
@@ -406,29 +398,6 @@ function IoController(app){
         });
     }
 
-    function sendUserListSocket(res){
-        var socket = app.io.socketList[res.target];
-        socket.emit('users data', responseJson.success(res.data));
-    }
-
-    function sendChatLogSocket(res){
-        var socket = app.io.socketList[res.target];
-        socket.emit('chat log', responseJson.success(res.data));
-    }
-
-    function informChangedPermissionUser(res){
-        this._iterateOverUser(res.target, function(socket){
-            socket.changePermission(res.permission);
-        });
-    }
-
-    function renderRegisterUser(res){
-        this._iterateOverUser(res.target, function(socket){
-            _seeyouUser(socket);
-            _renderRegister(socket);
-        });
-    }
-
     function _retrieveRoomList(socket){
         var result = {
             type: 'reset',
@@ -493,12 +462,8 @@ function IoController(app){
 
     this.on('userLoggedIn', welcomeSocket);
     this.on('userNotLoggedIn', renderLoginSocket);
-    this.on('successfullyLoggedInUser', welcomeSession)
-    this.on('successfullyRetrievedUserList', sendUserListSocket);
-    this.on('successfullyCompleteUserInfo', welcomeUser)
-    this.on('successfullyChangedUserPermission', informChangedPermissionUser);
-    this.on('successfullyDeletedUser', renderRegisterUser);
-    this.on('successfullyRetrievedChatLog', sendChatLogSocket);
+    this.on('successfullyLoggedInUser', welcomeSession);
+    this.on('successfullyCompleteUserInfo', welcomeUser);
 };
 
 util.inherits(IoController, events.EventEmitter);
