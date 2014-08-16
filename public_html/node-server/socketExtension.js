@@ -42,6 +42,15 @@ module.exports = function socketExtension(socket, next){
         delete this.avatar;
         //TODO:also remove from the chat room user is currently in!!!
     };
+    socket.getSocketInfo = function(){
+        return {
+            id: this.id,
+            username: this.username,
+            permission: this.permission,
+            avatar: this.avatar,
+            token: this.token
+        }
+    }
 
     socket.joinLounge = function(messages, getLinkedusers){
         this.join('/chatRoom/0');
@@ -77,11 +86,7 @@ module.exports = function socketExtension(socket, next){
     socket.renderChatFrame = function(){
         var res = {
             target: 'chatFrame',
-            data: {
-                username: this.username,
-                permission: this.permission,
-                avatar: this.avatar
-            }
+            data: this.getSocketInfo()
         }
         this.emit('render message', responseJson.success(res));
     }
@@ -138,13 +143,10 @@ module.exports = function socketExtension(socket, next){
         }
         this.emit('render message', responseJson.success(res));
     };
-    socket.renderFillInfo = function(user){
+    socket.renderFillInfo = function(){
         var res = {
             target: 'fillInfo',
-            data: {
-                username: user.username,
-                avatar: user.avatar
-            }
+            data: this.getSocketInfo()
         }
         this.emit('render message', responseJson.success(res));
     };

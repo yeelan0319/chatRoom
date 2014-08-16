@@ -9,6 +9,14 @@ function IoController(app){
 
     events.EventEmitter.call(this);
 
+    this._iterateAllSocket = function(action){
+        for(var socketID in app.io.socketList){
+            if(app.io.socketList.hasOwnProperty(socketID)){
+                var socket = app.io.socketList[socketID];
+                action(socket);
+            }
+        }
+    };
     this._iterateInRoom = function(roomid, action){
         var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + roomid];
         for(var socketID in chatRoom){
@@ -173,17 +181,9 @@ function IoController(app){
     this.retrieveLinkedUser = function(socketID){
         var socket = app.io.socketList[socketID];
         var data = [];
-        for(var socketID in app.io.socketList){
-            if(app.io.socketList.hasOwnProperty(socketID)){
-                var simpleSocket = {};
-                var targetSocket = app.io.socketList[socketID];
-                simpleSocket.id = targetSocket.id;
-                simpleSocket.username = targetSocket.username;
-                simpleSocket.permission = targetSocket.permission;
-                simpleSocket.token = targetSocket.token;
-                data.push(simpleSocket);
-            }
-        }
+        this._iterateAllSocket(function(socket){
+            data.push(socket.getSocketInfo());
+        });
         socket.emit('linked users data', responseJson.success(data));
     };
 
@@ -463,7 +463,7 @@ function IoController(app){
     function _welcomeUser(socket, user){
         socket.setSocketUser(user);
         if(user.prompts.needUserInfo){
-            socket.renderFillInfo(user);
+            socket.renderFillInfo();
         }
         else{
             _initiateLounge(socket, user);

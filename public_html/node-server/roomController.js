@@ -124,14 +124,7 @@ function RoomController(app){
     function _getRoomLinkedSockets(id){
         var sockets = [];
         app.ioController._iterateInRoom(id, function(socket){
-            var simpleSocket = {
-                id: socket.id,
-                token: socket.token,
-                username: socket.username,
-                permission: socket.permission,
-                avatar: socket.avatar
-            };
-            sockets.push(simpleSocket);
+            sockets.push(socket.getSocketInfo());
         });
         return sockets;
     }
