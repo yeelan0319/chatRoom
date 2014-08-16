@@ -6,7 +6,7 @@ module.exports = function socketExtension(socket, next){
         var session = this.request.session;
         if(session.cookie.maxAge < (session.cookie.originalMaxAge/2)){
             this.emit('session extension');
-            var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id];
+            var sessionRoom = io.sockets.adapter.rooms['/private/session/'+session.id]; //TODO: why socketExt will have access to io.sockets?
             console.log("3:"+sessionRoom);
             for(var socketID in sessionRoom){
                 if(sessionRoom.hasOwnProperty(socketID)){

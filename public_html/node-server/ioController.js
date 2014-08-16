@@ -9,6 +9,34 @@ function IoController(app){
 
     events.EventEmitter.call(this);
 
+    this._iterateInRoom = function(roomid, action){
+        var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + roomid];
+        for(var socketID in chatRoom){
+            if(chatRoom.hasOwnProperty(socketID)){
+                var socket = app.io.socketList[socketID];
+                action(socket);
+            }
+        }
+    };
+    this._iterateOverSession = function(sessionid, action){
+        var sessionRoom = app.io.sockets.adapter.rooms['/private/session/'+ sessionid];
+        for(var socketID in sessionRoom){
+            if(sessionRoom.hasOwnProperty(socketID)){
+                var socket = app.io.socketList[socketID];
+                action(socket);
+            }
+        }
+    };
+    this._iterateOverUser = function(username, action){
+        var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
+        for(var socketID in userRoom){
+            if(userRoom.hasOwnProperty(socketID)){
+                var socket = app.io.socketList[socketID];
+                action(socket);
+            }
+        }
+    };
+
     this.checkLoginStatus = function(session, socketID){
         var that = this;
         var username = session.username;
@@ -178,13 +206,9 @@ function IoController(app){
     };
 
     this.bootUser = function(username){
-        var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
-        for(var socketID in userRoom){
-            if(userRoom.hasOwnProperty(socketID)){
-                var targetSocket = app.io.socketList[socketID];
-                targetSocket.boot();
-            }
-        }
+        this._iterateOverUser(username, function(socket){
+            socket.boot();
+        });
     };
 
     this.sendChatMessage = function(username, id, msg){
@@ -365,35 +389,21 @@ function IoController(app){
     }
 
     function welcomeSession(res){
-        var sessionRoom = app.io.sockets.adapter.rooms['/private/session/'+res.target];
-        for(var socketID in sessionRoom){
-            if(sessionRoom.hasOwnProperty(socketID)){
-                var socket = app.io.socketList[socketID];
-                _welcomeUser(socket, res.user);
-            }
-        }
+        this._iterateOverSession(res.target, function(socket){
+            _welcomeUser(socket, res.user);
+        });
     }
     function welcomeUser(res){
-        var username = res.target;
-        var user = res.user;
-        var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
-        for(var socketID in userRoom){
-            if(userRoom.hasOwnProperty(socketID)){
-                var socket = app.io.socketList[socketID];
-                _initiateLounge(socket, user);
-            }
-        }
+        this._iterateOverUser(res.target, function(socket){
+            _initiateLounge(socket, res.user);
+        });
     }
 
     function renderLoginSession(res){
-        var sessionRoom = app.io.sockets.adapter.rooms['/private/session/'+res.target];
-        for(var socketID in sessionRoom){
-            if(sessionRoom.hasOwnProperty(socketID)){
-                var socket = app.io.socketList[socketID];
-                _seeyouUser(socket);
-                _renderLogin(socket);
-            }
-        }
+        this._iterateOverSession(res.target, function(socket){
+            _seeyouUser(socket);
+            _renderLogin(socket);
+        });
     }
 
     function sendUserListSocket(res){
@@ -407,27 +417,16 @@ function IoController(app){
     }
 
     function informChangedPermissionUser(res){
-        var username = res.target;
-        var permission = res.permission;
-        var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
-        for(var socketID in userRoom){
-            if(userRoom.hasOwnProperty(socketID)){
-                var socket = app.io.socketList[socketID];
-                socket.changePermission(permission);
-            }
-        }
+        this._iterateOverUser(res.target, function(socket){
+            socket.changePermission(res.permission);
+        });
     }
 
     function renderRegisterUser(res){
-        var username = res.target;
-        var userRoom = app.io.sockets.adapter.rooms['/private/user/'+username];
-        for(var socketID in userRoom){
-            if(userRoom.hasOwnProperty(socketID)){
-                var socket = app.io.socketList[socketID];
-                _seeyouUser(socket);
-                _renderRegister(socket);
-            }
-        }
+        this._iterateOverUser(res.target, function(socket){
+            _seeyouUser(socket);
+            _renderRegister(socket);
+        });
     }
 
     function _retrieveRoomList(socket){

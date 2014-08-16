@@ -118,31 +118,21 @@ function RoomController(app){
                 }
             ]
         }
-        var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + id];
-        for(var targetSocketID in chatRoom){
-            if(chatRoom.hasOwnProperty(targetSocketID)&&targetSocketID !== socketJoined.id){
-                var targetSocket = app.io.socketList[targetSocketID];
-                targetSocket.emit('room linked users data', responseJson.success(data));
-            }
-        }
+        socketJoined.broadcast.to('/chatRoom/' + id).emit('room linked users data', responseJson.success(data));
     }
 
     function _getRoomLinkedSockets(id){
         var sockets = [];
-        var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + id];
-        for(var socketID in chatRoom){
-            if(chatRoom.hasOwnProperty(socketID)){
-                var targetSocket = app.io.socketList[socketID];
-                var simpleSocket = {
-                    id: targetSocket.id,
-                    token: targetSocket.token,
-                    username: targetSocket.username,
-                    permission: targetSocket.permission,
-                    avatar: targetSocket.avatar
-                };
-                sockets.push(simpleSocket);
-            }
-        }
+        app.ioController._iterateInRoom(id, function(socket){
+            var simpleSocket = {
+                id: socket.id,
+                token: socket.token,
+                username: socket.username,
+                permission: socket.permission,
+                avatar: socket.avatar
+            };
+            sockets.push(simpleSocket);
+        });
         return sockets;
     }
 
@@ -176,16 +166,12 @@ function RoomController(app){
     };
 
     this.bootUser = function(id, username){
-        var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + id];
-        for(var socketID in chatRoom){
-            if(chatRoom.hasOwnProperty(socketID)){
-                var targetSocket = app.io.socketList[socketID];
-                if(targetSocket.username === username){
-                    this.leaveRoom(id, targetSocket);
-                    this.joinRoom(0, targetSocket);
-                }
+        app.ioController._iterateInRoom(id, function(socket){
+            if(socket.username === username){
+                this.leaveRoom(id, socket);
+                this.joinRoom(0, socket);
             }
-        }
+        });
     };
 
     this.createRoom = function(name, username){
@@ -245,14 +231,10 @@ function RoomController(app){
         }
         app.io.sockets.emit('room data', responseJson.success(result));
 
-        var chatRoom = app.io.sockets.adapter.rooms['/chatRoom/' + room._id];
-        for(var socketID in chatRoom){
-            if(chatRoom.hasOwnProperty(socketID)){
-                var targetSocket = app.io.socketList[socketID];
-                this.leaveRoom(room._id, targetSocket);
-                this.joinRoom(0, targetSocket);
-            }
-        }
+        app.ioController._iterateInRoom(room._id, function(socket){
+            this.leaveRoom(room._id, socket);
+            this.joinRoom(0, socket);
+        });
     }
 
     this.on('successfullyCreatedRoom', _addToRoomList);
