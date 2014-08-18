@@ -433,6 +433,11 @@ body.symbolic{
   font-size: 12px;
   padding: 5px;
   margin: 5px;
+  cursor:pointer;
+}
+
+#adminModal #constraints-container .constraint:hover{
+  background-color: #f5d313;
 }
 
 #profileModal .edit-mode{
