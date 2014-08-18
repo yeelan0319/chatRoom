@@ -245,27 +245,27 @@ module.exports = function(app){
                 //user not logged in
             }
         });
-        socket.on('editUserAction', function(data){
-            data = _parseData(data);
-            if(socket.isLoggedIn()){
-                var username = socket.username;
+        // socket.on('editUserAction', function(data){
+        //     data = _parseData(data);
+        //     if(socket.isLoggedIn()){
+        //         var username = socket.username;
                 
-                var firstNameFlag = typeof data.firstName === 'undefined'? true : validator.personName(data.firstName);
-                var lastNameFlag = typeof data.lastName === 'undefined'? true : validator.personName(data.lastName);
-                var phoneNumberFlag = typeof data.phoneNumber === 'undefined'? true : validator.phoneNumber(data.phoneNumber);
-                var birthdayFlag = typeof data.birthday === 'undefined'? true : validator.date(data.birthday);
-                var jobDescriptionFlag = typeof data.jobDescription === 'undefined'? true : validator.textMaxLength(data.jobDescription);
-                if(!firstNameFlag||!lastNameFlag||!phoneNumberFlag||!birthdayFlag||!jobDescriptionFlag){
-                    socket.emit('system warning', responseJson.badData());
-                }
-                else{
-                    app.ioController.editUserInfo(username, data);
-                }
-            }
-            else{
-                //user not logged in
-            }
-        });
+        //         var firstNameFlag = typeof data.firstName === 'undefined'? true : validator.personName(data.firstName);
+        //         var lastNameFlag = typeof data.lastName === 'undefined'? true : validator.personName(data.lastName);
+        //         var phoneNumberFlag = typeof data.phoneNumber === 'undefined'? true : validator.phoneNumber(data.phoneNumber);
+        //         var birthdayFlag = typeof data.birthday === 'undefined'? true : validator.date(data.birthday);
+        //         var jobDescriptionFlag = typeof data.jobDescription === 'undefined'? true : validator.textMaxLength(data.jobDescription);
+        //         if(!firstNameFlag||!lastNameFlag||!phoneNumberFlag||!birthdayFlag||!jobDescriptionFlag){
+        //             socket.emit('system warning', responseJson.badData());
+        //         }
+        //         else{
+        //             app.ioController.editUserInfo(username, data);
+        //         }
+        //     }
+        //     else{
+        //         //user not logged in
+        //     }
+        // });
         socket.on('editRoomAdminAction', function(data){
             data = _parseData(data);
             var id = data.id;

@@ -134,15 +134,28 @@ module.lounge = {
 	            	birthday: birthday,
 	            	jobDescription: jobDescription
 	            }
-	            socket.emit('editUserAction', JSON.stringify(data));
-	            $el.find("#firstName").text(firstName);
-	            $el.find('#lastName').text(lastName);
-	            $el.find('#phoneNumber').text(phoneNumber);
-	            $el.find('#email').text(email);
-	            $el.find('#birthday').text(birthday);
-	            $el.find('#job').text(jobDescription);
-	            $el.find('.read-only').show();
-				$el.find('.edit-mode').hide();
+	            var btn = $(this).find('button').button('loading');
+	        	$.ajax({
+	        		type: "POST",
+	        		url: "/user/edit",
+	        		data: data,
+	        		success: function(){
+	        			btn.button('reset');
+	        			$el.find("#firstName").text(firstName);
+			            $el.find('#lastName').text(lastName);
+			            $el.find('#phoneNumber').text(phoneNumber);
+			            $el.find('#email').text(email);
+			            $el.find('#birthday').text(birthday);
+			            $el.find('#job').text(jobDescription);
+			            $el.find('.read-only').show();
+						$el.find('.edit-mode').hide();
+	        		},
+	        		error: function(jqxhr, textStatus, thrownError){
+	        			if(jqxhr.status === 403){
+	        				location.reload();
+	        			}
+	        		}
+	        	});
             }
 		});
 		$('.site-wrapper').append($el);

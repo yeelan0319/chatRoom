@@ -14,4 +14,12 @@ responseJson.wrongCredentials = function(){
 responseJson.userExist = function(){
 	return JSON.stringify({meta: {status: 409, msg: "User already exist"}, data: {}});	
 }
+
+responseJson.userNotLoggedIn = function(){
+	return JSON.stringify({meta: {status: 403, msg: "Please login to proceed"}, data: {}});
+}
+
+responseJson.notAuthorized = function(){
+	return JSON.stringify({meta: {status: 403, msg: "You are not authorized for this activity"}, data:{}});
+}
 exports = module.exports = responseJson;

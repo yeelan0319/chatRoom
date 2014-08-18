@@ -52,6 +52,7 @@ module.exports = function(app){
 			                };
 			                app.ioController.emit('successfullyLoggedInUser', result);
 			                res.status(200);
+			                res.json(responseJson.success());
 			                res.end();
 			            }
 			            else{
@@ -62,6 +63,11 @@ module.exports = function(app){
 		            }
 		        }); 
             }
+   		}
+   		else{
+   			res.status(400);
+            res.json(responseJson.badData());
+            res.end();
    		}
    	});
 
@@ -116,12 +122,18 @@ module.exports = function(app){
 				                };
 				                app.ioController.emit('successfullyLoggedInUser', result);
 				                res.status(200);
+				                res.json(responseJson.success());
 				                res.end();
 		                    }
 		                });
 		            }
 		        }); 
             }
+   		}
+   		else{
+   			res.status(400);
+            res.json(responseJson.badData());
+            res.end();
    		}
 	});
 
@@ -153,9 +165,9 @@ module.exports = function(app){
 	    							function(file){
 	    								app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{avatar:'/avatar/'+file_name}}, {new:true}, function(err, user){
 								            if(err){
-								                //this is socket-level info
-								                //throw new DatabaseError();
+								                res.status(500);
 								                //redo the work
+								                res.end();
 								            }
 								            else{
 								           		res.status(200);
@@ -164,9 +176,9 @@ module.exports = function(app){
 								            }
 								        });
 	    							}, function(err){
-	    								//this is socket-level info
-						                //throw new DatabaseError();
+	    								res.status(500);
 						                //redo the work
+						                res.end();
 	    							}
 	    						);
 	    					}
@@ -176,7 +188,56 @@ module.exports = function(app){
 	    	});
     	}
     	else{
-    		//user is not logged in
+    		res.status(403);
+            res.json(responseJson.userNotLoggedIn());
+            res.end();
     	}
-    }); 
+    });
+
+    app.express.post('/user/edit', function(req, res){
+    	var username = req.session.username;
+    	if(username){
+            var firstNameFlag = typeof req.body.firstName === 'undefined'? true : validator.personName(req.body.firstName);
+            var lastNameFlag = typeof req.body.lastName === 'undefined'? true : validator.personName(req.body.lastName);
+            var emailFlag = typeof req.body.email === 'undefined'? true : validator.email(req.body.email);
+            var phoneNumberFlag = typeof req.body.phoneNumber === 'undefined'? true : validator.phoneNumber(req.body.phoneNumber);
+            var birthdayFlag = typeof req.body.birthday === 'undefined'? true : validator.date(req.body.birthday);
+            var jobDescriptionFlag = typeof req.body.jobDescription === 'undefined'? true : validator.textMaxLength(req.body.jobDescription);
+            if(!firstNameFlag||!lastNameFlag||!phoneNumberFlag||!birthdayFlag||!jobDescriptionFlag||!emailFlag){
+                socket.emit('system warning', responseJson.badData());
+            }
+            else{
+                req.body = _.pick(req.body, 'firstName', 'lastName', 'phoneNumber', 'birthday', 'jobDescription', 'email');
+		        if(req.body.phoneNumber){
+		            req.body.phoneNumber.replace(/[/(/)-\s]/g,'');
+		        }
+		        req.body.prompts = {};
+		        req.body.prompts.needUserInfo = false;
+		        app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:req.body}, {}, function(err, user){
+		            if(err){
+		                res.status(500);
+		                //redo the work
+		                res.end();
+		            }
+		            else{
+		                if(user.prompts.needUserInfo){
+		                    var result = {
+		                        user: user,
+		                        target: username
+		                    };
+		                    app.ioController.emit('successfullyCompleteUserInfo', result);
+		                }
+		                res.status(200);
+			            res.json(responseJson.success());
+			            res.end();
+		            }
+		        });
+            }
+    	}
+    	else{
+    		res.status(403);
+            res.json(responseJson.userNotLoggedIn());
+            res.end();
+    	}
+    });
 }

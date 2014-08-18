@@ -162,7 +162,20 @@ module.loginRegister = {
 	            	birthday: birthday,
 	            	jobDescription: jobDescription
 	            }
-	            socket.emit('editUserAction', JSON.stringify(data));
+	            var btn = $(this).find('button').button('loading');
+	        	$.ajax({
+	        		type: "POST",
+	        		url: "/user/edit",
+	        		data: data,
+	        		success: function(){
+	        			btn.button('succeed');
+	        		},
+	        		error: function(jqxhr, textStatus, thrownError){
+	        			if(jqxhr.status === 403){
+	        				location.reload();
+	        			}
+	        		}
+	        	});
             }
 			return false;
         });
