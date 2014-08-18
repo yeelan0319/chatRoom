@@ -209,7 +209,7 @@ module.exports = function(app){
             else{
                 req.body = _.pick(req.body, 'firstName', 'lastName', 'phoneNumber', 'birthday', 'jobDescription', 'email');
 		        if(req.body.phoneNumber){
-		            req.body.phoneNumber.replace(/[/(/)-\s]/g,'');
+		            req.body.phoneNumber = req.body.phoneNumber.replace(/[/(/)-\s]/g,'');
 		        }
 		        req.body.prompts = {};
 		        req.body.prompts.needUserInfo = false;

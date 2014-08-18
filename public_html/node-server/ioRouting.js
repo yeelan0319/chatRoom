@@ -104,7 +104,7 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isLoggedIn()){
                 var username = data.username;
-                if(!validator.nickName(username)&&socket.username!==username){
+                if(!validator.nickName(username) || socket.username===username){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -226,7 +226,7 @@ module.exports = function(app){
             if(socket.isLoggedIn()){
                 var toUsername = data.toUsername;
                 var msg = data.msg;
-                if(!validator.nickName(toUsername)&&socket.username!==toUsername){
+                if(!validator.nickName(toUsername) || socket.username===toUsername){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{

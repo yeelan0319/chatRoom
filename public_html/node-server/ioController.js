@@ -139,6 +139,12 @@ function IoController(app){
             }
             else{
                 that._iterateOverUser(username, function(socket){
+                    var session = socket.request.session;
+                    if(session.username){
+                        delete session.username;
+                        session.save();
+                    }
+
                     _seeyouUser(socket);
                     _renderRegister(socket);
                 });
@@ -207,6 +213,7 @@ function IoController(app){
     };
 
     this.sendPm = function(toUsername, msg, socketID){
+        var socket = app.io.socketList[socketID];
         _findUserWithUsername(toUsername, function(user){
             if(user){
                 var salt = [toUsername, socket.username].sort().toString();
@@ -247,6 +254,7 @@ function IoController(app){
     };
 
     this.createPm = function(toUsername, socketID){
+        var socket = app.io.socketList[socketID];
         _findUserWithUsername(toUsername, function(user){
             if(user){
                 var salt = [toUsername, socket.username].sort().toString();
@@ -391,10 +399,12 @@ function IoController(app){
                 var result = [];
                 for(var i = length-1; i>=Math.max(length-5,0); i--){
                     _findUserWithUsername(usernameArr[i], function(user){
-                        user = _.pick(user, 'username', 'avatar');
-                        result.push(user);
-                        if(result.length == Math.min(5, length)){
-                            socket.emit('pm contact data', responseJson.success(result));
+                        if(user){
+                            user = _.pick(user, 'username', 'avatar');
+                            result.push(user);
+                            if(result.length == Math.min(5, length)){
+                                socket.emit('pm contact data', responseJson.success(result));
+                            }
                         }
                     });
                 }

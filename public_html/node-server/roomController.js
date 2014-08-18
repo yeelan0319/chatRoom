@@ -72,7 +72,6 @@ function RoomController(app){
     };
 
     this.leaveRoom = function(from, socket){
-        var that = this;
         _informJoinLeftOfRoom(from, socket, 'delete');
         socket.leaveRoom(from);
     };
@@ -138,10 +137,9 @@ function RoomController(app){
     };
 
     this.bootUser = function(id, username){
-        var that = this;
         app.ioController._iterateInRoom(id, function(socket){
             if(socket.username === username){
-                _forceLeaveRoomJoinLounge(id, socket).apply(that);
+                this._forceLeaveRoomJoinLounge(id, socket);
             }
         });
     };
@@ -208,14 +206,14 @@ function RoomController(app){
         app.io.sockets.emit('room data', responseJson.success(result));
 
         app.ioController._iterateInRoom(room._id, function(socket){
-            _forceLeaveRoomJoinLounge(room._id, socket).apply(that);
+            that._forceLeaveRoomJoinLounge(room._id, socket);
         });
     }
 
-    function _forceLeaveRoomJoinLounge(id, socket){
+    this._forceLeaveRoomJoinLounge = function(id, socket){
         this.leaveRoom(id, socket);
         this.joinRoom(0, socket);
-    }
+    };
 
     this.on('successfullyCreatedRoom', _addToRoomList);
     this.on('successfullyDeletedRoom', _deleteFromRoomListAndClearRoom);
