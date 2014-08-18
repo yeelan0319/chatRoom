@@ -104,7 +104,7 @@ module.exports = function(app){
             data = _parseData(data);
             if(socket.isLoggedIn()){
                 var username = data.username;
-                if(!validator.nickName(username)){
+                if(!validator.nickName(username)&&socket.username!==username){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -125,9 +125,13 @@ module.exports = function(app){
                 }
             }
             else{
-                if(app.roomController._getRoom(id)){
+                var room = app.roomController._getRoom(id);
+                if(room){
                     if(socket.isAdmin() || app.roomController.isAdminOfRoom(id, socket.username)){
-                        app.roomController.renderRoomAdmin(id, socketID);
+                        var data = {
+                            admins: room.adminOfRoom
+                        }
+                        socket.render('roomAdmin', data);
                     }
                     else{
                         //user donnot have the privilage for this operation
@@ -222,7 +226,7 @@ module.exports = function(app){
             if(socket.isLoggedIn()){
                 var toUsername = data.toUsername;
                 var msg = data.msg;
-                if(!validator.nickName(toUsername)){
+                if(!validator.nickName(toUsername)&&socket.username!==toUsername){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -238,7 +242,7 @@ module.exports = function(app){
             if(socket.isLoggedIn()){
                 var fromUsername = data.fromUsername;
                 var toUsername = socket.username;
-                if(!validator.nickName(fromUsername) || !validator.nickName(toUsername)){
+                if(!validator.nickName(fromUsername)){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
@@ -338,9 +342,6 @@ module.exports = function(app){
         socket.on('disconnect', function(){
             if(socket.isLoggedIn()){
                 app.roomController.passiveLeaveRoom(socket);
-            }
-            else{
-                //user not logged in
             }
         });
     });

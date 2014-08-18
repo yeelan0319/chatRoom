@@ -207,9 +207,6 @@ function IoController(app){
     };
 
     this.sendPm = function(toUsername, msg, socketID){
-        var socket = app.io.socketList[socketID];
-        if(socket.username === toUsername) return;
-
         _findUserWithUsername(toUsername, function(user){
             if(user){
                 var salt = [toUsername, socket.username].sort().toString();
@@ -243,13 +240,13 @@ function IoController(app){
                     }
                 });
             }
+            else{
+                //user not exist
+            }
         });
     };
 
     this.createPm = function(toUsername, socketID){
-        var socket = app.io.socketList[socketID];
-        if(socket.username === toUsername) return;
-
         _findUserWithUsername(toUsername, function(user){
             if(user){
                 var salt = [toUsername, socket.username].sort().toString();
@@ -361,7 +358,7 @@ function IoController(app){
             _welcomeUser(socket, res.user);
         });
     }
-    function welcomeUser(res){
+    function loadLoungeUser(res){
         this._iterateOverUser(res.target, function(socket){
             _initiateLounge(socket, res.user);
         });
@@ -440,7 +437,7 @@ function IoController(app){
     this.on('userNotLoggedIn', renderLoginSocket);
     this.on('successfullyLoggedInUser', welcomeSession);
     this.on('successfullyLoggedOutUser', renderLoginSession);
-    this.on('successfullyCompleteUserInfo', welcomeUser);
+    this.on('successfullyCompleteUserInfo', loadLoungeUser);
 };
 
 util.inherits(IoController, events.EventEmitter);

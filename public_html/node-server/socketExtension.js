@@ -40,11 +40,9 @@ module.exports = function socketExtension(socket, next){
         delete this.username;
         delete this.permission;
         delete this.avatar;
-        //TODO:also remove from the chat room user is currently in!!!
     };
     socket.getSocketInfo = function(){
         return {
-            id: this.id,
             username: this.username,
             permission: this.permission,
             avatar: this.avatar,

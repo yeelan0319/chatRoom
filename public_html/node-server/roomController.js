@@ -41,9 +41,7 @@ function RoomController(app){
 
     this.isAdminOfRoom = function(id, username){
         var room = this._getRoom(id);
-        if(room){
-            return room.adminOfRoom.indexOf(username) != -1 ? true : false;
-        }
+        return room.adminOfRoom.indexOf(username) != -1 ? true : false;
     };
 
     this.joinRoom = function(to, socket){
@@ -61,16 +59,14 @@ function RoomController(app){
             }
             else{
                 var targetRoom = that._getRoom(to);
-                if(targetRoom){
-                    var name = targetRoom.name;
-                    var isAdminOfRoom = socket.isAdmin()||that.isAdminOfRoom(to, socket.username);
-                    socket.joinRoom(to, name, isAdminOfRoom, messages, function(){
-                        return {
-                            type: 'reset',
-                            users: _getRoomLinkedSockets(to)
-                        };
-                    });
-                }
+                var name = targetRoom.name;
+                var isAdminOfRoom = socket.isAdmin()||that.isAdminOfRoom(to, socket.username);
+                socket.joinRoom(to, name, isAdminOfRoom, messages, function(){
+                    return {
+                        type: 'reset',
+                        users: _getRoomLinkedSockets(to)
+                    };
+                });
             }
         });
     };
@@ -108,14 +104,7 @@ function RoomController(app){
         var data = {
             type: action,
             users:[
-                {
-                    id: socketJoined.id,
-                    token: socketJoined.token,
-                    username: socketJoined.username,
-                    permission: socketJoined.permission,
-                    avatar: socketJoined.avatar
-
-                }
+                socketJoined.getSocketInfo()
             ]
         }
         socketJoined.broadcast.to('/chatRoom/' + id).emit('room linked users data', responseJson.success(data));
@@ -129,26 +118,13 @@ function RoomController(app){
         return sockets;
     }
 
-    this.renderRoomAdmin = function(id, socketID){
-        var socket = app.io.socketList[socketID];
-        var room = this._getRoom(id);
-        if(room){
-            var data = {
-                admins: room.adminOfRoom
-            }
-            socket.render('roomAdmin', data);
-        }
-    };
-
     this.editRoomAdmin = function(id, username, permission){
         var room = this._getRoom(id);
-        if(permission === 0){
-            var index = room.adminOfRoom.indexOf(username);
-            if(index != -1){
-                room.adminOfRoom.splice(index, 1);
-            }
+        var index = room.adminOfRoom.indexOf(username);
+        if(permission === 0 && index !== -1){
+            room.adminOfRoom.splice(index, 1);
         }
-        else if(permission === 1){
+        else if(permission === 1 && index === -1){
             room.adminOfRoom.push(username);
         }
         //async update database
@@ -162,10 +138,10 @@ function RoomController(app){
     };
 
     this.bootUser = function(id, username){
+        var that = this;
         app.ioController._iterateInRoom(id, function(socket){
             if(socket.username === username){
-                this.leaveRoom(id, socket);
-                this.joinRoom(0, socket);
+                _forceLeaveRoomJoinLounge(id, socket).apply(that);
             }
         });
     };
@@ -195,6 +171,9 @@ function RoomController(app){
                 }
             });
         }
+        else{
+            //bad data
+        }
     };
 
     this.destoryRoom = function(id){
@@ -221,6 +200,7 @@ function RoomController(app){
     }
 
     function _deleteFromRoomListAndClearRoom(room){
+        var that = this;
         var result = {
             type: 'delete',
             data: {'1': room}
@@ -228,9 +208,13 @@ function RoomController(app){
         app.io.sockets.emit('room data', responseJson.success(result));
 
         app.ioController._iterateInRoom(room._id, function(socket){
-            this.leaveRoom(room._id, socket);
-            this.joinRoom(0, socket);
+            _forceLeaveRoomJoinLounge(room._id, socket).apply(that);
         });
+    }
+
+    function _forceLeaveRoomJoinLounge(id, socket){
+        this.leaveRoom(id, socket);
+        this.joinRoom(0, socket);
     }
 
     this.on('successfullyCreatedRoom', _addToRoomList);
