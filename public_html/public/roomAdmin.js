@@ -41,7 +41,7 @@ module.roomAdmin = {
     },
 
     destoryRoom: function(){
-        chobiUtil.confirmBox("Are you sure to delete this room?", function(){
+        chobiUtil.confirmBox("Are you sure you want to delete this room?", function(){
             var data = {
                 id: module.data.room
             }

@@ -31,6 +31,14 @@ textarea{
   transition: 0s; 
 }
 
+.btn-default{
+  background-color: #656B6E;
+}
+
+.btn-default:hover{
+  background-color: #828586;
+}
+
 
 /*
  * Base structure
@@ -375,14 +383,20 @@ body.symbolic{
   padding: 7px 10px;
 }
 
+#adminModal .btn-danger{
+  color: #aaa;
+}
+
+#adminModal .btn-danger:hover{
+  color:#eee;
+}
+
 #adminModal .btn-danger, .confirm-box .btn-danger{
   background-color: #862828;
-  color: #aaa;
 }
 
 #adminModal .btn-danger:hover, .confirm-box .btn-danger:hover{
   background-color: #B93528;
-  color:#eee;
 }
 
 #adminModal .input-group-addon, #profileModal .input-group-addon{

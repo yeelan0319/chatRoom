@@ -170,7 +170,7 @@
                 </label>
             </td>
             <td>
-                {{^isSelf}}<span class="boot btn btn-danger">Boot</span>{{/isSelf}}
+                {{^isSelf}}{{^isOffline}}<span class="boot btn btn-danger">Boot</span>{{/isOffline}}{{/isSelf}}
             </td>
         </tr>
     </script>
@@ -260,7 +260,7 @@
                 <div class="form-group">
                     <textarea id="job" name="job" class="form-control" rows="3" placeholder="Job Description: title, position..."></textarea>
                 </div>
-                <button class="btn btn-inverse btn-wide" type="submit" data-loading-text="Submiting..." data-succeed-text="waiting to join lounge...">Submit</button>
+                <button class="btn btn-inverse btn-wide" type="submit" data-loading-text="Submiting..." data-succeed-text="Loading Lounge...">Submit</button>
             </form>
         </div>
     </script>
@@ -324,7 +324,7 @@
                   <div class="tab-pane" id="chatHistory-pane">
                     <div class="row">
                         <div class="col-md-3">
-                            <input type="text" id="search-username" placeholder="Email" class="form-control input-sm" />
+                            <input type="text" id="search-username" placeholder="Username" class="form-control input-sm" />
                         </div>
                         <div class="col-md-2">
                             <input type="text" id="search-room" placeholder="Room Name" class="form-control input-sm" />
@@ -515,7 +515,7 @@
             <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown">{{username}}<span class="caret"></span></button>
             <ul class="dropdown-menu dropdown-inverse">
                 <li><a id="profile">Profile</a></li>
-                {{#permission}}<li><a id="admin">System Manage</a></li>{{/permission}}
+                {{#permission}}<li><a id="admin">Manage System</a></li>{{/permission}}
                 <li><a id="signout">Logout</a></li>
             </ul>
         </div>

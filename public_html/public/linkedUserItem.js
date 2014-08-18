@@ -29,7 +29,7 @@ LinkedUserItem.prototype = {
 	},
 	boot: function(){
 		var that = this;
-		chobiUtil.confirmBox("Are you sure to boot this user?", function(){
+		chobiUtil.confirmBox("Are you sure you want to boot this user?", function(){
 			var data = {username: that.username};
 			socket.emit("systemBootAction", JSON.stringify(data));
 			that.$el.remove();

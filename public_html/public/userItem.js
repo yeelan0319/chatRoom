@@ -25,7 +25,7 @@ UserItem.prototype = {
 	},
 	destroy: function(){
 		var that = this;
-		chobiUtil.confirmBox("Are you sure to delete this user?", function(){
+		chobiUtil.confirmBox("Are you sure you want to delete this user?", function(){
 			var data = {username: that.username};
 			socket.emit("deleteUserAction", JSON.stringify(data));
 			that.$el.remove();

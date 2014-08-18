@@ -22,6 +22,8 @@ module.lounge = {
 	  		var $el = $(module.template.roomPromptTmpl());
 	  		$el.modal('toggle').on('hidden.bs.modal', function(e){
 	  			$el.remove();
+	  		}).on('shown.bs.modal', function(){
+	  			$el.find('input').focus();
 	  		});
 	  		$el.find("button:last").unbind('click').click(function(){
 	  			module.lounge.createRoom();
@@ -31,8 +33,7 @@ module.lounge = {
 	  				module.lounge.createRoom();
 	  			}
 	  		});
-	  		$('.site-wrapper').append($el);
-	  		$el.find('input').focus();
+	  		$('.site-wrapper').append($el);	
 	  	});
 	},
 
@@ -79,6 +80,7 @@ module.lounge = {
 		$el.find('.read-only button').unbind('click').click(function(){
 			$el.find('.read-only').hide();
 			$el.find('.edit-mode').show();
+			$el.find("input[name=firstName]").focus();
 		});
 		$el.find('.edit-mode button:last').unbind('click').click(function(){
 			$el.find("input[name=firstName]").val($el.find("#firstName").text());

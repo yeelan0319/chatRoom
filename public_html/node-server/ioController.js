@@ -95,7 +95,7 @@ function IoController(app){
         var result = {
             target: session.id
         };
-        renderLoginSession(result);
+        this.emit('successfullyLoggedOutUser', result);
     };
 
     this.retrieveUserList = function(socketID){
@@ -112,34 +112,7 @@ function IoController(app){
             }
         });
     };
-    // this.editUserInfo = function(username, data){
-    //     var that = this;
-    //     data = _.pick(data, 'firstName', 'lastName', 'phoneNumber', 'birthday', 'jobDescription');
-    //     if(data.phoneNumber){
-    //         data.phoneNumber.replace(/[/(/)-\s]/g,'');
-    //     }
-    //     data.prompts = {};
-    //     data.prompts.needUserInfo = false;
-    //     app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:data}, {}, function(err, user){
-    //         if(err){
-    //             //this is socket-level info
-    //             //throw new DatabaseError();
-    //             //redo the work
-    //         }
-    //         else{
-    //             if(user.prompts.needUserInfo){
-    //                 var result = {
-    //                     user: user,
-    //                     target: username
-    //                 };
-    //                 that.emit('successfullyCompleteUserInfo', result);
-    //             }
-    //             else{
-    //                 //revised in the profile page
-    //             }
-    //         }
-    //     });
-    // };
+    
     this.editUserPermission = function(username, permission){
         var that = this;
         app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{permission: permission}}, {}, function(err, user){

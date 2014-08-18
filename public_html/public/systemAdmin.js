@@ -87,7 +87,6 @@ module.systemAdmin = {
             }
         }
         socket.emit('retrieveChatLogAction', JSON.stringify(constraints));
-        $('#adminModal input').val('');
     },
 
     renderChatLogData: function(data){

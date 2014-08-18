@@ -11,6 +11,7 @@ RoomUserManageItem.prototype = {
 		var userdata = JSON.parse(JSON.stringify(that));
 		userdata.isSelf = that.username === module.data.user.username? true : false;
 		userdata.isAdminOfRoom = that.isAdminOfRoom === 1? true : false;
+		userdata.isOffline = that.socketCount === 0? true : false;
 		that.$el = $(module.template.roomUserItemTmpl(userdata));
 		that.$el.find('.boot').unbind('click').click(function(){that.boot.apply(that)});
 		that.$el.find('.roomAdmin :checkbox').checkbox().unbind('change').on('change', function(){that.changePermission.apply(that)});
@@ -18,7 +19,7 @@ RoomUserManageItem.prototype = {
 	},
 	boot: function(){
 		var that = this;
-		chobiUtil.confirmBox("Are you sure to boot this user?", function(){
+		chobiUtil.confirmBox("Are you sure you want to boot this user?", function(){
 			var data = {
 				id: module.data.room, 
 				username: that.username
