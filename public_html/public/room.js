@@ -74,7 +74,7 @@ module.room = {
 		}
 		module.room.onlineList = _.sortBy(module.room.onlineList, 'username');
 		//here to trigger event and update online list/admin page information
-		module.room.renderOnlineList();
+		$(document).trigger($.Event('onlineListUpdated'));
 	},
 
 	renderOnlineList: function(){

@@ -35,6 +35,7 @@ module.lounge = {
 	  		});
 	  		$('.site-wrapper').append($el);	
 	  	});
+	  	$(document).unbind('onlineListUpdated').on('onlineListUpdated', module.room.renderOnlineList);
 	},
 
 	renderUserPanel: function(user){
