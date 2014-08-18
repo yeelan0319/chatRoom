@@ -133,7 +133,10 @@ function RoomController(app){
         var socket = app.io.socketList[socketID];
         var room = this._getRoom(id);
         if(room){
-            socket.renderRoomAdmin(room.adminOfRoom);
+            var data = {
+                admins: room.adminOfRoom
+            }
+            socket.render('roomAdmin', data);
         }
     };
 

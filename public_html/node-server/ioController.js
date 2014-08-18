@@ -199,7 +199,10 @@ function IoController(app){
     this.retrieveUserProfile = function(socketID){
         var socket = app.io.socketList[socketID];
         _findUserWithUsername(socket.username, function(user){
-            socket.renderProfile(user);
+            var data = {
+                user: _.omit(user, 'password', 'prompts')
+            }
+            socket.render('profile', data);
         });
     };
 
@@ -405,7 +408,7 @@ function IoController(app){
     function _welcomeUser(socket, user){
         socket.setSocketUser(user);
         if(user.prompts.needUserInfo){
-            socket.renderFillInfo();
+            socket.render('fillInfo', socket.getSocketInfo());
         }
         else{
             _initiateLounge(socket, user);
@@ -413,7 +416,7 @@ function IoController(app){
     }
 
     function _initiateLounge(socket, user){
-        socket.renderChatFrame();
+        socket.render('chatFrame', socket.getSocketInfo());
         _checkUnreadPm(socket);
         _retrieveRoomList(socket);
         _retrieveRecentContact(socket);
@@ -421,7 +424,7 @@ function IoController(app){
     }
 
     function _renderLogin(socket){
-        socket.renderLogin();
+        socket.render('login');
     }
 
     function _seeyouUser(socket){
@@ -430,12 +433,13 @@ function IoController(app){
     }
 
     function _renderRegister(socket){
-        socket.renderRegister();
+        socket.render('register');
     }
 
     this.on('userLoggedIn', welcomeSocket);
     this.on('userNotLoggedIn', renderLoginSocket);
     this.on('successfullyLoggedInUser', welcomeSession);
+    this.on('successfullyLoggedOutUser', renderLoginSession);
     this.on('successfullyCompleteUserInfo', welcomeUser);
 };
 

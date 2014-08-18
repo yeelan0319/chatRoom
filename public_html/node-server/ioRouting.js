@@ -118,7 +118,7 @@ module.exports = function(app){
         socket.on('adminRender', function(id){
             if(id===0){
                 if(socket.isAdmin()){
-                    socket.renderSystemAdmin();
+                    socket.render('systemAdmin');
                 }
                 else{
                     //user donnot have the provilage for this operation

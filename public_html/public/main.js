@@ -131,7 +131,10 @@ $(document).ready(function(){
 	});
 
 	socket.on('room linked users data', function(data){
-		module.room.updateOnlineList(data);
+		data = JSON.parse(data);
+		if(data.meta.status == 200){
+			module.room.updateOnlineList(data.data);	
+		}
 	});
 
 	// socket.on('room related users data', function(data){
