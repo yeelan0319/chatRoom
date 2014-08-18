@@ -49,7 +49,7 @@ function RoomController(app){
 
         _retrievePastMessage(to, function(messages){
             _informJoinLeftOfRoom(to, socket, 'add');
-            if(to === 0){    
+            if(to === 0 && socket){ 
                 socket.joinLounge(messages, function(){
                     return {
                         type: 'reset',
@@ -57,7 +57,7 @@ function RoomController(app){
                     };
                 });
             }
-            else{
+            else if(socket){
                 var targetRoom = that._getRoom(to);
                 var name = targetRoom.name;
                 var isAdminOfRoom = socket.isAdmin()||that.isAdminOfRoom(to, socket.username);
@@ -72,15 +72,19 @@ function RoomController(app){
     };
 
     this.leaveRoom = function(from, socket){
-        _informJoinLeftOfRoom(from, socket, 'delete');
-        socket.leaveRoom(from);
+        if(socket){
+            _informJoinLeftOfRoom(from, socket, 'delete');
+            socket.leaveRoom(from);
+        }
     };
 
     this.passiveLeaveRoom = function(socket){
-        var roompath = _.find(socket.rooms, function(roompath){return /\/chatRoom\//.test(roompath)});
-        if(roompath){
-            var id = roompath.replace(/\/chatRoom\//, '');
-            this.leaveRoom(id, socket);
+        if(socket){
+            var roompath = _.find(socket.rooms, function(roompath){return /\/chatRoom\//.test(roompath)});
+            if(roompath){
+                var id = roompath.replace(/\/chatRoom\//, '');
+                this.leaveRoom(id, socket);
+            }
         }
     }
 

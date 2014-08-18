@@ -36,11 +36,9 @@ module.exports = function(app){
     //event listening
     app.io.on('connection', function(socket){
         var session = socket.request.session;
-        var socketID = socket.id;
 
-        app.ioController.checkLoginStatus(session, socketID);
+        app.ioController.checkLoginStatus(session, socket);
 
-        //register listeners needed
         socket.on('loginRender', function(){
             if(!socket.isLoggedIn()){
                 socket.render('login');
@@ -86,7 +84,7 @@ module.exports = function(app){
         });
         socket.on('retrieveUserProfileAction', function(){
             if(socket.isLoggedIn()){
-                app.ioController.retrieveUserProfile(socketID);
+                app.ioController.retrieveUserProfile(socket);
             }
             else{
                 //user not logged in
@@ -94,7 +92,7 @@ module.exports = function(app){
         });
         socket.on('searchPmAction', function(str){
             if(socket.isLoggedIn()){
-                app.ioController.searchPm(str, socketID);
+                app.ioController.searchPm(str, socket);
             }
             else{
                 //user not logged in
@@ -108,7 +106,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    app.ioController.createPm(username, socketID);
+                    app.ioController.createPm(username, socket);
                 }
             }
             else{
@@ -144,7 +142,7 @@ module.exports = function(app){
         });
         socket.on('retrieveLinkedUserAction', function(){
             if(socket.isAdmin()){
-                app.ioController.retrieveLinkedUser(socketID);
+                app.ioController.retrieveLinkedUser(socket);
             }
             else{
                 //user donnot have the privilage
@@ -152,7 +150,7 @@ module.exports = function(app){
         });
         socket.on('retrieveUserDataAction', function(){
             if(socket.isAdmin()){
-                app.ioController.retrieveUserList(socketID);
+                app.ioController.retrieveUserList(socket);
             }
             else{
                 //user donnot have the privilage
@@ -161,7 +159,7 @@ module.exports = function(app){
         socket.on('retrieveChatLogAction', function(constraints){
             constraints = _parseData(constraints);
             if(socket.isAdmin()){
-                app.ioController.retrieveChatLog(constraints, socketID);
+                app.ioController.retrieveChatLog(constraints, socket);
             }
             else{
                 //user donnot have the privilage
@@ -230,7 +228,7 @@ module.exports = function(app){
                     socket.emit('system warning', responseJson.badData());
                 }
                 else{
-                    app.ioController.sendPm(toUsername, msg, socketID);
+                    app.ioController.sendPm(toUsername, msg, socket);
                 }    
             }
             else{

@@ -45,7 +45,7 @@ function IoController(app){
         }
     };
 
-    this.checkLoginStatus = function(session, socketID){
+    this.checkLoginStatus = function(session, socket){
         var that = this;
         var username = session.username;
         if(username){
@@ -53,7 +53,7 @@ function IoController(app){
                 if(user){
                     var result = {
                         user: user,
-                        target: socketID
+                        target: socket
                     };
                     that.emit('userLoggedIn', result);
                 }
@@ -62,7 +62,7 @@ function IoController(app){
                     session.save();
 
                     var result = {
-                        target: socketID
+                        target: socket
                     };
                     that.emit('userNotLoggedIn', result);
                 }
@@ -70,7 +70,7 @@ function IoController(app){
         }
         else{
             var result = {
-                target: socketID
+                target: socket
             };
             that.emit('userNotLoggedIn', result);
         }
@@ -98,7 +98,7 @@ function IoController(app){
         this.emit('successfullyLoggedOutUser', result);
     };
 
-    this.retrieveUserList = function(socketID){
+    this.retrieveUserList = function(socket){
         var that = this;
         app.db.collection('users').find().toArray(function(err, documents){
             if(err){
@@ -107,8 +107,9 @@ function IoController(app){
                 //redo the work
             }
             else{
-                socket = app.io.socketList[socketID];
-                socket.emit('users data', responseJson.success(documents));
+                if(socket){
+                    socket.emit('users data', responseJson.success(documents));
+                }
             }
         });
     };
@@ -123,7 +124,9 @@ function IoController(app){
             }
             else{
                 that._iterateOverUser(username, function(socket){
-                    socket.changePermission(permission);
+                    if(socket){
+                        socket.changePermission(permission);
+                    }
                 });
             }
         });
@@ -139,29 +142,32 @@ function IoController(app){
             }
             else{
                 that._iterateOverUser(username, function(socket){
-                    var session = socket.request.session;
-                    if(session.username){
-                        delete session.username;
-                        session.save();
-                    }
+                    if(socket){
+                        var session = socket.request.session;
+                        if(session.username){
+                            delete session.username;
+                            session.save();
+                        }
 
-                    _seeyouUser(socket);
-                    _renderRegister(socket);
+                        _seeyouUser(socket);
+                        _renderRegister(socket);
+                    }
                 });
             }
         });
     };
 
-    this.retrieveLinkedUser = function(socketID){
-        var socket = app.io.socketList[socketID];
+    this.retrieveLinkedUser = function(socket){
         var data = [];
-        this._iterateAllSocket(function(socket){
-            data.push(socket.getSocketInfo());
+        this._iterateAllSocket(function(targetSocket){
+            data.push(targetSocket.getSocketInfo());
         });
-        socket.emit('linked users data', responseJson.success(data));
+        if(socket){
+            socket.emit('linked users data', responseJson.success(data));
+        }
     };
 
-    this.retrieveChatLog = function(constraints, socketID){
+    this.retrieveChatLog = function(constraints, socket){
         var that = this;
         app.db.collection('messages').find(constraints).toArray(function(err, documents){
             if(err){
@@ -169,8 +175,7 @@ function IoController(app){
                 //throw new DatabaseError();
                 //redo the work
             }
-            else{
-                var socket = app.io.socketList[socketID];
+            else if(socket){
                 socket.emit('chat log', responseJson.success(documents));
             }
         });
@@ -202,27 +207,30 @@ function IoController(app){
         });
     };
 
-    this.retrieveUserProfile = function(socketID){
-        var socket = app.io.socketList[socketID];
-        _findUserWithUsername(socket.username, function(user){
-            var data = {
-                user: _.omit(user, 'password', 'prompts')
-            }
-            socket.render('profile', data);
-        });
+    this.retrieveUserProfile = function(socket){
+        if(socket){
+            _findUserWithUsername(socket.username, function(user){
+                var data = {
+                    user: _.omit(user, 'password', 'prompts')
+                }
+                if(socket){
+                    socket.render('profile', data);                    
+                }
+            });
+        }
     };
 
-    this.sendPm = function(toUsername, msg, socketID){
-        var socket = app.io.socketList[socketID];
+    this.sendPm = function(toUsername, msg, socket){
         _findUserWithUsername(toUsername, function(user){
-            if(user){
-                var salt = [toUsername, socket.username].sort().toString();
+            if(user && socket){
+                var fromUsername = socket.username;
+                var salt = [toUsername, fromUsername].sort().toString();
                 var pmid = crypto.createHash('sha1').update(salt).digest('hex');
 
                 var pm = {
                     pmid: pmid,
                     toUsername: user.username,
-                    fromUsername: socket.username,
+                    fromUsername: fromUsername,
                     ctime: Date.now(),
                     msg: msg,
                     hasRead: false
@@ -233,18 +241,16 @@ function IoController(app){
                         //that.emit('excepetion', new ExistingUserError());
                         //redo the work
                     }
-                    else{
-                        var receiverPmItemData = {
-                            username: socket.username,
-                            messageArr: [pm]
-                        };
-                        var senderPmItemData = {
-                            username: user.username,
-                            messageArr: [pm]
-                        };
-                        app.io.to('/private/user/' + user.username).emit('private messages', responseJson.success(receiverPmItemData));
-                        app.io.to('/private/user/' + socket.username).emit('private messages', responseJson.success(senderPmItemData));
-                    }
+                    var receiverPmItemData = {
+                        username: fromUsername,
+                        messageArr: [pm]
+                    };
+                    var senderPmItemData = {
+                        username: user.username,
+                        messageArr: [pm]
+                    };
+                    app.io.to('/private/user/' + user.username).emit('private messages', responseJson.success(receiverPmItemData));
+                    app.io.to('/private/user/' + fromUsername).emit('private messages', responseJson.success(senderPmItemData));
                 });
             }
             else{
@@ -253,18 +259,18 @@ function IoController(app){
         });
     };
 
-    this.createPm = function(toUsername, socketID){
-        var socket = app.io.socketList[socketID];
+    this.createPm = function(toUsername, socket){
         _findUserWithUsername(toUsername, function(user){
-            if(user){
-                var salt = [toUsername, socket.username].sort().toString();
+            if(user && socket){
+                var fromUsername = socket.username;
+                var salt = [toUsername, fromUsername].sort().toString();
                 var pmid = crypto.createHash('sha1').update(salt).digest('hex');
                 _retrievePm(pmid, function(pms){
                     var pmItemData = {
                         username: user.username,
                         messageArr: pms
                     };
-                    app.io.to('/private/user/' + socket.username).emit('private messages', responseJson.success(pmItemData));
+                    app.io.to('/private/user/' + fromUsername).emit('private messages', responseJson.success(pmItemData));
                 });
             }
             else{
@@ -273,8 +279,7 @@ function IoController(app){
         });
     };
 
-    this.searchPm = function(str, socketID){
-        var socket = app.io.socketList[socketID];
+    this.searchPm = function(str, socket){
         app.db.collection('users').find({'$or':[
             {'username':{'$regex':str, '$options':'i'}},
             {'firstName':{'$regex':str, '$options':'i'}},
@@ -287,7 +292,7 @@ function IoController(app){
                 //throw new DatabaseError();
                 //redo the work
             }
-            else{
+            else if(socket){
                 socket.emit('pm contact data', responseJson.success(users));
             }
         });
@@ -326,39 +331,42 @@ function IoController(app){
     };
 
     function _checkUnreadPm(socket){
-        app.db.collection('pms').distinct('pmid', {toUsername: socket.username, hasRead: false}, function(err, pmidArr){
-            if(err){
-               //this is socket-level info
-                //throw new DatabaseError();
-                //redo the work 
-            }
-            else{
-                for(var i in pmidArr){
-                    _retrievePm(pmidArr[i], function(pms){
-                        var pmItemData = {
-                            messageArr: pms
-                        };
-                        for(var j in pms){
-                            if(pms[j].fromUsername !== socket.username){
-                                pmItemData.username = pms[j].fromUsername;
-                                break;
-                            }
-                        }
-                        socket.emit('private messages', responseJson.success(pmItemData));
-                    });
+        if(socket){
+            var toUsername = socket.username;
+            app.db.collection('pms').distinct('pmid', {toUsername: toUsername, hasRead: false}, function(err, pmidArr){
+                if(err){
+                   //this is socket-level info
+                    //throw new DatabaseError();
+                    //redo the work 
                 }
-            }
-        });
+                else{
+                    for(var i in pmidArr){
+                        _retrievePm(pmidArr[i], function(pms){
+                            var pmItemData = {
+                                messageArr: pms
+                            };
+                            for(var j in pms){
+                                if(pms[j].fromUsername !== toUsername){
+                                    pmItemData.username = pms[j].fromUsername;
+                                    break;
+                                }
+                            }
+                            if(socket){
+                                socket.emit('private messages', responseJson.success(pmItemData));
+                            }
+                        });
+                    }
+                }
+            });
+        }
     }
 
     function welcomeSocket(res){
-        var socket = app.io.socketList[res.target];
-        _welcomeUser(socket, res.user);
+        _welcomeUser(res.target, res.user);
     }
 
     function renderLoginSocket(res){
-        var socket = app.io.socketList[res.target];
-        _renderLogin(socket);
+        _renderLogin(res.target);
     }
 
     function welcomeSession(res){
@@ -384,63 +392,77 @@ function IoController(app){
             type: 'reset',
             data: app.roomList
         }
-        socket.emit('room data', responseJson.success(result));     
+        if(socket){
+            socket.emit('room data', responseJson.success(result));
+        }   
     }
 
     function _retrieveRecentContact(socket){
-        app.db.collection('pms').distinct('toUsername', {fromUsername: socket.username}, function(err, usernameArr){
-            if(err){
-               //this is socket-level info
-                //throw new DatabaseError();
-                //redo the work 
-            }
-            else{
-                var length = usernameArr.length;
-                var result = [];
-                for(var i = length-1; i>=Math.max(length-5,0); i--){
-                    _findUserWithUsername(usernameArr[i], function(user){
-                        if(user){
-                            user = _.pick(user, 'username', 'avatar');
-                            result.push(user);
-                            if(result.length == Math.min(5, length)){
-                                socket.emit('pm contact data', responseJson.success(result));
-                            }
-                        }
-                    });
+        if(socket){
+            app.db.collection('pms').distinct('toUsername', {fromUsername: socket.username}, function(err, usernameArr){
+                if(err){
+                   //this is socket-level info
+                    //throw new DatabaseError();
+                    //redo the work 
                 }
-            }
-        });
+                else{
+                    var length = usernameArr.length;
+                    var result = [];
+                    for(var i = length-1; i>=Math.max(length-5,0); i--){
+                        _findUserWithUsername(usernameArr[i], function(user){
+                            if(user){
+                                user = _.pick(user, 'username', 'avatar');
+                                result.push(user);
+                                if(result.length == Math.min(5, length) && socket){
+                                    socket.emit('pm contact data', responseJson.success(result));
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
     }
 
     function _welcomeUser(socket, user){
-        socket.setSocketUser(user);
-        if(user.prompts.needUserInfo){
-            socket.render('fillInfo', socket.getSocketInfo());
-        }
-        else{
-            _initiateLounge(socket, user);
+        if(socket){
+            socket.setSocketUser(user);
+            if(user.prompts.needUserInfo){
+                socket.render('fillInfo', socket.getSocketInfo());
+            }
+            else{
+                _initiateLounge(socket, user);
+            }
         }
     }
 
     function _initiateLounge(socket, user){
-        socket.render('chatFrame', socket.getSocketInfo());
-        _checkUnreadPm(socket);
-        _retrieveRoomList(socket);
-        _retrieveRecentContact(socket);
-        app.roomController.joinRoom(0, socket);
+        if(socket){
+            socket.render('chatFrame', socket.getSocketInfo());
+            _checkUnreadPm(socket);
+            _retrieveRoomList(socket);
+            _retrieveRecentContact(socket);
+            app.roomController.joinRoom(0, socket);
+        }
     }
 
     function _renderLogin(socket){
-        socket.render('login');
+        if(socket){
+            socket.render('login');
+        }
     }
 
     function _seeyouUser(socket){
-        app.roomController.passiveLeaveRoom(socket);
-        socket.removeSocketUser();
+        if(socket){
+            app.roomController.passiveLeaveRoom(socket);
+            socket.removeSocketUser();
+        }
     }
 
     function _renderRegister(socket){
-        socket.render('register');
+        if(socket){
+            socket.render('register');
+        }
     }
 
     this.on('userLoggedIn', welcomeSocket);
