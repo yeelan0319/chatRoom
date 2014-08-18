@@ -1,7 +1,7 @@
 var chobiUtil = {};
 
 chobiUtil.inputError = function($targetEl, message){
-	$targetEl.addClass('has-error').append('<span class="error-message" style="position:absolute; bottom:-18px; left:0px; font-size:12px; line-height:18px; color:#C0392B">' + message + '</span>');
+	$targetEl.addClass('has-error').append('<span class="error-message" style="position:absolute; bottom:-18px; left:0px; width:500px; font-size:12px; line-height:18px; color:#C0392B">' + message + '</span>');
 }
 
 chobiUtil.inputErrorClear = function($targetContainer){

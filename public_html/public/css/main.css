@@ -423,8 +423,16 @@ body.symbolic{
   outline:none;
 }
 
-#adminModal #chatlog-container{
-  margin-top:15px;
+#adminModal #chatHistory-pane .outer-container{
+  overflow: auto;
+}
+
+#adminModal #constraints-container .constraint{
+  background-color: #f1c40f;
+  color: #fff;
+  font-size: 12px;
+  padding: 5px;
+  margin: 5px;
 }
 
 #profileModal .edit-mode{
@@ -615,6 +623,10 @@ body.symbolic{
     height:200px;
   }
 
+  #adminModal #chatHistory-pane .outer-container{
+    height:128px;
+  }
+
   .pm-message-container{
     max-height:300px;
   }
@@ -625,6 +637,10 @@ body.symbolic{
     height:400px;
   }
 
+  #adminModal #chatHistory-pane .outer-container{
+    height:328px;
+  }
+
   .pm-message-container{
     max-height:500px;
   }
@@ -633,6 +649,10 @@ body.symbolic{
 @media (min-height: 1000px){
   #adminModal .modal-content .tab-pane{
     height:600px;
+  }
+
+  #adminModal #chatHistory-pane .outer-container{
+    height:528px;
   }
 
   .pm-message-container{

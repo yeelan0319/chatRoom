@@ -149,7 +149,7 @@ $(document).ready(function(){
 	});
 
 	socket.on('chat log', function(data){
-		module.systemAdmin.renderChatLogData(data);
+		module.systemAdmin.receivedChatLogData(data);
 	});
 
 	socket.on('private messages', function(pmItemData){

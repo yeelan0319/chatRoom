@@ -1,5 +1,7 @@
 module.systemAdmin = {
     linkedUserList:{},
+    chatLogCache: [],
+    constraintsCount: 0,
 
     renderIndex: function(){
         var $el = $(module.template.systemAdminIndexTmpl());
@@ -61,40 +63,96 @@ module.systemAdmin = {
     },
 
     searchForChatLog: function(){
-        var input = {
-            username: $('#adminModal #search-username').val(),
-            room: $.trim($('#adminModal #search-room').val()),
-            startDate: $('#adminModal #search-startDate').val(),
-            endDate: $('#adminModal #search-endDate').val()
-        }
+        chobiUtil.inputErrorClear($('#chatHistory-pane'));
+
+        var $usernameEl = $('#chatHistory-pane #search-username');
+        var $roomEl = $('#chatHistory-pane #search-room');
+        var $startDateEl = $('#chatHistory-pane #search-startDate');
+        var $endDateEl = $('#chatHistory-pane #search-endDate');
+        
+        var username = $usernameEl.val();
+        var room = $roomEl.val();
+        var startDate = $startDateEl.val();
+        var endDate = $endDateEl.val();
+
         var constraints = {};
-        if(input.username){
-            constraints.username = input.username;
-        }
-        if(input.room){
-            var id = module.lounge.findRoomIDWithName(input.room);
-            if(typeof id != 'undefined'){
-                constraints.room = id;
+        var constraintstr = '';
+        if(username){
+            if(!validator.nickName(username)){
+                chobiUtil.inputError($usernameEl.parent(), 'Please enter a valid username');
+                return false;
+            }
+            else{
+                constraints.username = username;
+                constraintstr += username;
             }
         }
-        if(input.startDate || input.endDate){
+        else{
+            constraintstr += 'everyone'
+        }
+
+        if(room){
+            if(!validator.looseNickName(room)){
+                chobiUtil.inputError($roomEl.parent(), 'Please enter a valid room name');
+                return false;
+            }
+            else{
+                var id = module.lounge.findRoomIDWithName(room);
+                if(typeof id != 'undefined'){
+                    constraints.room = id;
+                    constraintstr += "@" + room;
+                }
+                else{
+                    chobiUtil.inputError($roomEl.parent(), 'Please enter a valid room name');
+                    return false;
+                }
+            }
+        }
+        else{
+            constraintstr += "@everywhere"
+        }
+        if(startDate || endDate){
             constraints.ctime = {};
-            if(input.startDate){
-                constraints.ctime.$gt = new Date(input.startDate).getTime();
+            constraintstr += ' (';
+            if(startDate && !validator.date(startDate)){
+                chobiUtil.inputError($startDateEl.parent(), 'Please enter a valid date in mm/dd/yyyy format');
+                return false;
             }
-            if(input.endDate){
-                constraints.ctime.$lt = new Date(input.endDate).getTime();
+            else{
+                constraints.ctime.$gt = new Date(startDate).getTime();
+                constraintstr += startDate;
             }
+            constraintstr += '~';
+            if(endDate && !validator.date(endDate)){
+                chobiUtil.inputError($endDateEl.parent(), 'Please enter a valid date in mm/dd/yyyy format');
+                return false;
+            }
+            else{
+                constraints.ctime.$lt = new Date(endDate).getTime();
+                constraintstr += endDate;
+            }
+            constraintstr += ')';
         }
         socket.emit('retrieveChatLogAction', JSON.stringify(constraints));
+        $('#constraints-container').prepend($('<li class="constraint">').text(constraintstr).attr('data-index', module.systemAdmin.constraintsCount).click(function(){
+            module.systemAdmin.renderChatLogData(module.systemAdmin.chatLogCache[parseInt($(this).attr('data-index'))]);
+        }));
+        module.systemAdmin.constraintsCount++;
     },
 
-    renderChatLogData: function(data){
+    receivedChatLogData: function(data){
         data = JSON.parse(data);
-        if(data.meta.status == 200 && module.data.pos === 'admin-chatlog'){
+        if(data.meta.status == 200){
+            module.systemAdmin.chatLogCache.push(data.data);
+            module.systemAdmin.renderChatLogData(data.data);
+        }
+    },
+
+    renderChatLogData: function(messages){
+        if(module.data.pos === 'admin-chatlog'){
             $('#chatlog-container').html('');
-            $.each(data.data, function(index, message){
-                $('#chatlog-container').append('<li>' + message.username + ': ' + message.msg + '</li>');
+            $.each(messages, function(index, message){
+                $('#chatlog-container').append($('<li>').text(message.username + ': ' + message.msg));
             });
         }
     }
