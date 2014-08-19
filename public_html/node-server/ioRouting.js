@@ -20,7 +20,7 @@ module.exports = function(app){
     app.io.use(function(socket, next){
         //TODOS: Should generate socket based session key if the initial request is not via browser
         // var seed = crypto.randomBytes(20);
-        // socket.token = socket.request.signedCookies['PHPSESSID'] || crypto.createHash('sha1').update(seed).digest('hex');
+        // socket.token = socket.request.signedCookies['PHPSESSID'] || app.helper.crypto(seed);
         app.middleware.cookieParserFunction(socket.request, {}, function(){
             socket.token = socket.request.signedCookies['PHPSESSID'];
             socket.join('/private/session/' + socket.token);

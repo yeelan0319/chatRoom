@@ -4,7 +4,6 @@ var formidable = require('formidable');
 var easyimage = require('easyimage');
 var fs = require('fs');
 var _ = require('underscore');
-var crypto = require('crypto');
 var responseJson = require('./responseJson');
 var validator = require('../public/validator');
 var DEFAULTAVATAR = '/avatar/defaultAvatar.png';
@@ -42,7 +41,7 @@ module.exports = function(app){
 		                res.end();
 		            }
 		            else{
-		            	if(user && user.password === crypto.createHash('sha1').update(password).digest('hex')){
+		            	if(user && user.password === app.helper.crypto(password)){
 			                session.username = user.username;
 			                session.save();
 
@@ -98,7 +97,7 @@ module.exports = function(app){
 		            else{
 		            	var user = {
 		                    'username': username, 
-		                    'password': crypto.createHash('sha1').update(password).digest('hex'), 
+		                    'password': app.helper.crypto(password), 
 		                    'email': email,
 		                    'avatar': DEFAULTAVATAR,
 		                    'permission':0,

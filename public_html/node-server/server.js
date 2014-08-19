@@ -41,6 +41,8 @@ function serverInitialization(db){
         store: app.sessiondb,
         rolling: true
     });
+    
+    app.helper = require('./helper');
 
     (require('./expressRouting'))(app);
     (require('./ioRouting'))(app);

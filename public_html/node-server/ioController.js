@@ -1,6 +1,5 @@
 var util = require('util');
 var events = require('events');
-var crypto = require('crypto');
 var _ = require('underscore');
 var responseJson = require('./responseJson');
 var DAY = 1000*60*60*24;
@@ -225,7 +224,7 @@ function IoController(app){
             if(user && socket){
                 var fromUsername = socket.username;
                 var salt = [toUsername, fromUsername].sort().toString();
-                var pmid = crypto.createHash('sha1').update(salt).digest('hex');
+                var pmid = app.helper.crypto(salt);
 
                 var pm = {
                     pmid: pmid,
@@ -264,7 +263,7 @@ function IoController(app){
             if(user && socket){
                 var fromUsername = socket.username;
                 var salt = [toUsername, fromUsername].sort().toString();
-                var pmid = crypto.createHash('sha1').update(salt).digest('hex');
+                var pmid = app.helper.crypto(salt);
                 _retrievePm(pmid, function(pms){
                     var pmItemData = {
                         username: user.username,
