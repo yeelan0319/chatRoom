@@ -78,7 +78,7 @@ $(document).ready(function(){
 						module.lounge.renderFrame(res.data);
 						break;
 					case 'profile':
-						module.lounge.renderProfile(res.data);
+						module.lounge.renderProfile(res.data.user);
 						break;
 					case 'lounge':
 						module.lounge.renderIndex(res.data);

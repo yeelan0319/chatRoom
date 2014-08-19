@@ -210,7 +210,7 @@ function IoController(app){
         if(socket){
             _findUserWithUsername(socket.username, function(user){
                 var data = {
-                    user: _.omit(user, 'password', 'prompts')
+                    user: _.omit(user, 'password', 'prompts', 'permission')
                 }
                 if(socket){
                     socket.render('profile', data);                    
@@ -285,7 +285,7 @@ function IoController(app){
             {'lastName':{'$regex':str, '$options':'i'}},
             {'email':{'$regex':str, '$options':'i'}},
             {'jobDescription':{'$regex':str, '$options':'i'}},
-        ]},{username:1, avatar:1}).toArray(function(err, users){
+        ]},{username:1, avatar:1, firstName:1, lastName:1, email:1, phoneNumber:1, birthday:1, jobDescription:1}).toArray(function(err, users){
             if(err){
                 //this is socket-level info
                 //throw new DatabaseError();
@@ -410,7 +410,7 @@ function IoController(app){
                     for(var i = length-1; i>=Math.max(length-5,0); i--){
                         _findUserWithUsername(usernameArr[i], function(user){
                             if(user){
-                                user = _.pick(user, 'username', 'avatar');
+                                user = _.omit(user, 'password', 'prompts', 'permission');
                                 result.push(user);
                                 if(result.length == Math.min(5, length) && socket){
                                     socket.emit('pm contact data', responseJson.success(result));

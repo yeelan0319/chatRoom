@@ -100,6 +100,12 @@ PmItem.prototype = {
 ContactItem = function(data){
 	this.username = data.username;
 	this.avatar = data.avatar;
+	this.firstName = data.firstName;
+	this.lastName = data.lastName;
+	this.email = data.email;
+	this.phoneNumber = data.phoneNumber;
+	this.birthday = data.birthday;
+	this.jobDescription = data.jobDescription;
 	return this;
 }
 
@@ -108,7 +114,20 @@ ContactItem.prototype = {
 		var that = this;
 		that.$el = $(module.template.contactItemTmpl(that));
 		if(that.username !== module.data.user.username){
-			that.$el.unbind('click').click(function(){module.privateMessage.openPm(that.username)});
+			that.$el.find('.contact-item').unbind('contextmenu').on('contextmenu', function(event){
+				$('.context-menu').hide();
+				that.$el.find('.context-menu').css({
+					top: event.pageY,
+					left: event.pageX
+				}).show();
+				return false;
+			}).unbind('click').click(function(){module.privateMessage.openPm(that.username);});
+			that.$el.find('.context-menu .view-profile').unbind('click').click(function(){
+				module.lounge.renderProfile(that);
+			});
+			that.$el.find('.context-menu .send-pm').unbind('click').click(function(){
+				module.privateMessage.openPm(that.username);
+			});
 		}
 		return that.$el;
 	}
@@ -127,6 +146,9 @@ module.privateMessage = {
 				module.privateMessage.searchContact();
 			}
 			
+		});
+		$(document).unbind('.privateMessage').on('click.privateMessage contextmenu.privateMessage',function(){
+			$('.context-menu').hide();
 		});
 		$(window).resize(module.privateMessage.closeOverfitPm);
 	},

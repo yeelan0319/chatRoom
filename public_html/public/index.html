@@ -89,10 +89,16 @@
 
     <!-- Templates of chat room -->
     <script id="contact-item-tmpl" type="text/x-handlebars-template" class="template">
-        <li class="contact-item">
-            <img src="{{avatar}}" />
-            <span>{{username}}</span>
-        </li>
+        <div class="contact-item-container">
+            <li class="contact-item">
+                <img src="{{avatar}}" />
+                <span>{{username}}</span>
+            </li>
+            <ul class="dropdown-menu dropdown-inverse context-menu">
+                <li><a class="view-profile">View Profile</a></li>
+                <li><a class="send-pm">Send Message</a></li>
+            </ul>
+        </div>
     </script>
     <script id="pm-item-tmpl" type="text/x-handlebars-template" class="template">
         <div class="pm-box-outer pm-item">
@@ -483,7 +489,7 @@
                     </td>
                   </tr>
                   <tr>
-                    <td class="read-only"><button class="btn btn-inverse btn-wide">Edit</button></td>
+                    {{#isSelf}}<td class="read-only"><button class="btn btn-inverse btn-wide">Edit</button></td>{{/isSelf}}
                     <td class="edit-mode">
                         <button class="btn btn-inverse btn-wide">Submit</button>
                         <button class="btn btn-default btn-wide">Cancel</button>

@@ -1,6 +1,12 @@
 var RoomUserItem = function(userdata){
 	this.username = userdata.username;
 	this.avatar = userdata.avatar;
+	this.firstName = userdata.firstName;
+	this.lastName = userdata.lastName;
+	this.email = userdata.email;
+	this.phoneNumber = userdata.phoneNumber;
+	this.birthday = userdata.birthday;
+	this.jobDescription = userdata.jobDescription;
 	this.sessions = {};
 	this.activeSessions = 0;
 	this.socketCount = 0;

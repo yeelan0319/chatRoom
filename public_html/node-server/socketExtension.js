@@ -33,6 +33,12 @@ module.exports = function socketExtension(socket, next){
         this.username = user.username;
         this.permission = user.permission;
         this.avatar = user.avatar;
+        this.firstName = user.firstName;
+        this.lastName = user.lastName;
+        this.email = user.email;
+        this.phoneNumber = user.phoneNumber;
+        this.birthday = user.birthday;
+        this.jobDescription = user.jobDescription;
         this.join('/private/user/'+this.username);
     };
     socket.removeSocketUser = function(){
@@ -40,13 +46,25 @@ module.exports = function socketExtension(socket, next){
         delete this.username;
         delete this.permission;
         delete this.avatar;
+        delete this.firstName
+        delete this.lastName
+        delete this.email
+        delete this.phoneNumber
+        delete this.birthday
+        delete this.jobDescription
     };
     socket.getSocketInfo = function(){
         return {
             username: this.username,
             permission: this.permission,
             avatar: this.avatar,
-            token: this.token
+            token: this.token,
+            firstName: this.firstName,
+            lastName: this.lastName,
+            email: this.email,
+            phoneNumber: this.phoneNumber,
+            birthday: this.birthday,
+            jobDescription: this.jobDescription
         }
     }
 

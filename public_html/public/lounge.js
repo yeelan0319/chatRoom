@@ -56,8 +56,10 @@ module.lounge = {
 	  	return $userPanelEl;
 	},
 
-	renderProfile: function(data){
-		var $el = $(module.template.profileTmpl(data.user));
+	renderProfile: function(userdata){
+		userdata.isSelf = userdata.username === module.data.user.username? true : false;
+		var $el = $(module.template.profileTmpl(userdata));
+
 		var uploader = new qq.FileUploaderBasic({
 			button: $el.find('.avatar-upload')[0],
 			action: '/upload/avatar',

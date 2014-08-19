@@ -623,6 +623,23 @@ body.symbolic{
   cursor: not-allowed;
 }
 
+.context-menu{
+  position: fixed;
+  display: none;
+  opacity: 1;
+  visibility: visible;
+  -webkit-transition: 0s;
+  transition: 0s; 
+  background:rgba(48,40,40,0.43);
+  border:1px solid #333;
+  box-shadow: 1px 0px 5px rgba(0,0,0,.75);
+}
+
+.context-menu > li > a:hover{
+  color:#fff;
+  cursor: pointer;
+}
+
 @media (max-height: 600px){
   #adminModal .modal-content .tab-pane{
     height:200px;
