@@ -187,7 +187,7 @@ module.loginRegister = {
 		var uploader = new qq.FileUploaderBasic({
 			button: $el.find('.avatar-upload')[0],
 			action: '/upload/avatar',
-			allowedExtension:['jpg', 'jpeg', 'png'],
+			allowedExtensions:['jpg', 'jpeg', 'png'],
 			onProgress: function(id, fileName, loaded, total){
 				console.log(id, fileName, loaded, total);
 			},
@@ -197,8 +197,14 @@ module.loginRegister = {
 				if(res.meta.status == 200){
 					$el.find('.avatar').attr('src', res.data.avatar);
 				}
+			},
+			onError: function(id, fileName, xhr){
+				if(xhr.status === 400){
+					chobiUtil.alertBox('Only png, jpeg, jpg files are allowed.')
+				}
 			}
 		});
+		$(uploader._button._input).attr('accept', 'image/x-png, image/jpeg');
 		$('.container-idle').html($el);
 	}
 }

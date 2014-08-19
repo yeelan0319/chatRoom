@@ -148,43 +148,50 @@ module.exports = function(app){
 	    			file_name = username + Date.now() + '.' + file_ext,
 	    			new_path = process.env.PWD + '/../public/avatar/' + file_name;
 
-	    		fs.readFile(old_path, function(err, data){
-	    			fs.writeFile(new_path, data, function(err){
-	    				fs.unlink(old_path, function(err){
-	    					if(err){
-	    						res.status(500);
-	    						//failed to upload
-	    						res.end();
-	    					}
-	    					else{
-	    						easyimage.thumbnail({
-	    							src: new_path,
-	    							dst: new_path,
-	    							width: 230
-	    						}).then(
-	    							function(file){
-	    								app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{avatar:'/avatar/'+file_name}}, {new:true}, function(err, user){
-								            if(err){
-								                res.status(500);
-								                //redo the work
-								                res.end();
-								            }
-								            else{
-								           		res.status(200);
-					    						res.json(responseJson.success(_.pick(user, 'avatar')));
-					    						res.end();     
-								            }
-								        });
-	    							}, function(err){
-	    								res.status(500);
-						                //redo the work
-						                res.end();
-	    							}
-	    						);
-	    					}
-	    				});
-	    			});
-	    		});
+	    		if(['png','jpg','jpeg'].indexOf(file_ext) === -1){
+	    			res.status(400);
+		            res.json(responseJson.badData());
+		            res.end();
+	    		}
+	    		else{
+	    			fs.readFile(old_path, function(err, data){
+		    			fs.writeFile(new_path, data, function(err){
+		    				fs.unlink(old_path, function(err){
+		    					if(err){
+		    						res.status(500);
+		    						//failed to upload
+		    						res.end();
+		    					}
+		    					else{
+		    						easyimage.thumbnail({
+		    							src: new_path,
+		    							dst: new_path,
+		    							width: 230
+		    						}).then(
+		    							function(file){
+		    								app.db.collection('users').findAndModify({username:username}, [['_id','asc']], {$set:{avatar:'/avatar/'+file_name}}, {new:true}, function(err, user){
+									            if(err){
+									                res.status(500);
+									                //redo the work
+									                res.end();
+									            }
+									            else{
+									           		res.status(200);
+						    						res.json(responseJson.success(_.pick(user, 'avatar')));
+						    						res.end();     
+									            }
+									        });
+		    							}, function(err){
+		    								res.status(500);
+							                //redo the work
+							                res.end();
+		    							}
+		    						);
+		    					}
+		    				});
+		    			});
+		    		});
+	    		}	
 	    	});
     	}
     	else{

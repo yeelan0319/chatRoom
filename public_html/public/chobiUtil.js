@@ -69,3 +69,30 @@ chobiUtil.confirmBox = function(msg, callback){
 		$('body').append('<div class="confirm-container"><div class="modal-backdrop fade"></div></div>').find('.confirm-container').append($el);
 	}
 }
+
+chobiUtil.alertBox = function(msg){
+	if($('.confirm-container').length==0){
+		$el = $('<div class="confirm-container">' +
+				'<div class="modal-backdrop fade"></div>' +
+				'<div class="confirm-box">' +
+	            	'<h6 class="msg">' + msg + '</h6>' +
+	            	'<button class="btn btn-danger btn-wide">ok</button>' +
+	        	'</div>' +
+	        '</div>');
+		$el.find('button').unbind('click').click(function(){
+			$('.confirm-container').remove();
+		});
+		// $(document).unbind('keydown.confirmbox').bind('keydown.confirmbox',function(event){
+		// 	if(event.which === 13){
+		// 		callback();
+		// 		$('.confirm-container').remove();
+		// 		$(document).unbind('keydown.confirmbox');
+		// 	}
+		// 	else if(event.which === 27){
+		// 		$('.confirm-container').remove();
+		// 		$(document).unbind('keydown.confirmbox');
+		// 	}
+		// });
+		$('body').append($el);
+	}
+}
