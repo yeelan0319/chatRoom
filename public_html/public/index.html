@@ -8,7 +8,7 @@
     <meta name="author" content="Yiran Mao">
     <link rel="icon" href="/img/favicon.ico">
 
-    <title>Secret Board Room for Everyone</title>
+    <title>Symbolic IO™ Corporate Chat Application</title>
 
     <!-- Bootstrap core CSS -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
@@ -323,32 +323,44 @@
                   </div>
                   <div class="tab-pane" id="chatHistory-pane">
                     <div class="row">
-                        <div class="col-md-3">
-                            <input type="text" id="search-username" placeholder="Username" class="form-control input-sm" />
-                        </div>
-                        <div class="col-md-2">
-                            <input type="text" id="search-room" placeholder="Room Name" class="form-control input-sm" />
-                        </div>
-                        <div class="col-md-3">
-                            <div class="input-group date">
-                            <input id="search-startDate" type="text" name="startDate" class="form-control input-sm" placeholder="Start Date">
-                            <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
-                          </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="input-group date">
-                              <input id="search-endDate" type="text" name="endDate" class="form-control input-sm" placeholder="End Date">
-                              <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
-                            </div>
-                        </div>
-                        <div class="col-md-1">
-                            <button class="btn btn-inverse" id="search-message">Go</button>
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="col-md-12">
                             <small>*leave it blank if you do not want to specify it</small>
                         </div>
+                    </div>
+                    <div class="row">
+                        <form role="form" id="search-message">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <input type="text" id="search-username" placeholder="Username" class="form-control input-sm" />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <input type="text" id="search-room" placeholder="Room Name" class="form-control input-sm" />
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <div class="input-group date">
+                                    <input id="search-startDate" type="text" name="startDate" class="form-control input-sm" placeholder="Start Date">
+                                    <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
+                                  </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <div class="input-group date">
+                                      <input id="search-endDate" type="text" name="endDate" class="form-control input-sm" placeholder="End Date">
+                                      <span class="input-group-addon"><i class="fui-calendar-solid"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="form-group">
+                                    <button class="btn btn-inverse" type="submit">Go</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                     <div class="row">
                         <div class="col-md-3 outer-container">

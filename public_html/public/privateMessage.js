@@ -44,6 +44,7 @@ PmItem.prototype = {
 				return false;
 			}
 		});
+		setPmContainerSize(that.$el);
 		return that.$el;
 	},
 
@@ -106,7 +107,9 @@ ContactItem.prototype = {
 	render: function(){
 		var that = this;
 		that.$el = $(module.template.contactItemTmpl(that));
-		that.$el.unbind('click').click(function(){module.privateMessage.openPm(that.username)});
+		if(that.username !== module.data.user.username){
+			that.$el.unbind('click').click(function(){module.privateMessage.openPm(that.username)});
+		}
 		return that.$el;
 	}
 }

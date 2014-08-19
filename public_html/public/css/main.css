@@ -413,7 +413,7 @@ body.symbolic{
 }
 
 #adminModal #chatHistory-pane{
-  padding-top:15px;
+  padding-top:5px;
 }
 
 #adminModal .modal-body button, #roomPrompt .modal-footer button, #profileModal .modal-body button, .confirm-box button{
@@ -432,7 +432,7 @@ body.symbolic{
   color: #fff;
   font-size: 12px;
   padding: 5px;
-  margin: 5px;
+  margin-bottom: 5px;
   cursor:pointer;
 }
 
@@ -536,7 +536,7 @@ body.symbolic{
   color:#888;
 }
 
-#adminModal .modal-content .tab-pane, .pm-message-container{
+.pm-message-container{
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -631,10 +631,6 @@ body.symbolic{
   #adminModal #chatHistory-pane .outer-container{
     height:128px;
   }
-
-  .pm-message-container{
-    max-height:300px;
-  }
 }
 
 @media (min-height:600px) and (max-height: 1000px){
@@ -645,10 +641,6 @@ body.symbolic{
   #adminModal #chatHistory-pane .outer-container{
     height:328px;
   }
-
-  .pm-message-container{
-    max-height:500px;
-  }
 }
 
 @media (min-height: 1000px){
@@ -658,10 +650,6 @@ body.symbolic{
 
   #adminModal #chatHistory-pane .outer-container{
     height:528px;
-  }
-
-  .pm-message-container{
-    max-height:700px;
   }
 }
 

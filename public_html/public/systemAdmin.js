@@ -20,13 +20,15 @@ module.systemAdmin = {
         $el.find('#chatHistory').unbind('click').click(function(){
             module.data.pos = 'admin-chatlog';
             $el.find('#chatlog-container').html('');
+        }).on('shown.bs.tab', function(){
+            $el.find('#search-username').focus();
         });
-        $el.find('#search-message').unbind('click').click(module.systemAdmin.searchForChatLog); 
-        $('.site-wrapper').append($el);
+        $el.find('#search-message').submit(module.systemAdmin.searchForChatLog);
         $el.modal('toggle').on('hidden.bs.modal', function(e){
             module.data.pos = module.data.room == 0 ? 'lounge' : 'room'; 
             $el.remove();
         });
+        $('.site-wrapper').append($el);
     },
 
     renderRegisterUserData: function(data){
@@ -138,6 +140,7 @@ module.systemAdmin = {
             module.systemAdmin.renderChatLogData(module.systemAdmin.chatLogCache[parseInt($(this).attr('data-index'))]);
         }));
         module.systemAdmin.constraintsCount++;
+        return false;
     },
 
     receivedChatLogData: function(data){

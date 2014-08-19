@@ -30,7 +30,10 @@ $(document).ready(function(){
 	}
 	$('.template').remove();
 
-	$(window).bind('resize', function(){setChatPanelSize($('#chat-panel'))});
+	$(window).bind('resize', function(){
+		setChatPanelSize($('#chat-panel'));
+		setPmContainerSize($('#pm-container'));
+	});
 
 	socket.on('session extension', function(){
 		$.get('/sessionExtension');
@@ -165,10 +168,14 @@ $(document).ready(function(){
 });
 
 function setChatPanelSize($chatPanel){
-	var width = $(window).width();
 	var height = $(window).height();
 	var chatPanelHeight = height - 79 - 62;
 	$chatPanel.outerHeight(chatPanelHeight);
 	$chatPanel.find('#online-list-container').outerHeight(chatPanelHeight - 79);
 	$chatPanel.find('#messages, #online-list').outerHeight(chatPanelHeight - 79 - 40);
+}
+
+function setPmContainerSize($pmContainer){
+	var height = $(window).height();
+	$pmContainer.find('.pm-message-container').css({'max-height': height-265 + 'px'});
 }
