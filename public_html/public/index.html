@@ -470,7 +470,6 @@
                     </td>
                   </tr>
                   <tr>
-                    
                     <td class="read-only">Birthday: <span id="birthday">{{birthday}}</span></td>
                     <td class="edit-mode">
                         <div class="input-group date">
@@ -480,8 +479,9 @@
                     </td>
                   </tr>
                   <tr>
-                    
-                    <td class="read-only" id="job">{{jobDescription}}</td>
+                    <td class="read-only">Job Description<br>
+                        <div class="job-container"><span id="job">{{jobDescription}}</span></div>
+                    </td>
                     <td class="edit-mode">
                         <div class="form-group">
                             <textarea name="job" class="form-control" rows="3" placeholder="Job Description: title, position...">{{jobDescription}}</textarea>

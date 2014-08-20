@@ -377,6 +377,7 @@ body.symbolic{
 
 #adminModal .table>thead>tr>th, #profileModal .table td{
   border:none;
+  word-break: break-all;
 }
 
 #adminModal .table>tbody>tr>td{
@@ -454,6 +455,12 @@ body.symbolic{
 
 #profileModal .edit-mode{
   display: none;
+}
+
+#profileModal .job-container{
+  border: 2px solid #222;
+  margin-top: 5px;
+  padding: 5px 8px;
 }
 
 #pm-contact-container .form-group{
