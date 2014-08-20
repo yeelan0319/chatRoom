@@ -17,6 +17,9 @@ chobiUtil.offlineBlock = function(status){
 				if(['admin-roomuser', 'admin-linkeduser', 'admin-alluser', 'admin-chatlog'].indexOf(module.data.pos) !== -1){
 					$("#adminModal").modal('hide');
 				}
+				else if(module.data.pos === 'profile'){
+					$('#profileModal').modal('hide');
+				}
 				$('body').append('<div class="offline-alert"><div class="modal-backdrop fade in"></div><div class="msg">Temporarily lost connect to the server</div></div>');
 				//hint that the application is offline right now
 			}

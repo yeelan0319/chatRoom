@@ -57,6 +57,7 @@ module.lounge = {
 	},
 
 	renderProfile: function(userdata){
+		module.data.pos = 'profile';
 		userdata.isSelf = userdata.username === module.data.user.username? true : false;
 		var $el = $(module.template.profileTmpl(userdata));
 
@@ -173,6 +174,7 @@ module.lounge = {
 		});
 		$('.site-wrapper').append($el);
         $el.modal('toggle').on('hidden.bs.modal', function(e){
+        	module.data.pos = module.data.room === 0? 'lounge' : 'room';
             $el.remove();
         });
 	},
