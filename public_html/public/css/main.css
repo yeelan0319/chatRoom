@@ -20,6 +20,18 @@ u{
   cursor: pointer;
 }
 
+.modal.fade .modal-dialog{
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -webkit-transition: none !important;
+  transition: none !important;
+  -moz-transform: none !important;
+  -o-transform: none !important;
+  -webkit-transform: none !important;
+  -ms-transform: none !important;
+  transform: none !important;
+}
+
 textarea{
   resize:none;
 }

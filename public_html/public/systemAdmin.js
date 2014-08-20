@@ -5,6 +5,7 @@ module.systemAdmin = {
 
     renderIndex: function(){
         var $el = $(module.template.systemAdminIndexTmpl());
+        $('.site-wrapper').append($el);
         $el.find('.input-group.date').datepicker({
             autoclose: true
         });
@@ -28,7 +29,6 @@ module.systemAdmin = {
             module.data.pos = module.data.room == 0 ? 'lounge' : 'room'; 
             $el.remove();
         });
-        $('.site-wrapper').append($el);
     },
 
     renderRegisterUserData: function(data){

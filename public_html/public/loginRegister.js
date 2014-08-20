@@ -199,7 +199,7 @@ module.loginRegister = {
 				}
 			},
 			onError: function(id, fileName, xhr){
-				if(xhr.status === 400){
+				if(xhr.status === 400 || xhr.status === 500){
 					chobiUtil.alertBox('Only png, jpeg, jpg files are allowed.')
 				}
 			}
