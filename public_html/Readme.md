@@ -1,5 +1,8 @@
 #Chat room documentation
 
+##Server set-up command
+###set someone as administrator from mongo
+db.users.findAndModify({query: {username: [username]}, update: {$inc: {permission:1}}})
 
 ##API documentation
 _all the following response level is based on the response level, since all request is send by socket level._
