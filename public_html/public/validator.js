@@ -19,7 +19,8 @@ validator.password = function(input){
 		return FAIL;
 	}
 	//password must be a combination of letter and number and special characters
-	var passwordRegex = /^[\da-zA-Z]*\d+[a-zA-Z]+[\da-zA-Z]*|[\da-zA-Z]*[a-zA-Z]+\d+[\da-zA-Z]*$/;
+	var allowedCharacters = "[A-Za-z0-9!#$%&'*+\/=?^_`{|}~@\\.-]*"
+	var passwordRegex = new RegExp('^' + allowedCharacters + '\\d+[A-z]+' + allowedCharacters +'|' + allowedCharacters + '[A-z]+\\d+' + allowedCharacters + '$');
 	return passwordRegex.test(input)? PASS : FAIL;
 }
 
