@@ -7,7 +7,7 @@ function databaseManager(){
 
     this.connect = function(){
         var that = this;
-        MongoClient.connect("mongodb://127.0.0.1:27017/test", function(err,db){
+        MongoClient.connect("mongodb://127.0.0.1:27017/production", function(err,db){
             if(err){
                 console.log("attempt fails. Try to reconnect to database"); 
                 that.connect();  //should set a upper bound for try time

@@ -145,7 +145,7 @@ module.exports = function(app){
 	    			file_size = files.file.size,
 	    			file_ext = files.file.name.split('.').pop(),
 	    			file_name = username + Date.now() + '.' + file_ext,
-	    			new_path = process.env.PWD + '/../public/avatar/' + file_name;
+	    			new_path = '../public/avatar/' + file_name;
 
 	    		if(['png','jpg','jpeg'].indexOf(file_ext) === -1){
 	    			res.status(400);
